@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_sync.py
-Written by Tyler Sutterley (05/2017)
+Written by Tyler Sutterley (05/2018)
 
 This program syncs Cryosat Elevation products
 From the ESA Cryosat dissemination server:
@@ -30,6 +30,7 @@ COMMAND LINE OPTIONS:
 	--clobber: Overwrite existing data in transfer
 
 UPDATE HISTORY:
+	Updated 05/2018 for public release.
 	Updated 05/2017: exception if ESA Cryosat-2 credentials weren't entered
 		using os.makedirs to recursively create directories
 		using getpass to enter server password securely (remove --password)
@@ -46,7 +47,7 @@ import os
 import getopt
 import getpass
 import calendar, time
-import ftplib
+import ftplib, posixpath
 
 #-- PURPOSE: check internet connection
 def check_connection(USER, PASSWORD):
@@ -101,7 +102,7 @@ def compile_regex_pattern(PRODUCT):
 	#-- Validity Stop Date and Time
 	#-- Baseline Identifier
 	#-- Version Number
-	regex_pattern = '({0})_({1})_({2})__(\d+T?\d+)_(\d+T?\d+)_(.*?)(\d+).{3}' \
+	regex_pattern = '({0})_({1})_({2})__(\d+T?\d+)_(\d+T?\d+)_(.*?)(\d+).{3}$' \
 		.format('CS', regex_class, regex_products[PRODUCT], '(DBL|HDR)')
 	return re.compile(regex_pattern, re.VERBOSE)
 
@@ -114,14 +115,10 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 
 	#-- create log file with list of synchronized files (or print to terminal)
 	if LOG:
-		#-- output to log file
-		LOGDIR = os.path.join(DIRECTORY,'sync_logs.dir')
-		#-- check if log directory exists and recursively create if not
-		os.makedirs(LOGDIR,MODE) if not os.path.exists(LOGDIR) else None
-		#-- format: PODAAC_sync_2002-04-01.log
+		#-- format: ESA_CS_SIR_SIN_L2_sync_2002-04-01.log
 		today = time.strftime('%Y-%m-%d',time.localtime())
 		LOGFILE = 'ESA_CS_{0}_sync_{1}.log'.format(PRODUCT,today)
-		fid1 = open(os.path.join(LOGDIR,LOGFILE),'w')
+		fid1 = open(os.path.join(DIRECTORY,LOGFILE),'w')
 		print('ESA CryoSat-2 Sync Log ({0})'.format(today), file=fid1)
 		print('PRODUCT={0}'.format(PRODUCT), file=fid1)
 	else:
@@ -132,19 +129,19 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 	regex_years = '|'.join('{0:d}'.format(y) for y in YEARS)
 	R1 = re.compile('({0})'.format(regex_years), re.VERBOSE)
 	#-- initial regular expression pattern for months of the year
-	regex_months = '|'.join('{0:02d}'.format(m) for m in range(1,13))
+	regex_months = '(' + '|'.join('{0:02d}'.format(m) for m in range(1,13)) + ')'
 
 	#-- find remote yearly directories for PRODUCT within YEARS
 	YRS = [R1.findall(Y).pop() for Y in f.nlst(PRODUCT) if R1.search(Y)]
 	for Y in YRS:
 		#-- compile regular expression operator for months in year to sync
-		R2 = re.compile('{0}/({1})'.format(Y,regex_months), re.VERBOSE)
+		R2 = re.compile(posixpath.join(Y,regex_months), re.VERBOSE)
 		#-- find remote monthly directories for PRODUCT within year
-		MNS = [R2.findall(M).pop() for M in f.nlst('{0}/{1}'.format(PRODUCT,Y))
+		MNS = [R2.findall(M).pop() for M in f.nlst(posixpath.join(PRODUCT,Y))
 			if R2.search(M)]
 		for M in MNS:
 			#-- remote and local directory for data product of year and month
-			remote_dir = '{0}/{1}/{2}/'.format(PRODUCT,Y,M)
+			remote_dir = posixpath.join(PRODUCT,Y,M)
 			local_dir = os.path.join(DIRECTORY,PRODUCT,Y,M)
 			#-- check if local directory exists and recursively create if not
 			os.makedirs(local_dir,MODE) if not os.path.exists(local_dir) else None
@@ -155,7 +152,7 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 			for line in sorted(valid_lines):
 				#-- extract filename from regex object
 				fi = R3.search(line).group(0)
-				remote_file = '{0}{1}'.format(remote_dir,fi)
+				remote_file = posixpath.join(remote_dir,fi)
 				local_file = os.path.join(local_dir,fi)
 				ftp_mirror_file(fid1,f,remote_file,local_file,LIST,CLOBBER,MODE)
 
@@ -164,7 +161,7 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 	#-- close log file and set permissions level to MODE
 	if LOG:
 		fid1.close()
-		os.chmod(os.path.join(LOGDIR,LOGFILE), MODE)
+		os.chmod(os.path.join(DIRECTORY,LOGFILE), MODE)
 
 #-- PURPOSE: pull file from a remote host checking if file exists locally
 #-- and if the remote file is newer than the local file
@@ -189,8 +186,8 @@ def ftp_mirror_file(fid, ftp, remote_file, local_file, LIST, CLOBBER, MODE):
 	#-- if file does not exist locally, is to be overwritten, or CLOBBER is set
 	if TEST or CLOBBER:
 		#-- Printing files transferred
-		print('{0}{1}/{2} --> '.format('ftp://',ftp.host,remote_file),file=fid)
-		print('\t{0}{1}\n'.format(local_file,OVERWRITE),file=fid)
+		args=(posixpath.join('ftp://',ftp.host,remote_file),local_file,OVERWRITE)
+		print('{0} -->\n\t{1}{2}\n'.format(*args), file=fid)
 		#-- if executing copy command (not only printing the files)
 		if not LIST:
 			#-- copy remote file contents to local file
@@ -257,11 +254,12 @@ def main():
 		#-- Input CryoSat Level-2 Product (sys.argv[0] is the python code)
 		raise Exception('No CryoSat Level-2 Product Specified')
 
+	#-- ESA CryoSat-2 FTP Server name
+	HOST = 'science-pds.cryosat.esa.int''
 	#-- check that ESA CryoSat-2 FTP Server credentials were entered
 	if not USER:
-		raise IOError('Please Enter your ESA CryoSat-2 FTP Server Username')
+		USER = raw_input('Username for {0}: '.format(HOST))
 	#-- enter password securely from command-line
-	HOST = 'science-pds.cryosat.esa.int'
 	PASSWORD = getpass.getpass('Password for {0}@{1}: '.format(USER,HOST))
 
 	#-- check internet connection before attempting to run program

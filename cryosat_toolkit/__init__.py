@@ -1,3 +1,6 @@
 from read_cryosat_L1b import read_cryosat_L1b
 from read_cryosat_L2 import read_cryosat_L2
 from read_cryosat_L2I import read_cryosat_L2I
+from HDF5_cryosat_L1b import HDF5_cryosat_L1b
+from HDF5_cryosat_L2 import HDF5_cryosat_L2
+from HDF5_cryosat_L2I import HDF5_cryosat_L2I

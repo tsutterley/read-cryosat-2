@@ -255,7 +255,7 @@ def main():
 		raise Exception('No CryoSat Level-2 Product Specified')
 
 	#-- ESA CryoSat-2 FTP Server name
-	HOST = 'science-pds.cryosat.esa.int''
+	HOST = 'science-pds.cryosat.esa.int'
 	#-- check that ESA CryoSat-2 FTP Server credentials were entered
 	if not USER:
 		USER = raw_input('Username for {0}: '.format(HOST))

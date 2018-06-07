@@ -227,7 +227,7 @@ def main():
 	LIST = False
 	LOG = False
 	#-- permissions mode of the local directories and files (number in octal)
-	MODE = 0775
+	MODE = 0o775
 	CLOBBER = False
 	for opt, arg in optlist:
 		if opt in ('-h','--help'):

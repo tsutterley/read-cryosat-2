@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2I.py (05/2016)
+HDF5_cryosat_L2I.py (06/2018)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 intermediary data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 06/2018: use items instead of iteritems for python3 compatibility
 	Updated 05/2016: using __future__ print function
 	Written 04/2016
 """
@@ -107,7 +108,7 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 			#-- attach dimensions
 			h5['Location'][key].dims[0].label='CS_L2I_MDS_REC_SIZE'
 		#-- add HDF5 variable attributes
-		for att_name,att_val in CS_l2I_attrib['Location'][key].iteritems():
+		for att_name,att_val in CS_l2I_attrib['Location'][key].items():
 			h5['Location'][key].attrs[att_name] = att_val
 
 	#-- CryoSat-2 Measurement Group
@@ -129,7 +130,7 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 			#-- attach dimensions
 			h5['Data'][key].dims[0].label='CS_L2I_MDS_REC_SIZE'
 		#-- add HDF5 variable attributes
-		for att_name,att_val in CS_l2I_attrib['Data'][key].iteritems():
+		for att_name,att_val in CS_l2I_attrib['Data'][key].items():
 			h5['Data'][key].attrs[att_name] = att_val
 
 	#-- CryoSat-2 Auxiliary Data Group
@@ -167,20 +168,20 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 		fileID['METADATA'].create_group('SPH')
 		fileID['METADATA'].create_group('DSD')
 		#-- Main Product Header (MPH) are all strings
-		for att_name,att_val in CS_l2I_mds['METADATA']['MPH'].iteritems():
+		for att_name,att_val in CS_l2I_mds['METADATA']['MPH'].items():
 			fileID['METADATA']['MPH'].attrs[att_name] = att_val
 		#-- Specific Product Header (SPH) are both strings and dictionaries
-		for att_name,att_val in CS_l2I_mds['METADATA']['SPH'].iteritems():
+		for att_name,att_val in CS_l2I_mds['METADATA']['SPH'].items():
 			if isinstance(att_val,dict):
 				#-- if att_val is dictionary
 				fileID['METADATA']['SPH'].create_group(att_name)
-				for ds_name,ds_val in att_val.iteritems():
+				for ds_name,ds_val in att_val.items():
 					fileID['METADATA']['SPH'][att_name].attrs[ds_name] = ds_val
 			elif isinstance(att_val,basestring) and att_name:
 				#-- if att_val is string
 				fileID['METADATA']['SPH'].attrs[att_name] = att_val
 		#-- Data Set Descriptors (DSD) are all strings
-		for att_name,att_val in CS_l2I_mds['METADATA']['DSD'].iteritems():
+		for att_name,att_val in CS_l2I_mds['METADATA']['DSD'].items():
 			fileID['METADATA']['DSD'].attrs[att_name] = att_val
 	elif (HEADER == 2):
 		#-- HEADER 2 is for merged CryoSat-2 files from convert_cryosat_L2I.py
@@ -191,16 +192,16 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 		#-- Main Product Header (MPH) are all strings
 		for fi in CS_l2I_mds['METADATA']['MPH'].keys():
 			fileID['METADATA']['MPH'].create_group(fi)
-			for att_name,att_val in CS_l2I_mds['METADATA']['MPH'][fi].iteritems():
+			for att_name,att_val in CS_l2I_mds['METADATA']['MPH'][fi].items():
 				fileID['METADATA']['MPH'][fi].attrs[att_name] = att_val
 		#-- Specific Product Header (SPH) are both strings and dictionaries
 		for fi in CS_l2I_mds['METADATA']['SPH'].keys():
 			fileID['METADATA']['SPH'].create_group(fi)
-			for att_name,att_val in CS_l2I_mds['METADATA']['SPH'][fi].iteritems():
+			for att_name,att_val in CS_l2I_mds['METADATA']['SPH'][fi].items():
 				if isinstance(att_val,dict):
 					#-- if att_val is dictionary
 					fileID['METADATA']['SPH'][fi].create_group(att_name)
-					for dsn,dsv in att_val.iteritems():
+					for dsn,dsv in att_val.items():
 						fileID['METADATA']['SPH'][fi][att_name].attrs[dsn] = dsv
 				elif isinstance(att_val,basestring) and att_name:
 					#-- if att_val is string
@@ -208,7 +209,7 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 		#-- Data Set Descriptors (DSD) are all strings
 		for fi in CS_l2I_mds['METADATA']['DSD'].keys():
 			fileID['METADATA']['DSD'].create_group(fi)
-			for att_name,att_val in CS_l2I_mds['METADATA']['DSD'][fi].iteritems():
+			for att_name,att_val in CS_l2I_mds['METADATA']['DSD'][fi].items():
 				fileID['METADATA']['DSD'][fi].attrs[att_name] = att_val
 
 	#-- output file title
@@ -275,27 +276,27 @@ def read_HDF5_cryosat_L2I(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
 		#-- CryoSat-2 Location Group
 		for key in fileID['Location'].keys():
 			CS_l2I_mds['Attributes']['Location'][key] = {}
-			for att_name,att_val in fileID['Location'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Location'][key].attrs.items():
 				CS_l2I_mds['Attributes']['Location'][key][att_name] = att_val
 		#-- CryoSat-2 Measurement Group
 		for key in fileID['Data'].keys():
 			CS_l2I_mds['Attributes']['Data'][key] = {}
-			for att_name,att_val in fileID['Data'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Data'][key].attrs.items():
 				CS_l2I_mds['Attributes']['Data'][key][att_name] = att_val
 		#-- CryoSat-2 Auxiliary Data Group
 		for key in fileID['Auxiliary'].keys():
 			CS_l2I_mds['Attributes']['Auxiliary'][key] = {}
-			for att_name,att_val in fileID['Auxiliary'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Auxiliary'][key].attrs.items():
 				CS_l2I_mds['Attributes']['Auxiliary'][key][att_name] = att_val
 		#-- CryoSat-2 External Corrections Group
 		for key in fileID['Geometry'].keys():
 			CS_l2I_mds['Attributes']['Geometry'][key] = {}
-			for att_name,att_val in fileID['Geometry'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Geometry'][key].attrs.items():
 				CS_l2I_mds['Attributes']['Geometry'][key][att_name] = att_val
 		#-- CryoSat-2 Internal Corrections Group
 		for key in fileID['Instrumental'].keys():
 			CS_l2I_mds['Attributes']['Instrumental'][key] = {}
-			for att_name,att_val in fileID['Instrumental'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Instrumental'][key].attrs.items():
 				CS_l2I_mds['Attributes']['Instrumental'][key][att_name] = att_val
 		#-- Global attribute description
 		CS_l2I_mds['Attributes']['title'] = fileID.attrs['description']

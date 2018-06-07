@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2.py (11/2016)
+HDF5_cryosat_L2.py (06/2018)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -27,6 +27,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 06/2018: use items instead of iteritems for python3 compatibility
 	Updated 11/2016: added Abs_Orbit and Ascending_Flg to Data_1Hz outputs
 	Updated 05/2016: using __future__ print function
 	Written 03/2016
@@ -80,7 +81,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 		h5['Data_1Hz'][key] = fileID.create_dataset('Data_1Hz/{0}'.format(key),
 			(n_records,), data=val, dtype=val.dtype, compression='gzip')
 		#-- add HDF5 variable attributes
-		for att_name,att_val in CS_l2_attrib['Data_1Hz'][key].iteritems():
+		for att_name,att_val in CS_l2_attrib['Data_1Hz'][key].items():
 			h5['Data_1Hz'][key].attrs[att_name] = att_val
 		#-- attach dimensions
 		h5['Data_1Hz'][key].dims[0].label='CS_L2_MDS_REC_SIZE'
@@ -92,7 +93,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 		h5['Data_20Hz'][key] = fileID.create_dataset('Data_20Hz/{0}'.format(key),
 			(n_records,n_blocks,), data=val, dtype=val.dtype, compression='gzip')
 		#-- add HDF5 variable attributes
-		for att_name,att_val in CS_l2_attrib['Data_20Hz'][key].iteritems():
+		for att_name,att_val in CS_l2_attrib['Data_20Hz'][key].items():
 			h5['Data_20Hz'][key].attrs[att_name] = att_val
 		#-- attach dimensions
 		h5['Data_20Hz'][key].dims[0].label='CS_L2_MDS_REC_SIZE'
@@ -104,7 +105,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 		h5['Corrections'][key] = fileID.create_dataset('Corrections/{0}'.format(key),
 			(n_records,), data=val, dtype=val.dtype, compression='gzip')
 		#-- add HDF5 variable attributes
-		for att_name,att_val in CS_l2_attrib['Corrections'][key].iteritems():
+		for att_name,att_val in CS_l2_attrib['Corrections'][key].items():
 			h5['Corrections'][key].attrs[att_name] = att_val
 		#-- attach dimensions
 		h5['Corrections'][key].dims[0].label='CS_L2_MDS_REC_SIZE'
@@ -117,20 +118,20 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 		fileID['METADATA'].create_group('SPH')
 		fileID['METADATA'].create_group('DSD')
 		#-- Main Product Header (MPH) are all strings
-		for att_name,att_val in CS_l2_mds['METADATA']['MPH'].iteritems():
+		for att_name,att_val in CS_l2_mds['METADATA']['MPH'].items():
 			fileID['METADATA']['MPH'].attrs[att_name] = att_val
 		#-- Specific Product Header (SPH) are both strings and dictionaries
-		for att_name,att_val in CS_l2_mds['METADATA']['SPH'].iteritems():
+		for att_name,att_val in CS_l2_mds['METADATA']['SPH'].items():
 			if isinstance(att_val,dict):
 				#-- if att_val is dictionary
 				fileID['METADATA']['SPH'].create_group(att_name)
-				for ds_name,ds_val in att_val.iteritems():
+				for ds_name,ds_val in att_val.items():
 					fileID['METADATA']['SPH'][att_name].attrs[ds_name] = ds_val
 			elif isinstance(att_val,basestring) and att_name:
 				#-- if att_val is string
 				fileID['METADATA']['SPH'].attrs[att_name] = att_val
 		#-- Data Set Descriptors (DSD) are all strings
-		for att_name,att_val in CS_l2_mds['METADATA']['DSD'].iteritems():
+		for att_name,att_val in CS_l2_mds['METADATA']['DSD'].items():
 			fileID['METADATA']['DSD'].attrs[att_name] = att_val
 	elif (HEADER == 2):
 		#-- HEADER 2 is for merged CryoSat-2 files from convert_cryosat_L2.py
@@ -141,16 +142,16 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 		#-- Main Product Header (MPH) are all strings
 		for fi in CS_l2_mds['METADATA']['MPH'].keys():
 			fileID['METADATA']['MPH'].create_group(fi)
-			for att_name,att_val in CS_l2_mds['METADATA']['MPH'][fi].iteritems():
+			for att_name,att_val in CS_l2_mds['METADATA']['MPH'][fi].items():
 				fileID['METADATA']['MPH'][fi].attrs[att_name] = att_val
 		#-- Specific Product Header (SPH) are both strings and dictionaries
 		for fi in CS_l2_mds['METADATA']['SPH'].keys():
 			fileID['METADATA']['SPH'].create_group(fi)
-			for att_name,att_val in CS_l2_mds['METADATA']['SPH'][fi].iteritems():
+			for att_name,att_val in CS_l2_mds['METADATA']['SPH'][fi].items():
 				if isinstance(att_val,dict):
 					#-- if att_val is dictionary
 					fileID['METADATA']['SPH'][fi].create_group(att_name)
-					for dsn,dsv in att_val.iteritems():
+					for dsn,dsv in att_val.items():
 						fileID['METADATA']['SPH'][fi][att_name].attrs[dsn] = dsv
 				elif isinstance(att_val,basestring) and att_name:
 					#-- if att_val is string
@@ -158,7 +159,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 		#-- Data Set Descriptors (DSD) are all strings
 		for fi in CS_l2_mds['METADATA']['DSD'].keys():
 			fileID['METADATA']['DSD'].create_group(fi)
-			for att_name,att_val in CS_l2_mds['METADATA']['DSD'][fi].iteritems():
+			for att_name,att_val in CS_l2_mds['METADATA']['DSD'][fi].items():
 				fileID['METADATA']['DSD'][fi].attrs[att_name] = att_val
 
 	#-- output file title
@@ -208,17 +209,17 @@ def read_HDF5_cryosat_L2(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
 		#-- CryoSat-2 Location Group
 		for key in fileID['Data_1Hz'].keys():
 			CS_l2_mds['Attributes']['Data_1Hz'][key] = {}
-			for att_name,att_val in fileID['Data_1Hz'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Data_1Hz'][key].attrs.items():
 				CS_l2_mds['Attributes']['Data_1Hz'][key][att_name] = att_val
 		#-- CryoSat-2 Measurement Group
 		for key in fileID['Data_20Hz'].keys():
 			CS_l2_mds['Attributes']['Data_20Hz'][key] = {}
-			for att_name,att_val in fileID['Data_20Hz'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Data_20Hz'][key].attrs.items():
 				CS_l2_mds['Attributes']['Data_20Hz'][key][att_name] = att_val
 		#-- CryoSat-2 External Corrections Group
 		for key in fileID['Corrections'].keys():
 			CS_l2_mds['Attributes']['Corrections'][key] = {}
-			for att_name,att_val in fileID['Corrections'][key].attrs.iteritems():
+			for att_name,att_val in fileID['Corrections'][key].attrs.items():
 				CS_l2_mds['Attributes']['Corrections'][key][att_name] = att_val
 		#-- Global attribute description
 		CS_l2_mds['Attributes']['title'] = fileID.attrs['description']

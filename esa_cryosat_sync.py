@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_sync.py
-Written by Tyler Sutterley (05/2018)
+Written by Tyler Sutterley (06/2018)
 
 This program syncs Cryosat Elevation products
 From the ESA Cryosat dissemination server:
@@ -29,7 +29,12 @@ COMMAND LINE OPTIONS:
 	--list: print files to be transferred, but do not execute transfer
 	--clobber: Overwrite existing data in transfer
 
+PYTHON DEPENDENCIES:
+	future: Compatibility layer between Python 2 and Python 3
+		(http://python-future.org/)
+
 UPDATE HISTORY:
+	Updated 06/2018: using python3 compatible octal and input
 	Updated 05/2018 for public release.
 	Updated 05/2017: exception if ESA Cryosat-2 credentials weren't entered
 		using os.makedirs to recursively create directories
@@ -46,6 +51,7 @@ import re
 import os
 import getopt
 import getpass
+import builtins
 import calendar, time
 import ftplib, posixpath
 
@@ -258,7 +264,7 @@ def main():
 	HOST = 'science-pds.cryosat.esa.int'
 	#-- check that ESA CryoSat-2 FTP Server credentials were entered
 	if not USER:
-		USER = raw_input('Username for {0}: '.format(HOST))
+		USER = builtins.input('Username for {0}: '.format(HOST))
 	#-- enter password securely from command-line
 	PASSWORD = getpass.getpass('Password for {0}@{1}: '.format(USER,HOST))
 

@@ -1,7 +1,7 @@
 read-cryosat-2
 ==============
 
-Tools to read waveform and geolocated elevation data from the ESA CryoSat-2 mission and write to HDF5
+Python tools to read waveform and geolocated elevation data from the ESA CryoSat-2 mission and write to HDF5
 
 - [How to access CryoSat-2 data](https://earth.esa.int/web/guest/-/how-to-access-cryosat-data-6842)  
 - [CryoSat-2 Products Overview](https://earth.esa.int/web/guest/-/products-overview-6975)  

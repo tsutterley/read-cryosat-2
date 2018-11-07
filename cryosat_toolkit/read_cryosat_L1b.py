@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L1b.py
-Written by Tyler Sutterley (03/2016)
+Written by Tyler Sutterley (10/2018)
 
 Reads CryoSat Level-1b data products from baselines A, B and C
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
@@ -18,6 +18,7 @@ OUTPUTS:
 	METADATA: MPH, SPH and DSD Header data
 
 UPDATE HISTORY:
+Updated 10/2018: updated header read functions for python3
 Updated 05/2016: using __future__ print and division functions
 Written 03/2016
 """
@@ -951,20 +952,20 @@ def read_MPH(full_filename):
 	#-- number of text lines in standard MPH
 	n_MPH_lines	= 41
 	#-- check that first line of header matches PRODUCT
-	if not bool(re.match('PRODUCT\=\"(.*)(?=\")',file_contents[0])):
+	if not bool(re.match(b'PRODUCT\=\"(.*)(?=\")',file_contents[0])):
 		raise IOError('File does not start with a valid PDS MPH')
 	#-- read MPH header text
 	s_MPH_fields = {}
 	for i in range(n_MPH_lines):
 		#-- use regular expression operators to read headers
-		if bool(re.match('(.*?)\=\"(.*)(?=\")',file_contents[i])):
+		if bool(re.match(b'(.*?)\=\"(.*)(?=\")',file_contents[i])):
 			#-- data fields within quotes
-			field,value=re.findall('(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
-			s_MPH_fields[field] = value.rstrip()
-		elif bool(re.match('(.*?)\=(.*)',file_contents[i])):
+			field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
+			s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
+		elif bool(re.match(b'(.*?)\=(.*)',file_contents[i])):
 			#-- data fields without quotes
-			field,value=re.findall('(.*?)\=(.*)',file_contents[i]).pop()
-			s_MPH_fields[field] = value.rstrip()
+			field,value=re.findall(b'(.*?)\=(.*)',file_contents[i]).pop()
+			s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
 	#-- Return block name array to calling function
 	return s_MPH_fields
@@ -979,43 +980,44 @@ def read_SPH(full_filename,j_sph_size):
 	#-- number of text lines in standard MPH
 	n_MPH_lines	= 41
 	#-- compile regular expression operator for reading headers
-	rx = re.compile('(.*?)\=\"?(.*)',re.VERBOSE)
+	rx = re.compile(b'(.*?)\=\"?(.*)',re.VERBOSE)
 	#-- check first line of header matches SPH_DESCRIPTOR
-	if not bool(re.match('SPH\_DESCRIPTOR\=',file_contents[n_MPH_lines+1])):
+	if not bool(re.match(b'SPH\_DESCRIPTOR\=',file_contents[n_MPH_lines+1])):
 		raise IOError('File does not have a valid PDS DSD')
 	#-- read SPH header text (no binary control characters)
 	s_SPH_lines = [li for li in file_contents[n_MPH_lines+1:] if rx.match(li)
-		and not re.search(r'[^\x20-\x7e]+',li)]
+		and not re.search(b'[^\x20-\x7e]+',li)]
 
 	#-- extract SPH header text
 	s_SPH_fields = {}
 	c = 0
 	while (c < len(s_SPH_lines)):
 		#-- check if line is within DS_NAME portion of SPH header
-		if bool(re.match('DS_NAME',s_SPH_lines[c])):
+		if bool(re.match(b'DS_NAME',s_SPH_lines[c])):
 			#-- add dictionary for DS_NAME
-			field,value=re.findall('(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
-			s_SPH_fields[value.rstrip()] = {}
+			field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
+			key = value.decode('utf-8').rstrip()
+			s_SPH_fields[key] = {}
 			for line in s_SPH_lines[c+1:c+7]:
-				if bool(re.match('(.*?)\=\"(.*)(?=\")',line)):
+				if bool(re.match(b'(.*?)\=\"(.*)(?=\")',line)):
 					#-- data fields within quotes
-					dsfield,dsvalue=re.findall('(.*?)\=\"(.*)(?=\")',line).pop()
-					s_SPH_fields[value.rstrip()][dsfield] = dsvalue.rstrip()
-				elif bool(re.match('(.*?)\=(.*)',line)):
+					dsfield,dsvalue=re.findall(b'(.*?)\=\"(.*)(?=\")',line).pop()
+					s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
+				elif bool(re.match(b'(.*?)\=(.*)',line)):
 					#-- data fields without quotes
-					dsfield,dsvalue=re.findall('(.*?)\=(.*)',line).pop()
-					s_SPH_fields[value.rstrip()][dsfield] = dsvalue.rstrip()
+					dsfield,dsvalue=re.findall(b'(.*?)\=(.*)',line).pop()
+					s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
 			#-- add 6 to counter to go to next entry
 			c += 6
 		#-- use regular expression operators to read headers
-		elif bool(re.match('(.*?)\=\"(.*)(?=\")',s_SPH_lines[c])):
+		elif bool(re.match(b'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c])):
 			#-- data fields within quotes
-			field,value=re.findall('(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
-			s_SPH_fields[field] = value.rstrip()
-		elif bool(re.match('(.*?)\=(.*)',s_SPH_lines[c])):
+			field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
+			s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
+		elif bool(re.match(b'(.*?)\=(.*)',s_SPH_lines[c])):
 			#-- data fields without quotes
-			field,value=re.findall('(.*?)\=(.*)',s_SPH_lines[c]).pop()
-			s_SPH_fields[field] = value.rstrip()
+			field,value=re.findall(b'(.*?)\=(.*)',s_SPH_lines[c]).pop()
+			s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 		#-- add 1 to counter to go to next line
 		c += 1
 
@@ -1037,11 +1039,11 @@ def read_DSD(full_filename, DS_TYPE=None):
 	#-- Level-1b CryoSat DS_NAMES within files
 	regex_patterns = []
 	if (DS_TYPE == 'CS_L1B'):
-		regex_patterns.append('DS_NAME\="SIR_L1B_LRM[\s+]*"')
-		regex_patterns.append('DS_NAME\="SIR_L1B_SAR[\s+]*"')
-		regex_patterns.append('DS_NAME\="SIR_L1B_SARIN[\s+]*"')
+		regex_patterns.append(b'DS_NAME\="SIR_L1B_LRM[\s+]*"')
+		regex_patterns.append(b'DS_NAME\="SIR_L1B_SAR[\s+]*"')
+		regex_patterns.append(b'DS_NAME\="SIR_L1B_SARIN[\s+]*"')
 	elif (DS_TYPE == 'SIR_L1B_FDM'):
-		regex_patterns.append('DS_NAME\="SIR_L1B_FDM[\s+]*"')
+		regex_patterns.append(b'DS_NAME\="SIR_L1B_FDM[\s+]*"')
 	#-- find the DSD starting line within the SPH header
 	c = 0
 	Flag = False
@@ -1062,14 +1064,14 @@ def read_DSD(full_filename, DS_TYPE=None):
 	s_DSD_fields = {}
 	for i in range(DSD_START,DSD_START+n_DSD_lines):
 		#-- use regular expression operators to read headers
-		if bool(re.match('(.*?)\=\"(.*)(?=\")',file_contents[i])):
+		if bool(re.match(b'(.*?)\=\"(.*)(?=\")',file_contents[i])):
 			#-- data fields within quotes
-			field,value=re.findall('(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
-			s_DSD_fields[field] = value.rstrip()
-		elif bool(re.match('(.*?)\=(.*)',file_contents[i])):
+			field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
+			s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
+		elif bool(re.match(b'(.*?)\=(.*)',file_contents[i])):
 			#-- data fields without quotes
-			field,value=re.findall('(.*?)\=(.*)',file_contents[i]).pop()
-			s_DSD_fields[field] = value.rstrip()
+			field,value=re.findall(b'(.*?)\=(.*)',file_contents[i]).pop()
+			s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
 	#-- Return block name array to calling function
 	return s_DSD_fields

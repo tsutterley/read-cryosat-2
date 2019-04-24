@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L1b.py (06/2018)
+HDF5_cryosat_L1b.py (04/2019)
 Reads and Writes HDF5 files for CryoSat-2 Level-1b data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
 	Updated 05/2016: using __future__ print function
 	Updated 04/2016: fixed read attributes for Beam Behavior Parameters
@@ -262,7 +263,7 @@ def HDF5_cryosat_L1b(CS_l1b_mds, MODE, BASELINE, FILENAME='', TITLE='',
 	#-- Output HDF5 structure information
 	if VERBOSE in ('Y','y'):
 		print(FILENAME)
-		print(fileID.keys())
+		print(list(fileID.keys()))
 
 	#-- Closing the HDF5 file
 	fileID.close()
@@ -275,7 +276,7 @@ def read_HDF5_cryosat_L1b(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
 	#-- Output HDF5 file information
 	if VERBOSE in ('Y','y'):
 		print(fileID.filename)
-		print(fileID.keys())
+		print(list(fileID.keys()))
 
 	#-- allocate python dictionaries for output CS_l1b_mds variables
 	CS_l1b_mds = {}

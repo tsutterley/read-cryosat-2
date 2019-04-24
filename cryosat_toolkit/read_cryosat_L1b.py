@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L1b.py
-Written by Tyler Sutterley (10/2018)
+Written by Tyler Sutterley (04/2019)
 
 Reads CryoSat Level-1b data products from baselines A, B and C
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
@@ -18,6 +18,7 @@ OUTPUTS:
 	METADATA: MPH, SPH and DSD Header data
 
 UPDATE HISTORY:
+Updated 04/2019: USO correction signed 32 bit int
 Updated 10/2018: updated header read functions for python3
 Updated 05/2016: using __future__ print and division functions
 Written 03/2016
@@ -46,7 +47,7 @@ def cryosat_baseline_AB(fid, n_records, MODE):
 	#-- Time: microsecond part
 	L1b_location_parameters['Micsec'] = np.zeros((n_records,n_blocks),dtype=np.uint32)
 	#-- USO correction factor
-	L1b_location_parameters['USO_Corr'] = np.zeros((n_records,n_blocks),dtype=np.uint32)
+	L1b_location_parameters['USO_Corr'] = np.zeros((n_records,n_blocks),dtype=np.int32)
 	#-- Mode ID
 	L1b_location_parameters['Mode_ID'] = np.zeros((n_records,n_blocks),dtype=np.uint16)
 	#-- Source sequence counter
@@ -315,7 +316,7 @@ def cryosat_baseline_AB(fid, n_records, MODE):
 			L1b_location_parameters['Day'][r,b] = np.fromfile(fid,dtype='>i4',count=1)
 			L1b_location_parameters['Second'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
 			L1b_location_parameters['Micsec'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
-			L1b_location_parameters['USO_Corr'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
+			L1b_location_parameters['USO_Corr'][r,b] = np.fromfile(fid,dtype='>i4',count=1)
 			L1b_location_parameters['Mode_ID'][r,b] = np.fromfile(fid,dtype='>u2',count=1)
 			L1b_location_parameters['SSC'][r,b] = np.fromfile(fid,dtype='>u2',count=1)
 			L1b_location_parameters['Inst_config'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
@@ -492,7 +493,7 @@ def cryosat_baseline_C(fid, n_records, MODE):
 	#-- Time: microsecond part
 	L1b_c_location_parameters['Micsec'] = np.zeros((n_records,n_blocks),dtype=np.uint32)
 	#-- USO correction factor
-	L1b_c_location_parameters['USO_Corr'] = np.zeros((n_records,n_blocks),dtype=np.uint32)
+	L1b_c_location_parameters['USO_Corr'] = np.zeros((n_records,n_blocks),dtype=np.int32)
 	#-- Mode ID
 	L1b_c_location_parameters['Mode_ID'] = np.zeros((n_records,n_blocks),dtype=np.uint16)
 	#-- Source sequence counter
@@ -775,7 +776,7 @@ def cryosat_baseline_C(fid, n_records, MODE):
 			L1b_c_location_parameters['Day'][r,b] = np.fromfile(fid,dtype='>i4',count=1)
 			L1b_c_location_parameters['Second'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
 			L1b_c_location_parameters['Micsec'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
-			L1b_c_location_parameters['USO_Corr'][r,b] = np.fromfile(fid,dtype='>u4',count=1)
+			L1b_c_location_parameters['USO_Corr'][r,b] = np.fromfile(fid,dtype='>i4',count=1)
 			L1b_c_location_parameters['Mode_ID'][r,b] = np.fromfile(fid,dtype='>u2',count=1)
 			L1b_c_location_parameters['SSC'][r,b] = np.fromfile(fid,dtype='>u2',count=1)
 			L1b_c_location_parameters['Inst_config'][r,b] = np.fromfile(fid,dtype='>u4',count=1)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2I.py
-Written by Tyler Sutterley (10/2018)
+Written by Tyler Sutterley (08/2019)
 
 Reads CryoSat Level-2 Intermediate data products from baselines A, B, BC and C
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
@@ -18,6 +18,7 @@ OUTPUTS:
 	METADATA: MPH, SPH and DSD Header data
 
 UPDATE HISTORY:
+Updated 08/2019: generalize regular expression patterns in read_DSD function
 Updated 10/2018: updated header read functions for python3
 Updated 05/2016: using __future__ print and division functions
 Written 03/2016
@@ -1295,28 +1296,16 @@ def read_DSD(full_filename):
 
 	#-- Level-2 CryoSat DS_NAMES within files
 	regex_patterns = []
-	regex_patterns.append(b'DS_NAME\="SIR_LRM_L2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2B[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_FDM_L2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SARIL2B[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SARIL2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2B_I[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2A[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SIN_L2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SID_L2[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_LRM_L2(_I)?[\s+]*"')
 	regex_patterns.append(b'DS_NAME\="SIR_LRMIL2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_LRM_L2_I[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SARIL2A[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2A_I[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2_I[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_SAR_L2(A|B)?(_I)?[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_SARIL2(A|B)?[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_FDM_L2[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_SIN_L2(_I)?[\s+]*"')
 	regex_patterns.append(b'DS_NAME\="SIR_SINIL2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SIN_L2_I[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_SID_L2(_I)?[\s+]*"')
 	regex_patterns.append(b'DS_NAME\="SIR_SIDIL2[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_SID_L2_I[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_GDR_2A[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_GDR_2B[\s+]*"')
-	regex_patterns.append(b'DS_NAME\="SIR_GDR_2[\s+]*"')
+	regex_patterns.append(b'DS_NAME\="SIR_GDR_2(A|B|_)?[\s+]*"')
 	#-- find the DSD starting line within the SPH header
 	c = 0
 	Flag = False

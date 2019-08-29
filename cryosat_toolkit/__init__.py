@@ -1,7 +1,6 @@
-import cryosat_toolkit
-from cryosat_toolkit import read_cryosat_L1b
-from cryosat_toolkit import read_cryosat_L2
-from cryosat_toolkit import read_cryosat_L2I
-from cryosat_toolkit import HDF5_cryosat_L1b
-from cryosat_toolkit import HDF5_cryosat_L2
-from cryosat_toolkit import HDF5_cryosat_L2I
+from cryosat_toolkit.read_cryosat_L1b import read_cryosat_L1b
+from cryosat_toolkit.read_cryosat_L2 import read_cryosat_L2
+from cryosat_toolkit.read_cryosat_L2I import read_cryosat_L2I
+from cryosat_toolkit.HDF5_cryosat_L1b import HDF5_cryosat_L1b
+from cryosat_toolkit.HDF5_cryosat_L2 import HDF5_cryosat_L2
+from cryosat_toolkit.HDF5_cryosat_L2I import HDF5_cryosat_L2I

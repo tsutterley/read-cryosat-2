@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 setup(
 	name='read-cryosat-2',
-	version='1.0.0.6',
+	version='1.0.0.7',
 	description='Reads and writes data from the ESA CryoSat-2 mission',
 	url='https://github.com/tsutterley/read-cryosat-2',
 	author='Tyler Sutterley',
-	author_email='tyler.c.sutterley@nasa.gov',
+	author_email='tsutterl@uw.edu',
 	license='MIT',
 	classifiers=[
 		'Development Status :: 3 - Alpha',
@@ -17,5 +17,5 @@ setup(
 	],
 	keywords='CryoSat-2 radar altimetry SIRAL',
 	packages=find_packages(),
-	install_requires=['numpy','h5py','future'],
+	install_requires=['numpy','h5py','future','lxml'],
 )

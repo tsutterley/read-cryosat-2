@@ -9,14 +9,21 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 - [CryoSat-2 Geographical Mode Masks](https://earth.esa.int/web/guest/-/geographical-mode-mask-7107)  
 - [CryoSat-2 Baseline C Improvements](https://earth.esa.int/documents/10174/1773005/C2-Evolution-BaselineC-Level2-V3)  
 
-#### `esa_cryosat_sync.py`
-Program to sync Cryosat-2 Elevation products from the ESA data dissemination server.  
+#### `esa_cryosat_ftp.py`
+Program to sync Cryosat-2 Elevation products from the ESA ftp data dissemination server.  
 Will sync all available CryoSat-2 data for a given product and set of years  
 ```bash
-python esa_cryosat_sync.py --baseline=C --user=<username> --year=2010,2011 SIR_SIN_L2
+python esa_cryosat_ftp.py --baseline=C --user=<username> --year=2010,2011 SIR_SIN_L2
 ```
 where `<username>` is your ESA data dissemination server username  
 your ESA data dissemination password will be entered from the command-line within the program  
+
+#### `esa_cryosat_sync.py`
+Program to sync Cryosat-2 Elevation products from the ESA https Science Server.  
+Will sync all available CryoSat-2 data for a given product and set of years  
+```bash
+python esa_cryosat_sync.py --baseline=C --year=2010,2011 SIR_SIN_L2
+```
 
 ##### `read_cryosat_L1b.py`
 Program to read Level-1B CryoSat waveform data into a python environment.  
@@ -84,6 +91,7 @@ read_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
  - [numpy: Scientific Computing Tools For Python](http://www.numpy.org)  
  - [h5py: Python interface for Hierarchal Data Format 5 (HDF5)](http://h5py.org)  
  - [future: Compatibility layer between Python 2 and Python 3](http://python-future.org/)  
+ - [lxml: processing XML and HTML in Python](https://pypi.python.org/pypi/lxml)  
 
 #### Download
 The program homepage is:   

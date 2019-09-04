@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
 	name='read-cryosat-2',
-	version='1.0.0.7',
+	version='1.0.0.8',
 	description='Reads and writes data from the ESA CryoSat-2 mission',
 	url='https://github.com/tsutterley/read-cryosat-2',
 	author='Tyler Sutterley',
@@ -17,5 +17,5 @@ setup(
 	],
 	keywords='CryoSat-2 radar altimetry SIRAL',
 	packages=find_packages(),
-	install_requires=['numpy','h5py','future','lxml'],
+	install_requires=['numpy','h5py','netCDF4','future','lxml'],
 )

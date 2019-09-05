@@ -79,7 +79,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
 	#-- Inverse Barometric Correction packed units (mm, 1e-3 m)
 	Corrections['InvBar'] = np.zeros((n_records),dtype=np.int16)
 	#-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
-	Corrections['DynAtm'] = np.zeros((n_records),dtype=np.int16)
+	Corrections['DAC'] = np.zeros((n_records),dtype=np.int16)
 	#-- Ionospheric Correction packed units (mm, 1e-3 m)
 	Corrections['Iono'] = np.zeros((n_records),dtype=np.int16)
 	#-- Sea State Bias Correction packed units (mm, 1e-3 m)
@@ -187,7 +187,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
 		Corrections['dryTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['wetTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['InvBar'][r] = np.fromfile(fid,dtype='>i2',count=1)
-		Corrections['DynAtm'][r] = np.fromfile(fid,dtype='>i2',count=1)
+		Corrections['DAC'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['Iono'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['SSB'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['ocTideElv'][r] = np.fromfile(fid,dtype='>i2',count=1)
@@ -297,7 +297,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
 	#-- Inverse Barometric Correction packed units (mm, 1e-3 m)
 	Corrections['InvBar'] = np.zeros((n_records),dtype=np.int16)
 	#-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
-	Corrections['DynAtm'] = np.zeros((n_records),dtype=np.int16)
+	Corrections['DAC'] = np.zeros((n_records),dtype=np.int16)
 	#-- Ionospheric Correction packed units (mm, 1e-3 m)
 	Corrections['Iono'] = np.zeros((n_records),dtype=np.int16)
 	#-- Sea State Bias Correction packed units (mm, 1e-3 m)
@@ -424,7 +424,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
 		Corrections['dryTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['wetTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['InvBar'][r] = np.fromfile(fid,dtype='>i2',count=1)
-		Corrections['DynAtm'][r] = np.fromfile(fid,dtype='>i2',count=1)
+		Corrections['DAC'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['Iono'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['SSB'][r] = np.fromfile(fid,dtype='>i2',count=1)
 		Corrections['ocTideElv'][r] = np.fromfile(fid,dtype='>i2',count=1)
@@ -502,15 +502,18 @@ def cryosat_baseline_C(fid,record_size,n_records):
 	return CS_l2_mds
 
 #-- PURPOSE: Initiate L2 MDS variables for CryoSat Baseline D (netCDF4)
-def cryosat_baseline_D(full_filename, PACKED=True):
+def cryosat_baseline_D(full_filename, UNPACK=False):
 	#-- open netCDF4 file for reading
 	fid = netCDF4.Dataset(os.path.expanduser(full_filename),'r')
+	#-- use original unscaled units unless UNPACK=True
+	fid.set_auto_scale(UNPACK)
+	#-- get dimensions
 	n_records, = fid.variables['time_cor_01'].shape
 	time_cor_01 = fid.variables['time_cor_01'][:].copy()
 	#-- CryoSat-2 1 Hz data fields (Location Group)
 	#-- Time and Orbit Parameters plus Measurement Mode
 	Data_1Hz = {}
-	#-- Time (seconds singe 2000-01-01)
+	#-- Time (seconds since 2000-01-01)
 	Data_1Hz['Time'] = time_cor_01.copy()
 	#-- Time: day part
 	Data_1Hz['Day'] = np.array(time_cor_01/86400.0,dtype=np.int32)
@@ -536,14 +539,6 @@ def cryosat_baseline_D(full_filename, PACKED=True):
 	#-- Last few records of the last block of a dataset may be blank blocks
 	#-- inserted to bring the file up to a multiple of twenty.
 	Data_1Hz['N_valid'] = fid.variables['num_valid_01'][:].copy()
-	#-- repack units
-	if PACKED:
-		Data_1Hz['Lat_1Hz'] /= fid.variables['lat_01'].scale_factor
-		Data_1Hz['Lon_1Hz'] /= fid.variables['lon_01'].scale_factor
-		Data_1Hz['Alt_1Hz'] /= fid.variables['alt_01'].scale_factor
-		Data_1Hz['Roll'] /= fid.variables['off_nadir_roll_angle_str_01'].scale_factor
-		Data_1Hz['Pitch'] /= fid.variables['off_nadir_pitch_angle_str_01'].scale_factor
-		Data_1Hz['Yaw'] /= fid.variables['off_nadir_yaw_angle_str_01'].scale_factor
 	#-- add absolute orbit number to 1Hz data
 	Data_1Hz['Abs_Orbit'] = np.zeros((n_records),dtype=np.uint32)
 	Data_1Hz['Abs_Orbit'][:] = np.uint32(fid.abs_orbit_number)
@@ -560,10 +555,10 @@ def cryosat_baseline_D(full_filename, PACKED=True):
 	#-- Inverse Barometric Correction packed units (mm, 1e-3 m)
 	Corrections['InvBar'] = fid.variables['inv_bar_cor_01'][:].copy()
 	#-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
-	Corrections['DynAtm'] = fid.variables['hf_fluct_total_cor_01'][:].copy()
+	Corrections['DAC'] = fid.variables['hf_fluct_total_cor_01'][:].copy()
 	#-- Ionospheric Correction packed units (mm, 1e-3 m)
 	Corrections['Iono'] = fid.variables['iono_cor_01'][:].copy()
-	Corrections['IonoGIM'] = fid.variables['iono_cor_gim_01'][:].copy()
+	Corrections['Iono_GIM'] = fid.variables['iono_cor_gim_01'][:].copy()
 	#-- Sea State Bias Correction packed units (mm, 1e-3 m)
 	Corrections['SSB'] = fid.variables['sea_state_bias_01_ku'][:].copy()
 	#-- Ocean tide Correction packed units (mm, 1e-3 m)
@@ -593,34 +588,12 @@ def cryosat_baseline_D(full_filename, PACKED=True):
 	Corrections['SWH'] = fid.variables['swh_ocean_01_ku'][:].copy()
 	#-- Wind Speed packed units (mm/s, 1e-3 m/s)
 	Corrections['Wind_speed'] = fid.variables['wind_speed_alt_01_ku'][:].copy()
-	#-- repack units
-	if PACKED:
-		#-- packed units (mm, 1e-3 m)
-		Corrections['dryTrop'] /= fid.variables['mod_dry_tropo_cor_01'].scale_factor
-		Corrections['wetTrop'] /= fid.variables['mod_wet_tropo_cor_01'].scale_factor
-		Corrections['InvBar'] /= fid.variables['inv_bar_cor_01'].scale_factor
-		Corrections['DynAtm'] /= fid.variables['hf_fluct_total_cor_01'].scale_factor
-		Corrections['Iono'] /= fid.variables['iono_cor_01'].scale_factor
-		Corrections['IonoGIM'] /= fid.variables['iono_cor_gim_01'].scale_factor
-		Corrections['SSB'] /= fid.variables['sea_state_bias_01_ku'].scale_factor
-		Corrections['ocTideElv'] /= fid.variables['ocean_tide_01'].scale_factor
-		Corrections['lpeTideElv'] /= fid.variables['ocean_tide_eq_01'].scale_factor
-		Corrections['olTideElv'] /= fid.variables['load_tide_01'].scale_factor
-		Corrections['seTideElv'] /= fid.variables['solid_earth_tide_01'].scale_factor
-		Corrections['gpTideElv'] /= fid.variables['pole_tide_01'].scale_factor
-		Corrections['Geoid'] /= fid.variables['geoid_01'].scale_factor
-		Corrections['MSS'] /= fid.variables['mean_sea_surf_sea_ice_01'].scale_factor
-		Corrections['ODLE'] /= fid.variables['odle_01'].scale_factor
-		Corrections['Snow_depth'] /= fid.variables['snow_depth_01'].scale_factor
-		Corrections['SWH'] /= fid.variables['swh_ocean_01_ku'].scale_factor
-		#-- packed units (mm/s, 1e-3 m/s)
-		Corrections['Wind_speed'] /= fid.variables['wind_speed_alt_01_ku'].scale_factor
 
 	#-- CryoSat-2 20 Hz data fields (Measurement Group)
 	#-- Derived from instrument measurement parameters
 	n_blocks = 20
 	Data_20Hz = {}
-	#-- Time (seconds singe 2000-01-01)
+	#-- Time (seconds since 2000-01-01)
 	Data_20Hz['Time'] = np.ma.zeros((n_records,n_blocks))
 	Data_20Hz['Time'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
 	time_20_ku = fid.variables['time_20_ku'][:].copy()
@@ -740,84 +713,60 @@ def cryosat_baseline_D(full_filename, PACKED=True):
 		cnt = np.copy(fid.variables['num_valid_01'][r])
 		#-- CryoSat-2 Measurements Group for record r
 		Data_20Hz['Time'].data[r,:cnt] = time_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['D_time_mics'].data[r,:cnt] = 1e6*(time_20_ku[idx:idx+cnt] - time_cor_01[r])
-		Data_20Hz['Lat'].data[r,:cnt] = lat_poca_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Lon'].data[r,:cnt] = lon_poca_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Elev_1'].data[r,:cnt] = height_1_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Elev_2'].data[r,:cnt] = height_2_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Elev_3'].data[r,:cnt] = height_3_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Sig0_1'].data[r,:cnt] = sig0_1_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Sig0_2'].data[r,:cnt] = sig0_2_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Sig0_3'].data[r,:cnt] = sig0_3_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Range_1'].data[r,:cnt] = range_1_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Range_2'].data[r,:cnt] = range_2_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Range_3'].data[r,:cnt] = range_3_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Freeboard'].data[r,:cnt] = freeboard_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Sea_Ice_Floe'].data[r,:cnt] = height_sea_ice_floe_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Sea_Ice_Lead'].data[r,:cnt] = height_sea_ice_lead_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['SSHA_interp'].data[r,:cnt] = ssha_interp_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['SSHA_num'].data[r,:cnt] = ssha_interp_numval_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['SSHA_qual'].data[r,:cnt] = ssha_interp_rms_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Peakiness'].data[r,:cnt] = peakiness_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['N_avg'].data[r,:cnt] = echo_avg_numval_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Quality_Flg'].data[r,:cnt] = flag_prod_status_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Corrections_Flg'].data[r,:cnt] = flag_cor_applied_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Measurement_Mode'].data[r,:cnt] = flag_instr_mode_op_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Surf_type'].data[r,:cnt] = surf_type_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Quality_1'].data[r,:cnt] = retracker_1_quality_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Quality_2'].data[r,:cnt] = retracker_2_quality_20_ku[idx:idx+cnt].copy()
-		Data_20Hz['Quality_3'].data[r,:cnt] = retracker_3_quality_20_ku[idx:idx+cnt].copy()
-		if PACKED:
-			#-- packed units (0.1 micro-degree, 1e-7 degrees)
-			Data_20Hz['Lat'].data[r,:cnt] /= fid.variables['lat_poca_20_ku'].scale_factor
-			Data_20Hz['Lon'].data[r,:cnt] /= fid.variables['lon_poca_20_ku'].scale_factor
-			#-- packed units (mm, 1e-3 m)
-			Data_20Hz['Elev_1'].data[r,:cnt] /= fid.variables['height_1_20_ku'].scale_factor
-			Data_20Hz['Elev_2'].data[r,:cnt] /= fid.variables['height_2_20_ku'].scale_factor
-			Data_20Hz['Elev_3'].data[r,:cnt] /= fid.variables['height_3_20_ku'].scale_factor
-			#-- packed units (1e-2 dB)
-			Data_20Hz['Sig0_1'].data[r,:cnt] /= fid.variables['sig0_1_20_ku'].scale_factor
-			Data_20Hz['Sig0_2'].data[r,:cnt] /= fid.variables['sig0_2_20_ku'].scale_factor
-			Data_20Hz['Sig0_3'].data[r,:cnt] /= fid.variables['sig0_3_20_ku'].scale_factor
-			#-- packed units (mm, 1e-3 m)
-			Data_20Hz['Range_1'].data[r,:cnt] /= fid.variables['range_1_20_ku'].scale_factor
-			Data_20Hz['Range_2'].data[r,:cnt] /= fid.variables['range_2_20_ku'].scale_factor
-			Data_20Hz['Range_3'].data[r,:cnt] /= fid.variables['range_3_20_ku'].scale_factor
-			Data_20Hz['Freeboard'].data[r,:cnt] /= fid.variables['freeboard_20_ku'].scale_factor
-			Data_20Hz['Sea_Ice_Floe'].data[r,:cnt] /= fid.variables['height_sea_ice_floe_20_ku'].scale_factor
-			Data_20Hz['Sea_Ice_Lead'].data[r,:cnt] /= fid.variables['height_sea_ice_lead_20_ku'].scale_factor
-			Data_20Hz['SSHA_interp'].data[r,:cnt] /= fid.variables['ssha_interp_20_ku'].scale_factor
-			Data_20Hz['SSHA_qual'].data[r,:cnt] /= fid.variables['ssha_interp_rms_20_ku'].scale_factor
-			#-- packed units (1e-2)
-			Data_20Hz['Peakiness'].data[r,:cnt] /= fid.variables['peakiness_20_ku'].scale_factor
-		#-- set CryoSat-2 Measurements Group masks for record r
 		Data_20Hz['Time'].mask[r,:cnt] = False
+		Data_20Hz['D_time_mics'].data[r,:cnt] = 1e6*(time_20_ku[idx:idx+cnt] - time_cor_01[r])
 		Data_20Hz['D_time_mics'].mask[r,:cnt] = False
+		Data_20Hz['Lat'].data[r,:cnt] = lat_poca_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Lat'].mask[r,:cnt] = False
+		Data_20Hz['Lon'].data[r,:cnt] = lon_poca_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Lon'].mask[r,:cnt] = False
+		Data_20Hz['Elev_1'].data[r,:cnt] = height_1_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Elev_1'].mask[r,:cnt] = False
+		Data_20Hz['Elev_2'].data[r,:cnt] = height_2_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Elev_2'].mask[r,:cnt] = False
+		Data_20Hz['Elev_3'].data[r,:cnt] = height_3_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Elev_3'].mask[r,:cnt] = False
+		Data_20Hz['Sig0_1'].data[r,:cnt] = sig0_1_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Sig0_1'].mask[r,:cnt] = False
+		Data_20Hz['Sig0_2'].data[r,:cnt] = sig0_2_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Sig0_2'].mask[r,:cnt] = False
+		Data_20Hz['Sig0_3'].data[r,:cnt] = sig0_3_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Sig0_3'].mask[r,:cnt] = False
+		Data_20Hz['Range_1'].data[r,:cnt] = range_1_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Range_1'].mask[r,:cnt] = False
+		Data_20Hz['Range_2'].data[r,:cnt] = range_2_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Range_2'].mask[r,:cnt] = False
+		Data_20Hz['Range_3'].data[r,:cnt] = range_3_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Range_3'].mask[r,:cnt] = False
+		Data_20Hz['Freeboard'].data[r,:cnt] = freeboard_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Freeboard'].mask[r,:cnt] = False
+		Data_20Hz['Sea_Ice_Floe'].data[r,:cnt] = height_sea_ice_floe_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Sea_Ice_Floe'].mask[r,:cnt] = False
+		Data_20Hz['Sea_Ice_Lead'].data[r,:cnt] = height_sea_ice_lead_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Sea_Ice_Lead'].mask[r,:cnt] = False
+		Data_20Hz['SSHA_interp'].data[r,:cnt] = ssha_interp_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['SSHA_interp'].mask[r,:cnt] = False
+		Data_20Hz['SSHA_num'].data[r,:cnt] = ssha_interp_numval_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['SSHA_num'].mask[r,:cnt] = False
+		Data_20Hz['SSHA_qual'].data[r,:cnt] = ssha_interp_rms_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['SSHA_qual'].mask[r,:cnt] = False
+		Data_20Hz['Peakiness'].data[r,:cnt] = peakiness_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Peakiness'].mask[r,:cnt] = False
+		Data_20Hz['N_avg'].data[r,:cnt] = echo_avg_numval_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['N_avg'].mask[r,:cnt] = False
+		Data_20Hz['Quality_Flg'].data[r,:cnt] = flag_prod_status_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Quality_Flg'].mask[r,:cnt] = False
+		Data_20Hz['Corrections_Flg'].data[r,:cnt] = flag_cor_applied_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Corrections_Flg'].mask[r,:cnt] = False
+		Data_20Hz['Measurement_Mode'].data[r,:cnt] = flag_instr_mode_op_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Measurement_Mode'].mask[r,:cnt] = False
+		Data_20Hz['Surf_type'].data[r,:cnt] = surf_type_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Surf_type'].mask[r,:cnt] = False
+		Data_20Hz['Quality_1'].data[r,:cnt] = retracker_1_quality_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Quality_1'].mask[r,:cnt] = False
+		Data_20Hz['Quality_2'].data[r,:cnt] = retracker_2_quality_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Quality_2'].mask[r,:cnt] = False
+		Data_20Hz['Quality_3'].data[r,:cnt] = retracker_3_quality_20_ku[idx:idx+cnt].copy()
 		Data_20Hz['Quality_3'].mask[r,:cnt] = False
 
 	#-- Bind all the variables of the l2_mds together into a single dictionary
@@ -1118,7 +1067,7 @@ def read_cryosat_L2(full_filename, VERBOSE=False):
 	#-- check if input file is original binary *.DBL or new netCDF4 *.nc format
 	if (fileExtension == '.nc'):
 		print(fileBasename) if VERBOSE else None
-		CS_L2_mds = cryosat_baseline_D(full_filename, PACKED=True)
+		CS_L2_mds = cryosat_baseline_D(full_filename, UNPACK=False)
 	elif (fileExtension == '.DBL'):
 		#-- Record sizes
 		CS_L2_MDS_REC_SIZE = 980

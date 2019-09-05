@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2.py (04/2019)
+HDF5_cryosat_L2.py (09/2019)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -27,6 +27,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 09/2019: updates for Baseline D
 	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
 	Updated 11/2016: added Abs_Orbit and Ascending_Flg to Data_1Hz outputs
@@ -365,22 +366,30 @@ def cryosat_L2_attributes(BASELINE):
 	L2_corr_attributes['InvBar']['units'] = 'millimeters'
 	L2_corr_attributes['InvBar']['hertz'] = 1
 	#-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
-	L2_corr_attributes['DynAtm'] = {}
-	L2_corr_attributes['DynAtm']['long_name'] = 'Dynamic Atmosphere Correction'
-	L2_corr_attributes['DynAtm']['description'] = ('Altimeter range correction '
+	L2_corr_attributes['DAC'] = {}
+	L2_corr_attributes['DAC']['long_name'] = 'Dynamic Atmosphere Correction'
+	L2_corr_attributes['DAC']['description'] = ('Altimeter range correction '
 		'for the dynamic component of the wind effect on the ocean '
 		'(applicable only on ocean surface without sea-ice)')
-	L2_corr_attributes['DynAtm']['units'] = 'millimeters'
-	L2_corr_attributes['DynAtm']['hertz'] = 1
+	L2_corr_attributes['DAC']['units'] = 'millimeters'
+	L2_corr_attributes['DAC']['hertz'] = 1
 	#-- Ionospheric Correction packed units (mm, 1e-3 m)
 	L2_corr_attributes['Iono'] = {}
 	L2_corr_attributes['Iono']['long_name'] = 'Ionospheric Correction'
 	L2_corr_attributes['Iono']['description'] = ('Altimeter range correction '
 		'for the delay of the radar pulse caused by free electrons in the '
-		'ionosphere. (Computed from a simple model in NRT data or from GPS '
-		'satellite derived (GIM) map in normal processing.)')
+		'ionosphere. Computed from a simple model in NRT data.')
 	L2_corr_attributes['Iono']['units'] = 'millimeters'
 	L2_corr_attributes['Iono']['hertz'] = 1
+	#-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+	L2_corr_attributes['Iono_GIM'] = {}
+	L2_corr_attributes['Iono_GIM']['long_name'] = 'GIM Ionospheric Correction'
+	L2_corr_attributes['Iono_GIM']['description'] = ('Altimeter range correction '
+		'for the delay of the radar pulse caused by free electrons in the '
+		'ionosphere. Computed from GPS satellite derived (GIM) map. '
+		'This correction is an alternative and only one should be used')
+	L2_corr_attributes['Iono_GIM']['units'] = 'millimeters'
+	L2_corr_attributes['Iono_GIM']['hertz'] = 1
 	#-- Sea State Bias Correction packed units (mm, 1e-3 m)
 	L2_corr_attributes['SSB'] = {}
 	L2_corr_attributes['SSB']['long_name'] = 'Sea State Bias Correction'

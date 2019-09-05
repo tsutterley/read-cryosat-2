@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L1b.py (04/2019)
+HDF5_cryosat_L1b.py (09/2019)
 Reads and Writes HDF5 files for CryoSat-2 Level-1b data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 09/2019: updates for Baseline D
 	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
 	Updated 05/2016: using __future__ print function
@@ -411,7 +412,25 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 		'instrument measurement mode. See table 2.3.3-2 of the "L1b Products '
 		'Format Specification" document')
 	L1b_location_attributes['Mode_ID']['units'] = '1e-15'
+	L1b_location_attributes['Mode_ID']['flag_meanings'] = 'lrm sar sarin'
 	L1b_location_attributes['Mode_ID']['hertz'] = 20
+	#-- Mode Flags
+	L1b_location_attributes['Mode_flags'] = {}
+	L1b_location_attributes['Mode_flags']['long_name'] = 'Mode flags'
+	L1b_location_attributes['Mode_flags']['description'] = ('Flags related to '
+		'sub-modes of SARIn mode from instrument configuration bits in L0. '
+		'Identifies the sarin degraded case and the CAL4 flag')
+	L1b_location_attributes['Mode_flags']['flag_meanings'] = ('sarin_degraded_case '
+		'cal4_packet_detection')
+	L1b_location_attributes['Mode_flags']['hertz'] = 20
+	#-- Platform attitude control mode
+	L1b_location_attributes['Att_control'] = {}
+	L1b_location_attributes['Att_control']['long_name'] = 'Platform Attitude Control'
+	L1b_location_attributes['Att_control']['description'] = ('Platform attitude '
+		'control mode from instrument configuration bits in L0.')
+	L1b_location_attributes['Att_control']['flag_meanings'] = ('unknown '
+		'local_normal_pointing yaw_steering')
+	L1b_location_attributes['Att_control']['hertz'] = 20
 	#-- Source sequence counter
 	L1b_location_attributes['SSC'] = {}
 	L1b_location_attributes['SSC']['long_name'] = 'Source sequence counter'
@@ -427,7 +446,34 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_location_attributes['Inst_config']['description'] = ('This is derived '
 		'from flags in the L0 packets for tracking and the echo. See table '
 		'2.3.3-3 of the "L1b Products Format Specification" document.')
+	L1b_location_attributes['Inst_config']['flag_meanings'] = ('siral_redundant '
+		'external_cal open_loop loss_of_echo real_time_error echo_saturation '
+		'rx_band_attenuated cycle_report_error')
 	L1b_location_attributes['Inst_config']['hertz'] = 20
+	#-- acquisition band
+	L1b_location_attributes['Inst_band'] = {}
+	L1b_location_attributes['Inst_band']['long_name'] = 'Acquisition Band'
+	L1b_location_attributes['Inst_band']['description'] = ('This flag '
+		'contains the acquisition band of the SIRAL instrument.')
+	L1b_location_attributes['Inst_band']['flag_meanings'] = ('unknown '
+		'320_mhz 40_mhz')
+	L1b_location_attributes['Inst_band']['hertz'] = 20
+	#-- instrument channel
+	L1b_location_attributes['Inst_channel'] = {}
+	L1b_location_attributes['Inst_channel']['long_name'] = 'Rx Channel'
+	L1b_location_attributes['Inst_channel']['description'] = ('This flag '
+		'contains the SIRAL instrument channel in use.')
+	L1b_location_attributes['Inst_channel']['flag_meanings'] = ('unknown '
+		'rx1 rx2 both')
+	L1b_location_attributes['Inst_channel']['hertz'] = 20
+	#-- tracking mode
+	L1b_location_attributes['Tracking_mode'] = {}
+	L1b_location_attributes['Tracking_mode']['long_name'] = 'Tracking Mode'
+	L1b_location_attributes['Tracking_mode']['description'] = ('This flag '
+		'indicates the tracking mode of the SIRAL instrument.')
+	L1b_location_attributes['Tracking_mode']['flag_meanings'] = ('unknown '
+		'lrm sar sarin')
+	L1b_location_attributes['Tracking_mode']['hertz'] = 20
 	#-- Record Counter
 	L1b_location_attributes['Rec_Count'] = {}
 	L1b_location_attributes['Rec_Count']['long_name'] = ('Instrument '
@@ -531,6 +577,14 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_location_attributes['MCD']['description'] = ('Generally the MCD flags '
 		'indicate problems when set. If MCD is 0 then no problems or non-nominal '
 		'conditions were detected. Serious errors are indicated by setting bit 31')
+	L1b_location_attributes['MCD']['flag_meanings'] = ('block_degraded '
+		'blank_block datation_degraded orbit_prop_error orbit_file_change '
+		'orbit_gap echo_saturated other_echo_error sarin_rx1_error '
+		'sarin_rx2_error window_delay_error agc_error cal1_missing '
+		'cal1_default doris_uso_missing ccal1_default trk_echo_error '
+		'echo_rx1_error echo_rx2_error npm_error cal1_pwr_corr_type '
+		'phase_pert_cor_missing cal2_missing cal2_default power_scale_error '
+		'attitude_cor_missing phase_pert_cor_default')
 	L1b_location_attributes['MCD']['hertz'] = 20
 
 	#-- CryoSat-2 Measurement Group
@@ -617,6 +671,28 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 		'nadir direction.')
 	L1b_measurement_attributes['Doppler_range']['units'] = 'mm'
 	L1b_measurement_attributes['Doppler_range']['hertz'] = 20
+	#-- Value of Doppler Angle for the first single look echo (1e-7 radians)
+	L1b_measurement_attributes['Doppler_angle_start'] = {}
+	L1b_measurement_attributes['Doppler_angle_start']['long_name'] = ('Doppler '
+		'angle start')
+	L1b_measurement_attributes['Doppler_angle_start']['description'] = ('Value '
+		'of Doppler Angle for the first single look echo in the stack. It is '
+		'the angle between: (a) direction perpendicular to the velocity '
+		'vector, (b) direction from satellite to surface location. The Doppler '
+		'angle depends on velocity vector and on geometry.')
+	L1b_measurement_attributes['Doppler_angle_start']['units'] = '1e-7 radians'
+	L1b_measurement_attributes['Doppler_angle_start']['hertz'] = 20
+	#-- Value of Doppler Angle for the last single look echo (1e-7 radians)
+	L1b_measurement_attributes['Doppler_angle_stop'] = {}
+	L1b_measurement_attributes['Doppler_angle_stop']['long_name'] = ('Doppler '
+		'angle stop')
+	L1b_measurement_attributes['Doppler_angle_stop']['description'] = ('Value '
+		'of Doppler Angle for the last single look echo in the stack. It is '
+		'the angle between: (a) direction perpendicular to the velocity '
+		'vector, (b) direction from satellite to surface location. The Doppler '
+		'angle depends on velocity vector and on geometry.')
+	L1b_measurement_attributes['Doppler_angle_stop']['units'] = '1e-7 radians'
+	L1b_measurement_attributes['Doppler_angle_stop']['hertz'] = 20
 	#-- Instrument Range Correction: transmit-receive antenna (mm)
 	#-- Calibration correction to range on channel 1 computed from CAL1.
 	L1b_measurement_attributes['TR_inst_range'] = {}
@@ -831,59 +907,59 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	#-- Low-Resolution Mode (LRM)
 	L1b_1Hz_LRM_wfm_attributes = {}
 	#-- Data Record Time (MDSR Time Stamp)
-	L1b_1Hz_LRM_wfm_attributes['Day_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['Day_1Hz']['long_name'] = 'MDSR time stamp days'
-	L1b_1Hz_LRM_wfm_attributes['Day_1Hz']['units'] = 'days since 2000-01-01 00:00:00 TAI'
-	L1b_1Hz_LRM_wfm_attributes['Day_1Hz']['description'] = ('Corresponding to '
+	L1b_1Hz_LRM_wfm_attributes['Day'] = {}
+	L1b_1Hz_LRM_wfm_attributes['Day']['long_name'] = 'MDSR time stamp days'
+	L1b_1Hz_LRM_wfm_attributes['Day']['units'] = 'days since 2000-01-01 00:00:00 TAI'
+	L1b_1Hz_LRM_wfm_attributes['Day']['description'] = ('Corresponding to '
 		'the middle of group of pulses')
-	L1b_1Hz_LRM_wfm_attributes['Day_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['Day']['hertz'] = 1
 	#-- Time: second part
-	L1b_1Hz_LRM_wfm_attributes['Sec_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['Sec_1Hz']['long_name'] = 'MDSR time stamp seconds'
-	L1b_1Hz_LRM_wfm_attributes['Sec_1Hz']['units'] = 'seconds'
-	L1b_1Hz_LRM_wfm_attributes['Sec_1Hz']['description'] = ('Corresponding to '
+	L1b_1Hz_LRM_wfm_attributes['Second'] = {}
+	L1b_1Hz_LRM_wfm_attributes['Second']['long_name'] = 'MDSR time stamp seconds'
+	L1b_1Hz_LRM_wfm_attributes['Second']['units'] = 'seconds'
+	L1b_1Hz_LRM_wfm_attributes['Second']['description'] = ('Corresponding to '
 		'the middle of group of pulses')
-	L1b_1Hz_LRM_wfm_attributes['Sec_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['Second']['hertz'] = 1
 	#-- Time: microsecond part
-	L1b_1Hz_LRM_wfm_attributes['Micsec_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['Micsec_1Hz']['long_name'] = 'MDSR time stamp microseconds'
-	L1b_1Hz_LRM_wfm_attributes['Micsec_1Hz']['units'] = 'microseconds'
-	L1b_1Hz_LRM_wfm_attributes['Micsec_1Hz']['description'] = ('Corresponding '
+	L1b_1Hz_LRM_wfm_attributes['Micsec'] = {}
+	L1b_1Hz_LRM_wfm_attributes['Micsec']['long_name'] = 'MDSR time stamp microseconds'
+	L1b_1Hz_LRM_wfm_attributes['Micsec']['units'] = 'microseconds'
+	L1b_1Hz_LRM_wfm_attributes['Micsec']['description'] = ('Corresponding '
 		'to the middle of group of pulses')
-	L1b_1Hz_LRM_wfm_attributes['Micsec_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['Micsec']['hertz'] = 1
 	#-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz']['long_name'] = 'Latitude of measurement'
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz']['description'] = ('Corresponding to the '
+	L1b_1Hz_LRM_wfm_attributes['Lat'] = {}
+	L1b_1Hz_LRM_wfm_attributes['Lat']['long_name'] = 'Latitude of measurement'
+	L1b_1Hz_LRM_wfm_attributes['Lat']['description'] = ('Corresponding to the '
 		'position at the MDSR Time Stamp')
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz']['units'] = '0.1 micro-degree'
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz']['valid_min'] = -9e8
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz']['valid_max'] = 9e8
-	L1b_1Hz_LRM_wfm_attributes['Lat_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['Lat']['units'] = '0.1 micro-degree'
+	L1b_1Hz_LRM_wfm_attributes['Lat']['valid_min'] = -9e8
+	L1b_1Hz_LRM_wfm_attributes['Lat']['valid_max'] = 9e8
+	L1b_1Hz_LRM_wfm_attributes['Lat']['hertz'] = 1
 	#-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz']['long_name'] = 'Longitude of measurement'
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz']['description'] = ('Corresponding to the '
+	L1b_1Hz_LRM_wfm_attributes['Lon'] = {}
+	L1b_1Hz_LRM_wfm_attributes['Lon']['long_name'] = 'Longitude of measurement'
+	L1b_1Hz_LRM_wfm_attributes['Lon']['description'] = ('Corresponding to the '
 		'position at the MDSR Time Stamp')
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz']['units'] = '0.1 micro-degree'
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz']['valid_min'] = -18e8
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz']['valid_max'] = 18e8
-	L1b_1Hz_LRM_wfm_attributes['Lon_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['Lon']['units'] = '0.1 micro-degree'
+	L1b_1Hz_LRM_wfm_attributes['Lon']['valid_min'] = -18e8
+	L1b_1Hz_LRM_wfm_attributes['Lon']['valid_max'] = 18e8
+	L1b_1Hz_LRM_wfm_attributes['Lon']['hertz'] = 1
 	#-- Alt: packed units (mm, 1e-3 m)
 	#-- Altitude of COG above reference ellipsoid
-	L1b_1Hz_LRM_wfm_attributes['Alt_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['Alt_1Hz']['long_name'] = 'Altitude'
-	L1b_1Hz_LRM_wfm_attributes['Alt_1Hz']['description'] = ('Altitude of Satellite '
+	L1b_1Hz_LRM_wfm_attributes['Alt'] = {}
+	L1b_1Hz_LRM_wfm_attributes['Alt']['long_name'] = 'Altitude'
+	L1b_1Hz_LRM_wfm_attributes['Alt']['description'] = ('Altitude of Satellite '
 		'COG above reference ellipsoid corresponding to the MDSR Time Stamp')
-	L1b_1Hz_LRM_wfm_attributes['Alt_1Hz']['units'] = 'millimeters'
-	L1b_1Hz_LRM_wfm_attributes['Alt_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['Alt']['units'] = 'millimeters'
+	L1b_1Hz_LRM_wfm_attributes['Alt']['hertz'] = 1
 	#-- Window Delay (two-way) corrected for instrument delays
-	L1b_1Hz_LRM_wfm_attributes['TD_1Hz'] = {}
-	L1b_1Hz_LRM_wfm_attributes['TD_1Hz']['long_name'] = 'Altitude'
-	L1b_1Hz_LRM_wfm_attributes['TD_1Hz']['description'] = ('Window Delay '
+	L1b_1Hz_LRM_wfm_attributes['TD'] = {}
+	L1b_1Hz_LRM_wfm_attributes['TD']['long_name'] = 'Altitude'
+	L1b_1Hz_LRM_wfm_attributes['TD']['description'] = ('Window Delay '
 		'(two-way) from the telemetry corrected for instrument delays')
-	L1b_1Hz_LRM_wfm_attributes['TD_1Hz']['units'] = 'picoseconds'
-	L1b_1Hz_LRM_wfm_attributes['TD_1Hz']['hertz'] = 1
+	L1b_1Hz_LRM_wfm_attributes['TD']['units'] = 'picoseconds'
+	L1b_1Hz_LRM_wfm_attributes['TD']['hertz'] = 1
 	#-- 1 Hz Averaged Power Echo Waveform
 	L1b_1Hz_LRM_wfm_attributes['Waveform'] = {}
 	L1b_1Hz_LRM_wfm_attributes['Waveform']['long_name'] = 'Averaged Power Echo'
@@ -921,64 +997,66 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_1Hz_LRM_wfm_attributes['Flags']['description'] = ('For errors or '
 		'information about echoes. See table 2.3.4-3a of the "L1b Products '
 		'Format Specification" document')
+	L1b_1Hz_LRM_wfm_attributes['Flags']['flag_meanings'] = \
+		'1_hz_echo_error_not_computed mispointing_bad_angles'
 	L1b_1Hz_LRM_wfm_attributes['Flags']['hertz'] = 1
 
 	#-- SAR Mode
 	L1b_1Hz_SAR_wfm_attributes = {}
 	#-- Data Record Time (MDSR Time Stamp)
-	L1b_1Hz_SAR_wfm_attributes['Day_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['Day_1Hz']['long_name'] = 'MDSR time stamp days'
-	L1b_1Hz_SAR_wfm_attributes['Day_1Hz']['units'] = 'days since 2000-01-01 00:00:00 TAI'
-	L1b_1Hz_SAR_wfm_attributes['Day_1Hz']['description'] = ('Corresponding to '
+	L1b_1Hz_SAR_wfm_attributes['Day'] = {}
+	L1b_1Hz_SAR_wfm_attributes['Day']['long_name'] = 'MDSR time stamp days'
+	L1b_1Hz_SAR_wfm_attributes['Day']['units'] = 'days since 2000-01-01 00:00:00 TAI'
+	L1b_1Hz_SAR_wfm_attributes['Day']['description'] = ('Corresponding to '
 		'ground bounce time of the individual pulse')
-	L1b_1Hz_SAR_wfm_attributes['Day_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['Day']['hertz'] = 1
 	#-- Time: second part
-	L1b_1Hz_SAR_wfm_attributes['Sec_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['Sec_1Hz']['long_name'] = 'MDSR time stamp seconds'
-	L1b_1Hz_SAR_wfm_attributes['Sec_1Hz']['units'] = 'seconds'
-	L1b_1Hz_SAR_wfm_attributes['Sec_1Hz']['description'] = ('Corresponding to '
+	L1b_1Hz_SAR_wfm_attributes['Second'] = {}
+	L1b_1Hz_SAR_wfm_attributes['Second']['long_name'] = 'MDSR time stamp seconds'
+	L1b_1Hz_SAR_wfm_attributes['Second']['units'] = 'seconds'
+	L1b_1Hz_SAR_wfm_attributes['Second']['description'] = ('Corresponding to '
 		'ground bounce time of the individual pulse')
-	L1b_1Hz_SAR_wfm_attributes['Sec_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['Second']['hertz'] = 1
 	#-- Time: microsecond part
-	L1b_1Hz_SAR_wfm_attributes['Micsec_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['Micsec_1Hz']['long_name'] = 'MDSR time stamp microseconds'
-	L1b_1Hz_SAR_wfm_attributes['Micsec_1Hz']['units'] = 'microseconds'
-	L1b_1Hz_SAR_wfm_attributes['Micsec_1Hz']['description'] = ('Corresponding '
+	L1b_1Hz_SAR_wfm_attributes['Micsec'] = {}
+	L1b_1Hz_SAR_wfm_attributes['Micsec']['long_name'] = 'MDSR time stamp microseconds'
+	L1b_1Hz_SAR_wfm_attributes['Micsec']['units'] = 'microseconds'
+	L1b_1Hz_SAR_wfm_attributes['Micsec']['description'] = ('Corresponding '
 		'ground bounce time of the individual pulse')
-	L1b_1Hz_SAR_wfm_attributes['Micsec_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['Micsec']['hertz'] = 1
 	#-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz']['long_name'] = 'Latitude of measurement'
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz']['description'] = ('Corresponding to the '
+	L1b_1Hz_SAR_wfm_attributes['Lat'] = {}
+	L1b_1Hz_SAR_wfm_attributes['Lat']['long_name'] = 'Latitude of measurement'
+	L1b_1Hz_SAR_wfm_attributes['Lat']['description'] = ('Corresponding to the '
 		'position at the MDSR Time Stamp')
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz']['units'] = '0.1 micro-degree'
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz']['valid_min'] = -9e8
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz']['valid_max'] = 9e8
-	L1b_1Hz_SAR_wfm_attributes['Lat_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['Lat']['units'] = '0.1 micro-degree'
+	L1b_1Hz_SAR_wfm_attributes['Lat']['valid_min'] = -9e8
+	L1b_1Hz_SAR_wfm_attributes['Lat']['valid_max'] = 9e8
+	L1b_1Hz_SAR_wfm_attributes['Lat']['hertz'] = 1
 	#-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz']['long_name'] = 'Longitude of measurement'
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz']['description'] = ('Corresponding to the '
+	L1b_1Hz_SAR_wfm_attributes['Lon'] = {}
+	L1b_1Hz_SAR_wfm_attributes['Lon']['long_name'] = 'Longitude of measurement'
+	L1b_1Hz_SAR_wfm_attributes['Lon']['description'] = ('Corresponding to the '
 		'position at the MDSR Time Stamp')
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz']['units'] = '0.1 micro-degree'
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz']['valid_min'] = -18e8
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz']['valid_max'] = 18e8
-	L1b_1Hz_SAR_wfm_attributes['Lon_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['Lon']['units'] = '0.1 micro-degree'
+	L1b_1Hz_SAR_wfm_attributes['Lon']['valid_min'] = -18e8
+	L1b_1Hz_SAR_wfm_attributes['Lon']['valid_max'] = 18e8
+	L1b_1Hz_SAR_wfm_attributes['Lon']['hertz'] = 1
 	#-- Alt: packed units (mm, 1e-3 m)
 	#-- Altitude of COG above reference ellipsoid
-	L1b_1Hz_SAR_wfm_attributes['Alt_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['Alt_1Hz']['long_name'] = 'Altitude'
-	L1b_1Hz_SAR_wfm_attributes['Alt_1Hz']['description'] = ('Altitude of Satellite '
+	L1b_1Hz_SAR_wfm_attributes['Alt'] = {}
+	L1b_1Hz_SAR_wfm_attributes['Alt']['long_name'] = 'Altitude'
+	L1b_1Hz_SAR_wfm_attributes['Alt']['description'] = ('Altitude of Satellite '
 		'COG above reference ellipsoid corresponding to the MDSR Time Stamp')
-	L1b_1Hz_SAR_wfm_attributes['Alt_1Hz']['units'] = 'millimeters'
-	L1b_1Hz_SAR_wfm_attributes['Alt_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['Alt']['units'] = 'millimeters'
+	L1b_1Hz_SAR_wfm_attributes['Alt']['hertz'] = 1
 	#-- Window Delay (two-way) corrected for instrument delays
-	L1b_1Hz_SAR_wfm_attributes['TD_1Hz'] = {}
-	L1b_1Hz_SAR_wfm_attributes['TD_1Hz']['long_name'] = 'Altitude'
-	L1b_1Hz_SAR_wfm_attributes['TD_1Hz']['description'] = ('Window Delay '
+	L1b_1Hz_SAR_wfm_attributes['TD'] = {}
+	L1b_1Hz_SAR_wfm_attributes['TD']['long_name'] = 'Altitude'
+	L1b_1Hz_SAR_wfm_attributes['TD']['description'] = ('Window Delay '
 		'(two-way) from the telemetry corrected for instrument delays')
-	L1b_1Hz_SAR_wfm_attributes['TD_1Hz']['units'] = 'picoseconds'
-	L1b_1Hz_SAR_wfm_attributes['TD_1Hz']['hertz'] = 1
+	L1b_1Hz_SAR_wfm_attributes['TD']['units'] = 'picoseconds'
+	L1b_1Hz_SAR_wfm_attributes['TD']['hertz'] = 1
 	#-- 1 Hz Averaged Power Echo Waveform
 	L1b_1Hz_SAR_wfm_attributes['Waveform'] = {}
 	L1b_1Hz_SAR_wfm_attributes['Waveform']['long_name'] = 'Averaged Power Echo'
@@ -1019,6 +1097,8 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_1Hz_SAR_wfm_attributes['Flags']['description'] = ('For errors or '
 		'information about echoes. See table 2.3.4-3b of the "L1b Products '
 		'Format Specification" document')
+	L1b_1Hz_SAR_wfm_attributes['Flags']['flag_meanings'] = \
+		'1_hz_echo_error_not_computed mispointing_bad_angles'
 	L1b_1Hz_SAR_wfm_attributes['Flags']['hertz'] = 1
 
 	#-- SARIN Mode
@@ -1033,12 +1113,12 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 		'ground bounce time of the individual pulse')
 	L1b_1Hz_SARIN_wfm_attributes['Day']['hertz'] = 1
 	#-- Time: second part
-	L1b_1Hz_SARIN_wfm_attributes['Sec'] = {}
-	L1b_1Hz_SARIN_wfm_attributes['Sec']['long_name'] = 'MDSR time stamp seconds'
-	L1b_1Hz_SARIN_wfm_attributes['Sec']['units'] = 'seconds'
-	L1b_1Hz_SARIN_wfm_attributes['Sec']['description'] = ('Corresponding to '
+	L1b_1Hz_SARIN_wfm_attributes['Second'] = {}
+	L1b_1Hz_SARIN_wfm_attributes['Second']['long_name'] = 'MDSR time stamp seconds'
+	L1b_1Hz_SARIN_wfm_attributes['Second']['units'] = 'seconds'
+	L1b_1Hz_SARIN_wfm_attributes['Second']['description'] = ('Corresponding to '
 		'ground bounce time of the individual pulse')
-	L1b_1Hz_SARIN_wfm_attributes['Sec']['hertz'] = 1
+	L1b_1Hz_SARIN_wfm_attributes['Second']['hertz'] = 1
 	#-- Time: microsecond part
 	L1b_1Hz_SARIN_wfm_attributes['Micsec'] = {}
 	L1b_1Hz_SARIN_wfm_attributes['Micsec']['long_name'] = 'MDSR time stamp microseconds'
@@ -1119,6 +1199,8 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_1Hz_SARIN_wfm_attributes['Flags']['description'] = ('For errors or '
 		'information about echoes. See table 2.3.4-3b of the "L1b Products '
 		'Format Specification" document')
+	L1b_1Hz_SARIN_wfm_attributes['Flags']['flag_meanings'] = \
+		'1_hz_echo_error_not_computed mispointing_bad_angles'
 	L1b_1Hz_SARIN_wfm_attributes['Flags']['hertz'] = 1
 
 	#-- CryoSat-2 Waveforms Groups
@@ -1161,6 +1243,26 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_BB_attributes['Kurtosis']['units'] = '1/100'
 	L1b_BB_attributes['Kurtosis']['_FillValue'] = -99900
 	L1b_BB_attributes['Kurtosis']['hertz'] = 20
+	#-- Stack peakiness computed from the range integrated power of the single look echoes
+	L1b_BB_attributes['Peakiness'] = {}
+	L1b_BB_attributes['Peakiness']['long_name'] = 'Stack Peakiness'
+	L1b_BB_attributes['Peakiness']['description'] = ('Stack peakiness computed '
+		'from the range integrated power of the single look echoes within a '
+		'stack. Stack peakiness is defined as the inverse of the average of '
+		'the range integrated power normalized for the power at zero look angle')
+	L1b_BB_attributes['Peakiness']['units'] = '1/100'
+	L1b_BB_attributes['Peakiness']['_FillValue'] = -99900
+	L1b_BB_attributes['Peakiness']['hertz'] = 20
+	#-- Stack residuals of Gaussian that fits the range integrated power of the single look echoes
+	L1b_BB_attributes['RMS'] = {}
+	L1b_BB_attributes['RMS']['long_name'] = 'Gaussian Power Fit Residuals'
+	L1b_BB_attributes['RMS']['description'] = ('Residuals of Gaussian that '
+		'fits the range integrated power of the single look echoes within a '
+		'stack. It is the root mean squared error between the Gaussian fitting '
+		'and the range integrated power of the single look echoes within a stack')
+	L1b_BB_attributes['RMS']['units'] = 'dbW'
+	L1b_BB_attributes['RMS']['_FillValue'] = -99900
+	L1b_BB_attributes['RMS']['hertz'] = 20
 	#-- Standard deviation as a function of boresight angle (microradians)
 	L1b_BB_attributes['SD_boresight_angle'] = {}
 	L1b_BB_attributes['SD_boresight_angle']['long_name'] = 'Standard Deviation'
@@ -1179,6 +1281,33 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 	L1b_BB_attributes['Center_boresight_angle']['valid_min'] = -32768
 	L1b_BB_attributes['Center_boresight_angle']['valid_max'] = 32768
 	L1b_BB_attributes['Center_boresight_angle']['hertz'] = 20
+	#-- Stack Center angle as a function of look angle (microradians)
+	L1b_BB_attributes['Center_look_angle'] = {}
+	L1b_BB_attributes['Center_look_angle']['long_name'] = 'Stack Centre Angle'
+	L1b_BB_attributes['Center_look_angle']['description'] = ('Stack Centre '
+		'angle as a function of look angle')
+	L1b_BB_attributes['Center_look_angle']['units'] = 'microradians'
+	L1b_BB_attributes['Center_look_angle']['valid_min'] = -32768
+	L1b_BB_attributes['Center_look_angle']['valid_max'] = 32768
+	L1b_BB_attributes['Center_look_angle']['hertz'] = 20
+	#-- Number of contributing beams in the stack before weighting
+	L1b_BB_attributes['Number'] = {}
+	L1b_BB_attributes['Number']['long_name'] = ('Number of contributing '
+		'beams before weighting')
+	L1b_BB_attributes['Number']['description'] = ('Number of contributing '
+		'beams in the stack before weighting: number of single look echoes '
+		'in the stack before the Surface Sample Stack weighting is applied')
+	L1b_BB_attributes['Number']['units'] = 'count'
+	L1b_BB_attributes['Number']['hertz'] = 20
+	#-- Number of contributing beams in the stack after weighting
+	L1b_BB_attributes['Weighted_Number'] = {}
+	L1b_BB_attributes['Weighted_Number']['long_name'] = ('Number of contributing '
+		'beams after weighting')
+	L1b_BB_attributes['Weighted_Number']['description'] = ('Number of contributing '
+		'beams in the stack after weighting: number of single look echoes '
+		'in the stack after the Surface Sample Stack weighting is applied')
+	L1b_BB_attributes['Weighted_Number']['units'] = 'count'
+	L1b_BB_attributes['Weighted_Number']['hertz'] = 20
 
 	#-- Low-Resolution Mode
 	L1b_20Hz_LRM_wfm_attributes = {}

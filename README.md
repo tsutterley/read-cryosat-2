@@ -88,15 +88,16 @@ import cryosat_toolkit.HDF5_cryosat_L2I as HDF5_cryosat_L2I
 MODE = 'SIN'
 BASELINE = 'C'
 CS_L2I_mds = read_cryosat_L2I(full_filename)
-read_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
+HDF5_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
 ```
 
 #### Dependencies
- - [numpy: Scientific Computing Tools For Python](http://www.numpy.org)  
- - [h5py: Python interface for Hierarchal Data Format 5 (HDF5)](http://h5py.org)  
- - [netCDF4: Python interface to the netCDF C library](https://unidata.github.io/netcdf4-python/netCDF4/index.html)  
- - [future: Compatibility layer between Python 2 and Python 3](http://python-future.org/)  
- - [lxml: processing XML and HTML in Python](https://pypi.python.org/pypi/lxml)  
+- [numpy: Scientific Computing Tools For Python](http://www.numpy.org)  
+- [scipy: Scientific Tools for Python](http://www.scipy.org/)  
+- [h5py: Python interface for Hierarchal Data Format 5 (HDF5)](http://h5py.org)  
+- [netCDF4: Python interface to the netCDF C library](https://unidata.github.io/netcdf4-python/netCDF4/index.html)  
+- [future: Compatibility layer between Python 2 and Python 3](http://python-future.org/)  
+- [lxml: processing XML and HTML in Python](https://pypi.python.org/pypi/lxml)  
 
 #### Download
 The program homepage is:   

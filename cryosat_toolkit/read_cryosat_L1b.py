@@ -4,7 +4,7 @@ read_cryosat_L1b.py
 Written by Tyler Sutterley (09/2019)
 
 Reads CryoSat Level-1b data products from baselines A, B and C
-Reads CryoSat Level-2 netCDF4 data products from baseline D
+Reads CryoSat Level-1b netCDF4 data products from baseline D
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
 INPUTS:

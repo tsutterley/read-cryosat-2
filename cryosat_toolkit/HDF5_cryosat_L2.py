@@ -30,7 +30,7 @@ UPDATE HISTORY:
 	Updated 09/2019: updates for Baseline D
 	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
-	Updated 11/2016: added Abs_Orbit and Ascending_Flg to Data_1Hz outputs
+	Updated 11/2016: added Abs_Orbit and Ascending_flag to Data_1Hz outputs
 	Updated 05/2016: using __future__ print function
 	Written 03/2016
 """
@@ -335,11 +335,11 @@ def cryosat_L2_attributes(BASELINE):
 	L2_1Hz_attributes['Abs_Orbit']['units'] = 'Count'
 	L2_1Hz_attributes['Abs_Orbit']['hertz'] = 1
 	#-- Ascending Flag from SPH Header
-	L2_1Hz_attributes['Ascending_Flg'] = {}
-	L2_1Hz_attributes['Ascending_Flg']['long_name'] = 'Ascending Flag'
-	L2_1Hz_attributes['Ascending_Flg']['description'] = ('If True: satellite '
+	L2_1Hz_attributes['Ascending_flag'] = {}
+	L2_1Hz_attributes['Ascending_flag']['long_name'] = 'Ascending Flag'
+	L2_1Hz_attributes['Ascending_flag']['description'] = ('If True: satellite '
 		'is in ascending orbit. If False: satellite is in descending orbit.')
-	L2_1Hz_attributes['Ascending_Flg']['hertz'] = 1
+	L2_1Hz_attributes['Ascending_flag']['hertz'] = 1
 
 	#-- CryoSat-2 geophysical corrections (External Corrections Group)
 	L2_corr_attributes = {}
@@ -630,20 +630,20 @@ def cryosat_L2_attributes(BASELINE):
 	L2_20Hz_attributes['SSHA_interp']['units'] = 'millimeters'
 	L2_20Hz_attributes['SSHA_interp']['hertz'] = 20
 	#-- Interpolated Sea Surface Height measurement count
-	L2_20Hz_attributes['SSHA_num'] = {}
-	L2_20Hz_attributes['SSHA_num']['long_name'] = ('Interpolated Sea '
+	L2_20Hz_attributes['SSHA_interp_count'] = {}
+	L2_20Hz_attributes['SSHA_interp_count']['long_name'] = ('Interpolated Sea '
 		'Surface Height measurement count')
-	L2_20Hz_attributes['SSHA_num']['description'] = ('Number of records used '
+	L2_20Hz_attributes['SSHA_interp_count']['description'] = ('Number of records used '
 		'to create the fit in the SSHA calculation')
-	L2_20Hz_attributes['SSHA_num']['hertz'] = 20
+	L2_20Hz_attributes['SSHA_interp_count']['hertz'] = 20
 	#-- Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
-	L2_20Hz_attributes['SSHA_qual'] = {}
-	L2_20Hz_attributes['SSHA_qual']['long_name'] = ('Interpolated Sea '
+	L2_20Hz_attributes['SSHA_interp_RMS'] = {}
+	L2_20Hz_attributes['SSHA_interp_RMS']['long_name'] = ('Interpolated Sea '
 		'Surface Height quality estimate')
-	L2_20Hz_attributes['SSHA_qual']['description'] = ('Root mean square (RMS)'
+	L2_20Hz_attributes['SSHA_interp_RMS']['description'] = ('Root mean square (RMS)'
 		'of the residuals of the SSHA fit')
-	L2_20Hz_attributes['SSHA_qual']['units'] = 'millimeters'
-	L2_20Hz_attributes['SSHA_qual']['hertz'] = 20
+	L2_20Hz_attributes['SSHA_interp_RMS']['units'] = 'millimeters'
+	L2_20Hz_attributes['SSHA_interp_RMS']['hertz'] = 20
 	#-- Peakiness: packed units (1e-2)
 	L2_20Hz_attributes['Peakiness'] = {}
 	L2_20Hz_attributes['Peakiness']['long_name'] = 'Peakiness'
@@ -664,20 +664,20 @@ def cryosat_L2_attributes(BASELINE):
 		'ratio of the waveform.')
 	L2_20Hz_attributes['N_avg']['hertz'] = 20
 	#-- Quality flags
-	L2_20Hz_attributes['Quality_Flg'] = {}
-	L2_20Hz_attributes['Quality_Flg']['long_name'] = 'Measurement Quality Flags'
-	L2_20Hz_attributes['Quality_Flg']['description'] = ('Used to show validity '
+	L2_20Hz_attributes['Quality_flag'] = {}
+	L2_20Hz_attributes['Quality_flag']['long_name'] = 'Measurement Quality Flags'
+	L2_20Hz_attributes['Quality_flag']['description'] = ('Used to show validity '
 		'of the 20Hz measurements.  See table 2.3.3.1-5 of the "L2 Products '
 		'Format Specification" document')
-	L2_20Hz_attributes['Quality_Flg']['hertz'] = 20
+	L2_20Hz_attributes['Quality_flag']['hertz'] = 20
 
 	#-- Corrections Flag and Quality metrics for 3 retrackers with Baseline-C
 	if (BASELINE == 'C'):
 		#-- Corrections Application Flag
-		L2_20Hz_attributes['Corrections_Flg'] = {}
-		L2_20Hz_attributes['Corrections_Flg']['long_name'] = ('Corrections '
+		L2_20Hz_attributes['Corrections_flag'] = {}
+		L2_20Hz_attributes['Corrections_flag']['long_name'] = ('Corrections '
 			'Application Flag')
-		L2_20Hz_attributes['Corrections_Flg']['hertz'] = 20
+		L2_20Hz_attributes['Corrections_flag']['hertz'] = 20
 		#-- Quality metric for retracker 1
 		L2_20Hz_attributes['Quality_1'] = {}
 		L2_20Hz_attributes['Quality_1']['long_name'] = ('Quality metric for '

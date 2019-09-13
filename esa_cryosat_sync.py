@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_sync.py
-Written by Tyler Sutterley (08/2019)
+Written by Tyler Sutterley (09/2019)
 
 This program syncs Cryosat Elevation products
 From the ESA CryoSat-2 Science Server:
@@ -35,6 +35,7 @@ PYTHON DEPENDENCIES:
 		(http://python-future.org/)
 
 UPDATE HISTORY:
+	Updated 09/2019: increase urlopen timeout. place regex compilations together
 	Updated 08/2019: include baseline in regular expression patterns
 		updated for https Cryosat-2 Science Server
 		ftp program renamed esa_cryosat_ftp.py
@@ -154,6 +155,8 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 	#-- regular expression pattern for months of the year
 	regex_months = '|'.join('{0:02d}'.format(m) for m in range(1,13))
 	R2 = re.compile('({0})'.format(regex_months), re.VERBOSE)
+	#-- compile the regular expression operator to find CryoSat-2 files
+	R3 = compile_regex_pattern(PRODUCT, BASELINE)
 
 	#-- open connection with Cryosat-2 science server at remote directory
 	request = urllib2.Request(url=posixpath.join(HOST,PRODUCT))
@@ -163,11 +166,9 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 	colnames = tree.xpath('//tr/td//a/text()')
 	YRS = [d for i,d in enumerate(colnames) if R1.match(d)]
 	for Y in YRS:
-		#-- compile regular expression operator for months in year to sync
-		R2 = re.compile(posixpath.join(Y,regex_months), re.VERBOSE)
 		#-- open connection with Cryosat-2 science server at remote directory
 		request = urllib2.Request(url=posixpath.join(HOST,PRODUCT,Y))
-		response = urllib2.urlopen(request,timeout=60,context=context)
+		response = urllib2.urlopen(request,timeout=360,context=context)
 		tree = lxml.etree.parse(response, parser)
 		#-- find remote monthly directories for PRODUCT within year
 		colnames = tree.xpath('//tr/td//a/text()')
@@ -179,13 +180,11 @@ def esa_cryosat_sync(PRODUCT, YEARS, DIRECTORY=None, USER='', PASSWORD='',
 			os.makedirs(local_dir,MODE) if not os.path.exists(local_dir) else None
 			#-- open connection with Cryosat-2 science server at remote directory
 			request = urllib2.Request(url=posixpath.join(HOST,PRODUCT,Y,M))
-			response = urllib2.urlopen(request,timeout=180,context=context)
+			response = urllib2.urlopen(request,timeout=360,context=context)
 			tree = lxml.etree.parse(response, parser)
 			#-- find remote yearly directories for PRODUCT within YEARS
 			colnames = tree.xpath('//tr/td//a/text()')
 			collastmod = tree.xpath('//tr/td[@align="right"][1]/text()')
-			#-- compile the regular expression operator to find CryoSat-2 files
-			R3 = compile_regex_pattern(PRODUCT, BASELINE)
 			valid_lines = [i for i,f in enumerate(colnames) if R3.match(f)]
 			for i in valid_lines:
 				#-- remote and local versions of the file
@@ -229,7 +228,7 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
 			#-- Create and submit request. There are a wide range of exceptions
 			#-- that can be thrown here, including HTTPError and URLError.
 			req = urllib2.Request(remote_file)
-			resp = urllib2.urlopen(req,timeout=180,context=ssl.SSLContext())
+			resp = urllib2.urlopen(req,timeout=360,context=ssl.SSLContext())
 			#-- chunked transfer encoding size
 			CHUNK = 16 * 1024
 			#-- copy contents to local file using chunked transfer encoding

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L1b.py (09/2019)
+HDF5_cryosat_L1b.py (10/2019)
 Reads and Writes HDF5 files for CryoSat-2 Level-1b data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 10/2019: changing Y/N flags to True/False
 	Updated 09/2019: updates for Baseline D
 	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
@@ -44,9 +45,9 @@ import h5py
 
 #-- PURPOSE: write CryoSat-2 HDF5 files
 def HDF5_cryosat_L1b(CS_l1b_mds, MODE, BASELINE, FILENAME='', TITLE='',
-	HEADER=0, CLOBBER='Y', VERBOSE='N'):
+	HEADER=0, CLOBBER=True, VERBOSE=False):
 	#-- setting HDF5 clobber attribute
-	if CLOBBER in ('Y','y'):
+	if CLOBBER:
 		clobber = 'w'
 	else:
 		clobber = 'w-'
@@ -262,7 +263,7 @@ def HDF5_cryosat_L1b(CS_l1b_mds, MODE, BASELINE, FILENAME='', TITLE='',
 	fileID.attrs['description'] = TITLE
 
 	#-- Output HDF5 structure information
-	if VERBOSE in ('Y','y'):
+	if VERBOSE:
 		print(FILENAME)
 		print(list(fileID.keys()))
 
@@ -270,12 +271,12 @@ def HDF5_cryosat_L1b(CS_l1b_mds, MODE, BASELINE, FILENAME='', TITLE='',
 	fileID.close()
 
 #-- PURPOSE: read CryoSat-2 HDF5 files
-def read_HDF5_cryosat_L1b(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
+def read_HDF5_cryosat_L1b(FILENAME, ATTRIBUTES=True, VERBOSE=False):
 	#-- Open the HDF5 file for reading
 	fileID = h5py.File(os.path.expanduser(FILENAME), 'r')
 
 	#-- Output HDF5 file information
-	if VERBOSE in ('Y','y'):
+	if VERBOSE:
 		print(fileID.filename)
 		print(list(fileID.keys()))
 
@@ -317,7 +318,7 @@ def read_HDF5_cryosat_L1b(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
 			CS_l1b_mds['Waveform_20Hz'][key] = fileID['Waveform_20Hz'][key][:,:]
 
 	#-- Getting attributes of included variables
-	if ATTRIBUTES in ('Y','y'):
+	if ATTRIBUTES:
 		#-- allocate python dictionaries for output CS_l1b_mds attributes
 		CS_l1b_mds['Attributes'] = {}
 		CS_l1b_mds['Attributes']['Location'] = {}
@@ -543,8 +544,8 @@ def cryosat_L1b_attributes(MODE, BASELINE):
 		'CryoSat Reference Frame (CRF). This is a unit vector.')
 	L1b_location_attributes['Baseline']['units'] = 'micrometers'
 	L1b_location_attributes['Baseline']['hertz'] = 20
-	#-- Star Tracker ID and Spacecraft mispointing for Baseline-C
-	if (BASELINE == 'C'):
+	#-- Star Tracker ID and Spacecraft mispointing for Baseline-C and D
+	if BASELINE in ('C','D'):
 		#-- Star Tracker ID
 		L1b_location_attributes['ST_ID'] = {}
 		L1b_location_attributes['ST_ID']['long_name'] = 'Star Tracker ID'

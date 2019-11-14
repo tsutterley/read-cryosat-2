@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2I.py (04/2019)
+HDF5_cryosat_L2I.py (10/2019)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 intermediary data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 10/2019: changing Y/N flags to True/False
 	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
 	Updated 05/2016: using __future__ print function
@@ -42,9 +43,9 @@ import h5py
 
 #-- PURPOSE: write CryoSat-2 HDF5 files
 def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
-	HEADER=0, CLOBBER='Y', VERBOSE='N'):
+	HEADER=0, CLOBBER=True, VERBOSE=False):
 	#-- setting HDF5 clobber attribute
-	if CLOBBER in ('Y','y'):
+	if CLOBBER:
 		clobber = 'w'
 	else:
 		clobber = 'w-'
@@ -217,7 +218,7 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 	fileID.attrs['description'] = TITLE
 
 	#-- Output HDF5 structure information
-	if VERBOSE in ('Y','y'):
+	if VERBOSE:
 		print(FILENAME)
 		print(list(fileID.keys()))
 
@@ -225,12 +226,12 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
 	fileID.close()
 
 #-- PURPOSE: read CryoSat-2 HDF5 files
-def read_HDF5_cryosat_L2I(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
+def read_HDF5_cryosat_L2I(FILENAME, ATTRIBUTES=True, VERBOSE=False):
 	#-- Open the HDF5 file for reading
 	fileID = h5py.File(os.path.expanduser(FILENAME), 'r')
 
 	#-- Output HDF5 file information
-	if VERBOSE in ('Y','y'):
+	if VERBOSE:
 		print(fileID.filename)
 		print(list(fileID.keys()))
 
@@ -266,7 +267,7 @@ def read_HDF5_cryosat_L2I(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
 		CS_l2I_mds['Instrumental'][key] = fileID['Instrumental'][key][:]
 
 	#-- Getting attributes of included variables
-	if ATTRIBUTES in ('Y','y'):
+	if ATTRIBUTES:
 		#-- allocate python dictionaries for output CS_l2I_mds attributes
 		CS_l2I_mds['Attributes'] = {}
 		CS_l2I_mds['Attributes']['Location'] = {}

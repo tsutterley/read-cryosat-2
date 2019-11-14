@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2I.py
-Written by Tyler Sutterley (09/2019)
+Written by Tyler Sutterley (11/2019)
 
 Reads CryoSat Level-2 Intermediate data products from baselines A, B, BC and C
 Reads CryoSat Level-2 netCDF4 data products from baseline D
@@ -28,6 +28,7 @@ PYTHON DEPENDENCIES:
 	 	https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+Updated 11/2019: empty placeholder dictionary for baseline D DSD headers
 Updated 09/2019: added netCDF4 read function for baseline D
 	will output with same variable names and units as the binary read functions
 Updated 08/2019: generalize regular expression patterns in read_DSD function
@@ -1574,7 +1575,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
 	CS_L2I_mds['Instrumental'] = Instrumental
 
 	#-- extract global attributes and assign as MPH and SPH metadata
-	CS_L2I_mds['METADATA'] = dict(MPH={},SPH={})
+	CS_L2I_mds['METADATA'] = dict(MPH={},SPH={},DSD={})
 	#-- MPH attributes
 	CS_L2I_mds['METADATA']['MPH']['PRODUCT'] = fid.product_name
 	CS_L2I_mds['METADATA']['MPH']['DOI'] = fid.doi

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2.py (09/2019)
+HDF5_cryosat_L2.py (11/2019)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -27,6 +27,8 @@ PYTHON DEPENDENCIES:
 		(http://h5py.org)
 
 UPDATE HISTORY:
+	Updated 11/2019: add netCDF4 Time (TAI seconds since 2000-01-01)
+	Updated 10/2019: changing Y/N flags to True/False
 	Updated 09/2019: updates for Baseline D
 	Updated 04/2019: print HDF5 keys from list for python3 compatibility
 	Updated 06/2018: use items instead of iteritems for python3 compatibility
@@ -42,9 +44,9 @@ import h5py
 
 #-- PURPOSE: write CryoSat-2 HDF5 files
 def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
-	CLOBBER='Y', VERBOSE='N'):
+	CLOBBER=True, VERBOSE=False):
 	#-- setting HDF5 clobber attribute
-	if CLOBBER in ('Y','y'):
+	if CLOBBER:
 		clobber = 'w'
 	else:
 		clobber = 'w-'
@@ -168,7 +170,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 	fileID.attrs['description'] = TITLE
 
 	#-- Output HDF5 structure information
-	if VERBOSE in ('Y','y'):
+	if VERBOSE:
 		print(FILENAME)
 		print(list(fileID.keys()))
 
@@ -176,12 +178,12 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
 	fileID.close()
 
 #-- PURPOSE: read CryoSat-2 HDF5 files
-def read_HDF5_cryosat_L2(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
+def read_HDF5_cryosat_L2(FILENAME, ATTRIBUTES=True, VERBOSE=False):
 	#-- Open the HDF5 file for reading
 	fileID = h5py.File(os.path.expanduser(FILENAME), 'r')
 
 	#-- Output HDF5 file information
-	if VERBOSE in ('Y','y'):
+	if VERBOSE:
 		print(fileID.filename)
 		print(list(fileID.keys()))
 
@@ -202,7 +204,7 @@ def read_HDF5_cryosat_L2(FILENAME, ATTRIBUTES='Y', VERBOSE='N'):
 		CS_l2_mds['Corrections'][key] = fileID['Corrections'][key][:]
 
 	#-- Getting attributes of included variables
-	if ATTRIBUTES in ('Y','y'):
+	if ATTRIBUTES:
 		#-- allocate python dictionaries for output CS_l2_mds attributes
 		CS_l2_mds['Attributes'] = {}
 		CS_l2_mds['Attributes']['Data_1Hz'] = {}
@@ -244,6 +246,15 @@ def cryosat_L2_attributes(BASELINE):
 	#-- CryoSat-2 1 Hz data fields (Location Group)
 	#-- Time and Orbit Parameters plus Measurement Mode
 	L2_1Hz_attributes = {}
+	#-- Time: netCDF4 TAI time since 2000-01-01 00:00:00
+	L2_1Hz_attributes['Time'] = {}
+	L2_1Hz_attributes['Time']['long_name'] = 'MDSR time stamp'
+	L2_1Hz_attributes['Time']['units'] = 'seconds since 2000-01-01 00:00:00.0'
+	L2_1Hz_attributes['Time']['description'] = ('TAI time counted in seconds '
+		'since 2000-01-01 00:00:00')
+	L2_1Hz_attributes['Time']['hertz'] = 1
+	L2_1Hz_attributes['Time']['calendar'] = 'gregorian'
+	L2_1Hz_attributes['Time']['standard_name'] = 'time'
 	#-- Time: day part
 	L2_1Hz_attributes['Day'] = {}
 	L2_1Hz_attributes['Day']['long_name'] = 'MDSR time stamp days'
@@ -290,8 +301,8 @@ def cryosat_L2_attributes(BASELINE):
 	L2_1Hz_attributes['Alt_1Hz']['units'] = 'millimeters'
 	L2_1Hz_attributes['Alt_1Hz']['hertz'] = 1
 
-	#-- Spacecraft mispointing (Roll, Pitch, and Yaw for Baseline-C)
-	if (BASELINE == 'C'):
+	#-- Spacecraft mispointing (Roll, Pitch, and Yaw for Baseline-C and D)
+	if BASELINE in ('C','D'):
 		#-- Roll: packed units (0.1 micro-degree, 1e-7 degrees)
 		L2_1Hz_attributes['Roll'] = {}
 		L2_1Hz_attributes['Roll']['long_name'] = ('Spacecraft roll angle '
@@ -443,14 +454,6 @@ def cryosat_L2_attributes(BASELINE):
 		'classify surface at nadir provided by a model: (0=Open Ocean, '
 		'1=Closed Sea, 2=Continental Ice, 3=Land, 4-7=currently unused)')
 	L2_corr_attributes['Surf_type']['hertz'] = 1
-	#-- Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
-	L2_corr_attributes['MSS_Geoid'] = {}
-	L2_corr_attributes['MSS_Geoid']['long_name'] = 'Mean Sea Surface or Geoid'
-	L2_corr_attributes['MSS_Geoid']['description'] = ('Over Ocean (Surface'
-		'Types 0 and 1): surface height from the Mean Sea Surface. Over Land '
-		'Surface Types 2 and 3): geoid height from the CFI library.')
-	L2_corr_attributes['MSS_Geoid']['units'] = 'millimeters'
-	L2_corr_attributes['MSS_Geoid']['hertz'] = 1
 	#-- Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
 	L2_corr_attributes['ODLE'] = {}
 	L2_corr_attributes['ODLE']['long_name'] = 'ODLE from model'
@@ -501,10 +504,63 @@ def cryosat_L2_attributes(BASELINE):
 		'model by the geocorrections CFI')
 	L2_corr_attributes['Wind_speed']['units'] = 'mm/second'
 	L2_corr_attributes['Wind_speed']['hertz'] = 1
+	#-- Geoid height and mean sea surface for Baseline D
+	if (BASELINE == 'D'):
+		#-- Geoid: packed units (mm, 1e-3 m)
+		L2_corr_attributes['Geoid'] = {}
+		L2_corr_attributes['Geoid']['long_name'] = 'Geoid height'
+		L2_corr_attributes['Geoid']['description'] = ('Computed from the geoid '
+			'model with a correction to refer the value to the mean tide '
+			'system. Includes permanent tide (zero frequency).')
+		L2_corr_attributes['Geoid']['standard_name'] = ('geoid_height_above_'
+			'reference_ellipsoid')
+		L2_corr_attributes['Geoid']['units'] = 'millimeters'
+		L2_corr_attributes['Geoid']['source'] = "EGM96"
+		L2_corr_attributes['Geoid']['institution'] = "NASA GSFC and NIMA"
+		L2_corr_attributes['Geoid']['reference'] = ('Lemoine, F. G., S. C. '
+			'Kenyon, J. K. Factor, R.G. Trimmer, N. K. Pavlis, D. S. Chinn, '
+			'C. M. Cox, S. M. Klosko, S. B. Luthcke, M. H. Torrence, Y. M. '
+			'Wang, R. G. Williamson, E. C. Pavlis, R. H. Rapp and T. R. Olson. '
+			'The Development of the Joint NASA GSFC and the National Imagery '
+			'and Mapping Agency (NIMA) Geopotential Model EGM96. '
+			'NASA/TP-1998-206861, July 1998.')
+		L2_corr_attributes['Geoid']['hertz'] = 1
+		#-- Mean Sea Surface: packed units (mm, 1e-3 m)
+		L2_corr_attributes['MSS'] = {}
+		L2_corr_attributes['MSS']['long_name'] = 'Mean sea surface height'
+		L2_corr_attributes['MSS']['description'] = ('Mean sea surface model, '
+			'referenced to the WGS84 ellipsoid. This model has been optimised '
+			'for use in computing the surface height anomaly of the polar '
+			'oceans to derive sea-ice freeboard. The model is a merge of the '
+			'CLS2011 mean sea-surface and CryoSat data from high latitudes.')
+		L2_corr_attributes['MSS']['standard_name'] = ('sea_surface_height_'
+			'above_reference_ellipsoid')
+		L2_corr_attributes['MSS']['units'] = 'millimeters'
+		L2_corr_attributes['MSS']['source'] = "UCL13"
+		L2_corr_attributes['MSS']['institution'] = "UCL"
+		L2_corr_attributes['MSS']['hertz'] = 1
+	else:
+		#-- Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
+		L2_corr_attributes['MSS_Geoid'] = {}
+		L2_corr_attributes['MSS_Geoid']['long_name']='Mean Sea Surface or Geoid'
+		L2_corr_attributes['MSS_Geoid']['description'] = ('Over Ocean (Surface'
+			'Types 0 and 1): surface height from the Mean Sea Surface. Over '
+			'Land Surface Types 2 and 3): geoid height from the CFI library.')
+		L2_corr_attributes['MSS_Geoid']['units'] = 'millimeters'
+		L2_corr_attributes['MSS_Geoid']['hertz'] = 1
 
 	#-- CryoSat-2 20 Hz data fields (Measurement Group)
 	#-- Derived from instrument measurement parameters
 	L2_20Hz_attributes = {}
+	#-- Time: netCDF4 TAI time since 2000-01-01 00:00:00
+	L2_20Hz_attributes['Time'] = {}
+	L2_20Hz_attributes['Time']['long_name'] = 'MDSR time stamp'
+	L2_20Hz_attributes['Time']['units'] = 'seconds since 2000-01-01 00:00:00.0'
+	L2_20Hz_attributes['Time']['description'] = ('TAI time counted in seconds '
+		'since 2000-01-01 00:00:00')
+	L2_20Hz_attributes['Time']['hertz'] = 1
+	L2_20Hz_attributes['Time']['calendar'] = 'gregorian'
+	L2_20Hz_attributes['Time']['standard_name'] = 'time'
 	#-- Delta between the timestamps for 20Hz record and the 1Hz record
 	#-- D_time_mics packed units (microseconds)
 	L2_20Hz_attributes['D_time_mics'] = {}
@@ -535,7 +591,7 @@ def cryosat_L2_attributes(BASELINE):
 	L2_20Hz_attributes['Lon']['valid_max'] = 18e8
 	L2_20Hz_attributes['Lon']['hertz'] = 20
 
-	#-- Measured elevation and Backscatter (for 3 retrackers with Baseline-C)
+	#-- Measured elevation and Backscatter (for 3 retrackers with Baseline-C,D)
 	if (BASELINE == 'C'):
 		#-- Measured elevation above ellipsoid from retracker 1
 		#-- packed units (mm, 1e-3 m)
@@ -591,6 +647,110 @@ def cryosat_L2_attributes(BASELINE):
 		L2_20Hz_attributes['Sig0_3']['units'] = 'dB/100'
 		L2_20Hz_attributes['Sig0_3']['retracker'] = 3
 		L2_20Hz_attributes['Sig0_3']['hertz'] = 20
+	elif (BASELINE == 'D'):
+		#-- Measured elevation above ellipsoid from retracker 1
+		#-- packed units (mm, 1e-3 m)
+		L2_20Hz_attributes['Elev_1'] = {}
+		L2_20Hz_attributes['Elev_1']['long_name'] = 'Surface Elevation'
+		L2_20Hz_attributes['Elev_1']['description'] = ('Height of surface at '
+			'measurement point with respect to the reference ellipsoid (WGS84). '
+			'It is calculated with the retracked and geocorrected range')
+		L2_20Hz_attributes['Elev_1']['units'] = 'millimeters'
+		L2_20Hz_attributes['Elev_1']['retracker'] = 1
+		L2_20Hz_attributes['Elev_1']['hertz'] = 20
+		#-- Measured elevation above ellipsoid from retracker 2
+		#-- packed units (mm, 1e-3 m)
+		L2_20Hz_attributes['Elev_2'] = {}
+		L2_20Hz_attributes['Elev_2']['long_name'] = 'Surface Elevation'
+		L2_20Hz_attributes['Elev_2']['description'] = ('Height of surface at '
+			'measurement point with respect to the reference ellipsoid (WGS84). '
+			'It is calculated with the retracked and geocorrected range')
+		L2_20Hz_attributes['Elev_2']['units'] = 'millimeters'
+		L2_20Hz_attributes['Elev_2']['retracker'] = 2
+		L2_20Hz_attributes['Elev_2']['hertz'] = 20
+		#-- Measured elevation above ellipsoid from retracker 3
+		#-- packed units (mm, 1e-3 m)
+		L2_20Hz_attributes['Elev_3'] = {}
+		L2_20Hz_attributes['Elev_3']['long_name'] = 'Surface Elevation'
+		L2_20Hz_attributes['Elev_3']['description'] = ('Height of surface at '
+			'measurement point with respect to the reference ellipsoid (WGS84). '
+			'It is calculated with the retracked and geocorrected range')
+		L2_20Hz_attributes['Elev_3']['units'] = 'millimeters'
+		L2_20Hz_attributes['Elev_3']['retracker'] = 3
+		L2_20Hz_attributes['Elev_3']['hertz'] = 20
+		#-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+		L2_20Hz_attributes['Sig0_1'] = {}
+		L2_20Hz_attributes['Sig0_1']['long_name'] = 'Sigma Zero Backscatter'
+		L2_20Hz_attributes['Sig0_1']['description'] = ('Fully corrected '
+			'including instrument gain corrections and retracker correction')
+		L2_20Hz_attributes['Sig0_1']['units'] = 'dB/100'
+		L2_20Hz_attributes['Sig0_1']['retracker'] = 1
+		L2_20Hz_attributes['Sig0_1']['hertz'] = 20
+		#-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+		L2_20Hz_attributes['Sig0_2'] = {}
+		L2_20Hz_attributes['Sig0_2']['long_name'] = 'Sigma Zero Backscatter'
+		L2_20Hz_attributes['Sig0_2']['description'] = ('Fully corrected '
+			'including instrument gain corrections and retracker correction')
+		L2_20Hz_attributes['Sig0_2']['units'] = 'dB/100'
+		L2_20Hz_attributes['Sig0_2']['retracker'] = 2
+		L2_20Hz_attributes['Sig0_2']['hertz'] = 20
+		#-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+		L2_20Hz_attributes['Sig0_3'] = {}
+		L2_20Hz_attributes['Sig0_3']['long_name'] = 'Sigma Zero Backscatter'
+		L2_20Hz_attributes['Sig0_3']['description'] = ('Fully corrected '
+			'including instrument gain corrections and retracker correction')
+		L2_20Hz_attributes['Sig0_3']['units'] = 'dB/100'
+		L2_20Hz_attributes['Sig0_3']['retracker'] = 3
+		L2_20Hz_attributes['Sig0_3']['hertz'] = 20
+		#-- Measured range from the satellite to the surface from retracker 1
+		L2_20Hz_attributes['Range_1'] = {}
+		L2_20Hz_attributes['Range_1']['long_name'] = 'Range to surface'
+		L2_20Hz_attributes['Range_1']['description'] =('Measured range from '
+			'the satellite to the surface at the coordinate location. All '
+			'instrumental corrections applied.  Does not include geophysical '
+			'corrections.')
+		L2_20Hz_attributes['Range_1']['units'] = 'mm'
+		L2_20Hz_attributes['Range_1']['retracker'] = 1
+		L2_20Hz_attributes['Range_1']['hertz'] = 20
+		#-- Measured range from the satellite to the surface from retracker 2
+		L2_20Hz_attributes['Range_2'] = {}
+		L2_20Hz_attributes['Range_2']['long_name'] = 'Range to surface'
+		L2_20Hz_attributes['Range_2']['description'] =('Measured range from '
+			'the satellite to the surface at the coordinate location. All '
+			'instrumental corrections applied.  Does not include geophysical '
+			'corrections.')
+		L2_20Hz_attributes['Range_2']['units'] = 'mm'
+		L2_20Hz_attributes['Range_2']['retracker'] = 2
+		L2_20Hz_attributes['Range_2']['hertz'] = 20
+		#-- Measured range from the satellite to the surface from retracker 3
+		L2_20Hz_attributes['Range_3'] = {}
+		L2_20Hz_attributes['Range_3']['long_name'] = 'Range to surface'
+		L2_20Hz_attributes['Range_3']['description'] = ('Measured range from '
+			'the satellite to the surface at the coordinate location. All '
+			'instrumental corrections applied.  Does not include geophysical '
+			'corrections.')
+		L2_20Hz_attributes['Range_3']['units'] = 'mm'
+		L2_20Hz_attributes['Range_3']['retracker'] = 3
+		L2_20Hz_attributes['Range_3']['hertz'] = 20
+		#-- Sea ice Floe height
+		L2_20Hz_attributes['Sea_Ice_Floe'] = {}
+		L2_20Hz_attributes['Sea_Ice_Floe']['long_name'] = 'Sea ice Floe height'
+		L2_20Hz_attributes['Sea_Ice_Floe']['description'] = ('Measured height '
+			'of the surface above the reference ellipsoid (WGS84) at the '
+			'coordinate location. This retracker is run over all surfaces not '
+			'discriminated as a sea-ice lead, not just over sea-ice floes.')
+		L2_20Hz_attributes['Sea_Ice_Floe']['units'] = 'mm'
+		L2_20Hz_attributes['Sea_Ice_Floe']['retracker'] = 3
+		L2_20Hz_attributes['Sea_Ice_Floe']['hertz'] = 20
+		#-- Sea ice lead height
+		L2_20Hz_attributes['Sea_Ice_Lead'] = {}
+		L2_20Hz_attributes['Sea_Ice_Lead']['long_name'] = 'Sea ice lead height'
+		L2_20Hz_attributes['Sea_Ice_Lead']['description'] = ('Measured height '
+			'of the surface above the reference ellipsoid (WGS84) at the '
+			'coordinate location. ')
+		L2_20Hz_attributes['Sea_Ice_Lead']['units'] = 'mm'
+		L2_20Hz_attributes['Sea_Ice_Lead']['retracker'] = 3
+		L2_20Hz_attributes['Sea_Ice_Lead']['hertz'] = 20
 	else:
 		#-- Measured elevation above ellipsoid from retracker
 		#-- packed units (mm, 1e-3 m)
@@ -671,13 +831,58 @@ def cryosat_L2_attributes(BASELINE):
 		'Format Specification" document')
 	L2_20Hz_attributes['Quality_flag']['hertz'] = 20
 
-	#-- Corrections Flag and Quality metrics for 3 retrackers with Baseline-C
+	#-- Corrections Flag and Quality metrics for 3 retrackers with Baseline-C,D
 	if (BASELINE == 'C'):
 		#-- Corrections Application Flag
 		L2_20Hz_attributes['Corrections_flag'] = {}
 		L2_20Hz_attributes['Corrections_flag']['long_name'] = ('Corrections '
 			'Application Flag')
 		L2_20Hz_attributes['Corrections_flag']['hertz'] = 20
+		#-- Quality metric for retracker 1
+		L2_20Hz_attributes['Quality_1'] = {}
+		L2_20Hz_attributes['Quality_1']['long_name'] = ('Quality metric for '
+			'retracker')
+		L2_20Hz_attributes['Quality_1']['retracker'] = 1
+		L2_20Hz_attributes['Quality_1']['hertz'] = 20
+		#-- Quality metric for retracker 2
+		L2_20Hz_attributes['Quality_2'] = {}
+		L2_20Hz_attributes['Quality_2']['long_name'] = ('Quality metric for '
+			'retracker')
+		L2_20Hz_attributes['Quality_2']['retracker'] = 2
+		L2_20Hz_attributes['Quality_2']['hertz'] = 20
+		#-- Quality metric for retracker 3
+		L2_20Hz_attributes['Quality_3'] = {}
+		L2_20Hz_attributes['Quality_3']['long_name'] = ('Quality metric for '
+			'retracker')
+		L2_20Hz_attributes['Quality_3']['retracker'] = 3
+		L2_20Hz_attributes['Quality_3']['hertz'] = 20
+	elif (BASELINE == 'D'):
+		#-- Corrections Application Flag
+		L2_20Hz_attributes['Corrections_flag'] = {}
+		L2_20Hz_attributes['Corrections_flag']['long_name'] = ('Corrections '
+			'Application Flag')
+		L2_20Hz_attributes['Corrections_flag']['hertz'] = 20
+		#-- Measurement mode
+		L2_20Hz_attributes['Measurement_Mode'] = {}
+		L2_20Hz_attributes['Measurement_Mode']['long_name'] = ('Instrument '
+			'measurement mode derived from configuration bits in L0')
+		L2_20Hz_attributes['Measurement_Mode']['flag_values'] = [1,2,3]
+		L2_20Hz_attributes['Measurement_Mode']['flag_meanings']='lrm sar sarin'
+		L2_20Hz_attributes['Measurement_Mode']['hertz'] = 20
+		#-- Surface Type
+		L2_20Hz_attributes['Surf_type'] = {}
+		L2_20Hz_attributes['Surf_type']['long_name'] = 'surface type from mask'
+		L2_20Hz_attributes['Surf_type']['description'] = ('A 4-state surface '
+			'type mask for Cryosat2 data for the surface type at the nadir '
+			'location. Computed by combining data from different sources: '
+			'GSHHG, GlobCover, MODIS Mosaic of Antarctica, and Water body '
+			'outlines from LEGOS')
+		L2_20Hz_attributes['Surf_type']['flag_values'] = [0,1,2,3]
+		L2_20Hz_attributes['Surf_type']['flag_meanings'] = ('ocean '
+			'lake_enclosed_sea ice land')
+		L2_20Hz_attributes['Surf_type']['source'] = ('GSHHG, GlobCover, '
+			'MODIS Mosaic of Antarctica, and Water body outlines from LEGOS')
+		L2_20Hz_attributes['Surf_type']['hertz'] = 20
 		#-- Quality metric for retracker 1
 		L2_20Hz_attributes['Quality_1'] = {}
 		L2_20Hz_attributes['Quality_1']['long_name'] = ('Quality metric for '

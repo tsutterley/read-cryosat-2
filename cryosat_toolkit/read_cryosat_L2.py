@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2.py
-Written by Tyler Sutterley (09/2019)
+Written by Tyler Sutterley (11/2019)
 
 Reads CryoSat Level-2 data products from baselines A, B and C
 Reads CryoSat Level-2 netCDF4 data products from baseline D
@@ -24,6 +24,7 @@ PYTHON DEPENDENCIES:
 	 	https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+Updated 11/2019: empty placeholder dictionary for baseline D DSD headers
 Updated 09/2019: added netCDF4 read function for baseline D
 	will output with same variable names and units as the binary read functions
 	output 20Hz data as masked arrays for all baselines
@@ -776,7 +777,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
 	CS_l2_mds['Data_20Hz'] = Data_20Hz
 
 	#-- extract global attributes and assign as MPH and SPH metadata
-	CS_l2_mds['METADATA'] = dict(MPH={},SPH={})
+	CS_l2_mds['METADATA'] = dict(MPH={},SPH={},DSD={})
 	#-- MPH attributes
 	CS_l2_mds['METADATA']['MPH']['PRODUCT'] = fid.product_name
 	CS_l2_mds['METADATA']['MPH']['DOI'] = fid.doi

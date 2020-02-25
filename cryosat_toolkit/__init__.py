@@ -1,3 +1,4 @@
+from cryosat_toolkit.calc_GPS_time import calc_GPS_time
 from cryosat_toolkit.read_cryosat_L1b import read_cryosat_L1b
 from cryosat_toolkit.read_cryosat_L2 import read_cryosat_L2
 from cryosat_toolkit.read_cryosat_L2I import read_cryosat_L2I

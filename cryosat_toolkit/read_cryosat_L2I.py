@@ -1687,6 +1687,271 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     #-- return the output dictionary
     return CS_L2I_mds
 
+#-- PURPOSE: Get scaling factors for converting unpacked units in binary files
+def cryosat_scaling_factors():
+    #-- dictionary of scale factors for CryoSat-2 variables
+    CS_l2i_scale = {}
+
+    #-- CryoSat-2 Location Group
+    #-- Time and Orbit Parameters plus Measurement Mode
+    CS_l2i_scale['Location'] = {}
+    #-- Time: day part
+    CS_l2i_scale['Location']['Day'] = 1.0
+    #-- Time: second part
+    CS_l2i_scale['Location']['Sec'] = 1.0
+    #-- Time: microsecond part
+    CS_l2i_scale['Location']['Micsec'] = 1.0
+    #-- USO correction factor
+    CS_l2i_scale['Location']['USO_Corr'] = 1.0
+    #-- Mode ID
+    CS_l2i_scale['Location']['Mode_ID'] = 1
+    #-- Source sequence counter
+    CS_l2i_scale['Location']['SSC'] = 1
+    #-- Instrument configuration
+    CS_l2i_scale['Location']['Inst_config'] = 1
+    #-- Record Counter
+    CS_l2i_scale['Location']['Rec_Count'] = 1
+    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    CS_l2i_scale['Location']['Lat'] = 1e-7
+    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    CS_l2i_scale['Location']['Lon'] = 1e-7
+    #-- Alt: packed units (mm, 1e-3 m)
+    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    CS_l2i_scale['Location']['Alt'] = 1e-3
+    #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
+    CS_l2i_scale['Location']['Alt_rate'] = 1e-3
+    #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
+    CS_l2i_scale['Location']['Sat_velocity'] = 1e-3
+    #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    CS_l2i_scale['Location']['Real_beam'] = 1e-6
+    #-- Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    CS_l2i_scale['Location']['Baseline'] = 1e-6
+    #-- Star Tracker ID
+    CS_l2i_scale['Location']['ST_ID'] = 1
+    CS_l2i_scale['Location']['Spare'] = 1
+    #-- Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    CS_l2i_scale['Location']['Roll'] = 1e-7
+    #-- Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    CS_l2i_scale['Location']['Pitch'] = 1e-7
+    #-- Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    CS_l2i_scale['Location']['Yaw'] = 1e-7
+    #-- Measurement Confidence Data
+    CS_l2i_scale['Location']['MCD'] = 1
+
+    #-- CryoSat-2 Measurement Group
+    #-- Derived from instrument measurement parameters
+    CS_l2i_scale['Data'] = {}
+    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['Elev_1'] = 1e-3
+    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['Elev_2'] = 1e-3
+    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['Elev_3'] = 1e-3
+    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    CS_l2i_scale['Data']['Sig0_1'] = 1e-2
+    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    CS_l2i_scale['Data']['Sig0_2'] = 1e-2
+    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    CS_l2i_scale['Data']['Sig0_3'] = 1e-2
+    #-- SWH packed units (mm, 1e-3)
+    CS_l2i_scale['Data']['SWH'] = 1e-3
+    #-- Peakiness: packed units (1e-2)
+    CS_l2i_scale['Data']['Peakiness'] = 1e-2
+    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['Range_1'] = 1e-3
+    #-- Retracked range correction for retracker 2: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['Range_2'] = 1e-3
+    #-- Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['Range_3'] = 1e-3
+    #-- Retracked sigma 0 correction for Retracker 1: packed units (1e-2 dB)
+    CS_l2i_scale['Data']['Retrack_1_sig0'] = 1e-2
+    #-- Retracked sigma 0 correction for Retracker 2: packed units (1e-2 dB)
+    CS_l2i_scale['Data']['Retrack_2_sig0'] = 1e-2
+    #-- Retracked sigma 0 correction for Retracker 3: packed units (1e-2 dB)
+    CS_l2i_scale['Data']['Retrack_3_sig0'] = 1e-2
+    #-- Retracker 1 quality metric
+    CS_l2i_scale['Data']['Quality_1'] = 1
+    #-- Retracker 2 quality metric
+    CS_l2i_scale['Data']['Quality_2'] = 1
+    #-- Retracker 3 quality metric
+    CS_l2i_scale['Data']['Quality_3'] = 1
+    #-- Retrackers 3-23 output
+    CS_l2i_scale['Data']['Retrack_3'] = 1
+    CS_l2i_scale['Data']['Retrack_4'] = 1
+    CS_l2i_scale['Data']['Retrack_5'] = 1
+    CS_l2i_scale['Data']['Retrack_6'] = 1
+    CS_l2i_scale['Data']['Retrack_7'] = 1
+    CS_l2i_scale['Data']['Retrack_8'] = 1
+    CS_l2i_scale['Data']['Retrack_9'] = 1
+    CS_l2i_scale['Data']['Retrack_10'] = 1
+    CS_l2i_scale['Data']['Retrack_11'] = 1
+    CS_l2i_scale['Data']['Retrack_12'] = 1
+    CS_l2i_scale['Data']['Retrack_13'] = 1
+    CS_l2i_scale['Data']['Retrack_14'] = 1
+    CS_l2i_scale['Data']['Retrack_15'] = 1
+    CS_l2i_scale['Data']['Retrack_16'] = 1
+    CS_l2i_scale['Data']['Retrack_17'] = 1
+    CS_l2i_scale['Data']['Retrack_18'] = 1
+    CS_l2i_scale['Data']['Retrack_19'] = 1
+    CS_l2i_scale['Data']['Retrack_20'] = 1
+    CS_l2i_scale['Data']['Retrack_21'] = 1
+    CS_l2i_scale['Data']['Retrack_22'] = 1
+    CS_l2i_scale['Data']['Retrack_23'] = 1
+    #-- Power echo shape parameter: packed units (dB/100)
+    CS_l2i_scale['Data']['echo_shape'] = 1e-2
+    #-- Beam behaviour parameter: unitless code number related to
+    #-- surface characteristics
+    CS_l2i_scale['Data']['BB_parameter'] = 1
+    #-- Cross track angle: packed units (micro radians)
+    CS_l2i_scale['Data']['X_Track_Angle'] = 1e-6
+    #-- Cross track angle correction: packed units (micro radians)
+    CS_l2i_scale['Data']['X_Track_Angle_c'] = 1e-6
+    #-- Leading edge coherence at retrack point 1/1000
+    CS_l2i_scale['Data']['Coherence'] = 1e-3
+    #-- Interpolated Ocean Height: packed units (mm above ellipsoid)
+    CS_l2i_scale['Data']['Ocean_ht'] = 1e-3
+    #-- Freeboard: packed units (mm, 1e-3 m)
+    #-- -9999 default value indicates computation has not been performed
+    CS_l2i_scale['Data']['Freeboard'] = 1e-3
+    #-- Surface Height Anomaly: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['SHA'] = 1e-3
+    #-- Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['SSHA_interp'] = 1e-3
+    #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Data']['SSHA_interp_RMS'] = 1e-3
+    #-- Number of forward records interpolated
+    CS_l2i_scale['Data']['SSHA_interp_count_fwd'] = np.zeros((n_records),dtype=np.uint16)
+    #-- Number of backward records interpolated
+    CS_l2i_scale['Data']['SSHA_interp_count_bkwd'] = np.zeros((n_records),dtype=np.uint16)
+    #-- Distance in time of most forward record interpolated (milli-seconds)
+    CS_l2i_scale['Data']['SSHA_interp_time_fwd'] = np.zeros((n_records),dtype=np.uint16)
+    #-- Distance in time of most backward record interpolated (milli-seconds)
+    CS_l2i_scale['Data']['SSHA_interp_time_bkwd'] = np.zeros((n_records),dtype=np.uint16)
+    #-- Interpolation error flag
+    CS_l2i_scale['Data']['SSHA_interp_flag'] = np.zeros((n_records),dtype=np.uint16)
+    #-- Measurement mode
+    CS_l2i_scale['Data']['Measurement_Mode'] = np.zeros((n_records),dtype=np.uint32)
+    #-- Quality flags
+    CS_l2i_scale['Data']['Quality_flag'] = np.zeros((n_records),dtype=np.uint32)
+    #-- Retracker flags
+    CS_l2i_scale['Data']['Retracker_flag'] = np.zeros((n_records),dtype=np.uint32)
+    #-- Height calculation details
+    #-- Specifies what was applied during the height calculation
+    CS_l2i_scale['Data']['Height_status'] = np.zeros((n_records),dtype=np.uint32)
+    #-- SAR freeboard status flag
+    CS_l2i_scale['Data']['Freeboard_status'] = np.zeros((n_records),dtype=np.uint32)
+    #-- Number of averaged echoes or beams
+    CS_l2i_scale['Data']['N_avg'] = np.zeros((n_records),dtype=np.uint16)
+    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    CS_l2i_scale['Data']['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['Spares1'] = np.zeros((n_records,3),dtype=np.int32)
+
+    #-- CryoSat-2 Auxiliary Data Group
+    CS_l2i_scale['Auxiliary'] = {}
+    #-- Ice Concentration packed units (%/1000)
+    CS_l2i_scale['Auxiliary']['Ice_conc'] = 1e-3
+    #-- Snow Depth packed units (mm, 1e-3 m)
+    CS_l2i_scale['Auxiliary']['Snow_depth'] = 1e-3
+    #-- Snow Density packed units (kg/m^3)
+    CS_l2i_scale['Auxiliary']['Snow_density'] = 1.0
+    #-- Discriminator result
+    CS_l2i_scale['Auxiliary']['Discriminator'] = 1
+    #-- SARin discriminator parameters 1-10
+    CS_l2i_scale['Auxiliary']['SARIN_disc_1'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_2'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_3'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_4'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_5'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_6'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_7'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_8'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_9'] = 1
+    CS_l2i_scale['Auxiliary']['SARIN_disc_10'] = 1
+    #-- Discriminator flags
+    CS_l2i_scale['Auxiliary']['Discrim_flag'] = 1
+    #-- Slope model correction (Attitude of echo in micro-degrees)
+    CS_l2i_scale['Auxiliary']['Attitude'] = 1e-6
+    #-- Slope model correction (Azimuth of echo in micro-degrees)
+    CS_l2i_scale['Auxiliary']['Azimuth'] = 1e-6
+    #-- Slope doppler correction (mm)
+    CS_l2i_scale['Auxiliary']['Slope_doppler'] = 1e-3
+    #-- The original latitude of the satellite (micro-degrees)
+    CS_l2i_scale['Auxiliary']['Lat_sat'] = 1e-6
+    #-- The original longitude of the satellite (micro-degrees)
+    CS_l2i_scale['Auxiliary']['Lon_sat'] = 1e-6
+    #-- Ambiguity indicator
+    CS_l2i_scale['Auxiliary']['Ambiguity'] = 1
+    #-- Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Auxiliary']['MSS_model'] = 1e-3
+    #-- Geoid standard Model: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Auxiliary']['Geoid_model'] = 1e-3
+    #-- ODLE standard Model: packed units (mm, 1e-3 m)
+    CS_l2i_scale['Auxiliary']['ODLE'] = 1e-3
+    #-- The interpolated elevation value obtained from the DEM (mm)
+    CS_l2i_scale['Auxiliary']['DEM_elev'] = 1e-3
+    #-- Identification of DEM used in SARin ambiguity test
+    CS_l2i_scale['Auxiliary']['DEM_ID'] = 1
+    CS_l2i_scale['Auxiliary']['Spares2'] = 1
+
+    #-- CryoSat-2 External Corrections Group
+    CS_l2i_scale['Geometry'] = {}
+    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['dryTrop'] = 1e-3
+    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['wetTrop'] = 1e-3
+    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['InvBar'] = 1e-3
+    #-- Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['DAC'] = 1e-3
+    #-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['Iono_GIM'] = 1e-3
+    #-- Model Ionospheric Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['Iono_model'] = 1e-3
+    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['ocTideElv'] = 1e-3
+    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['lpeTideElv'] = 1e-3
+    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['olTideElv'] = 1e-3
+    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['seTideElv'] = 1e-3
+    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['gpTideElv'] = 1e-3
+    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    CS_l2i_scale['Geometry']['Surf_type'] = 1
+    #-- Corrections Status Flag
+    CS_l2i_scale['Geometry']['Corr_status'] = 1
+    #-- Correction Error Flag
+    CS_l2i_scale['Geometry']['Corr_error'] = 1
+    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    CS_l2i_scale['Geometry']['SSB'] = 1e-3
+    CS_l2i_scale['Geometry']['Spares3'] = 1
+
+    #-- CryoSat-2 Internal Corrections Group
+    CS_l2i_scale['Instrumental'] = {}
+    #-- Doppler range correction: Radial + slope (mm)
+    CS_l2i_scale['Instrumental']['Doppler_range'] = 1e-3
+    #-- Instrument Range Correction: t-r antenna (mm)
+    CS_l2i_scale['Instrumental']['TR_inst_range'] = 1e-3
+    #-- Instrument Range Correction: r-only antenna (mm)
+    CS_l2i_scale['Instrumental']['R_inst_range'] = 1e-3
+    #-- Instrument Sigma 0 Correction: t-r antenna (dB/100)
+    CS_l2i_scale['Instrumental']['TR_inst_gain'] = 1e-2
+    #-- Instrument Sigma 0 Correction: r-only (dB/100)
+    CS_l2i_scale['Instrumental']['R_inst_gain'] = 1e-2
+    #-- Internal Phase Correction (milli-radians)
+    CS_l2i_scale['Instrumental']['Internal_phase'] = 1e-3
+    #-- External Phase Correction (milli-radians)
+    CS_l2i_scale['Instrumental']['External_phase'] = 1e-3
+    #-- Noise Power measurement
+    CS_l2i_scale['Instrumental']['Noise_power'] = 1
+    #-- Phase slope correction (microradians)
+    CS_l2i_scale['Instrumental']['Phase_slope'] = 1e-6
+    CS_l2i_scale['Instrumental']['Spares4'] = 1
+
+    #-- return the scaling factors
+    return CS_l2i_scale
+
 #-- PURPOSE: Read ASCII Main Product Header (MPH) block from an ESA PDS file
 def read_MPH(full_filename):
     #-- read input data file

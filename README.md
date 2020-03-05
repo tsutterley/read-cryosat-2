@@ -104,6 +104,8 @@ The program homepage is:
 https://github.com/tsutterley/read-cryosat-2   
 A zip archive of the latest version is available directly at:    
 https://github.com/tsutterley/read-cryosat-2/archive/master.zip  
+Incorporated into the UW-APL pointCollection repository at:  
+https://github.com/SmithB/pointCollection  
 
 #### Disclaimer  
 This program is not sponsored or maintained by the Universities Space Research Association (USRA), the European Space Agency (ESA) or NASA.  It is provided here for your convenience but _with no guarantees whatsoever_.  

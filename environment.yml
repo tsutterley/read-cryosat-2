@@ -1,0 +1,17 @@
+name: example-environment
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.6
+  - notebook
+  - numpy
+  - scipy
+  - h5py
+  - netCDF4
+  - gdal
+  - fiona
+  - geopandas
+  - shapely
+  - pyproj
+  - future
+  - lxml

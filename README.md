@@ -1,6 +1,11 @@
 read-cryosat-2
 ==============
 
+[![Language](https://img.shields.io/badge/python-v3.7-green.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tsutterley/read-cryosat-2/blob/master/LICENSE)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tsutterley/read-cryosat-2/master)
+[![Binder](https://binder.pangeo.io/badge.svg)](https://binder.pangeo.io/v2/gh/tsutterley/read-cryosat-2/master)
+
 Python tools to read waveform and geolocated elevation data from the ESA CryoSat-2 mission and write to HDF5
 
 - [How to access CryoSat-2 data](https://earth.esa.int/web/guest/-/how-to-access-cryosat-data-6842)  
@@ -13,8 +18,9 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 #### `esa_cryosat_ftp.py`
 Program to sync Cryosat-2 Elevation products from the ESA ftp data dissemination server.  
 Will sync all available CryoSat-2 data for a given product and set of years  
+Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)  
 ```bash
-python esa_cryosat_ftp.py --baseline=C --user=<username> --year=2010,2011 SIR_SIN_L2
+python esa_cryosat_ftp.py --baseline=D --user=<username> --year=2011 SIR_SIN_L2
 ```
 where `<username>` is your ESA data dissemination server username  
 your ESA data dissemination password will be entered from the command-line within the program  
@@ -22,9 +28,11 @@ your ESA data dissemination password will be entered from the command-line withi
 #### `esa_cryosat_sync.py`
 Program to sync Cryosat-2 Elevation products from the ESA https Science Server.  
 Will sync all available CryoSat-2 data for a given product and set of years  
+Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)  
 ```bash
-python esa_cryosat_sync.py --baseline=C --year=2010,2011 SIR_SIN_L2
+python esa_cryosat_sync.py --baseline=D --year=2011 SIR_SIN_L2
 ```
+**NOTE:** CryoSat-2 server without javascript rendering seems to be presently offline.  Use the ftp sync program.    
 
 ##### `read_cryosat_L1b.py`
 Program to read Level-1B CryoSat waveform data into a python environment.  

@@ -5,3 +5,6 @@ from cryosat_toolkit.read_cryosat_L2I import read_cryosat_L2I
 from cryosat_toolkit.HDF5_cryosat_L1b import HDF5_cryosat_L1b
 from cryosat_toolkit.HDF5_cryosat_L2 import HDF5_cryosat_L2
 from cryosat_toolkit.HDF5_cryosat_L2I import HDF5_cryosat_L2I
+from cryosat_toolkit.read_shapefile import read_shapefile
+from cryosat_toolkit.read_kml_file import read_kml_file
+from cryosat_toolkit.read_geojson_file import read_geojson_file

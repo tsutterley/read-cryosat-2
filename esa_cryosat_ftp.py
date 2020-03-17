@@ -53,6 +53,7 @@ PYTHON DEPENDENCIES:
 
 UPDATE HISTORY:
     Updated 03/2020: add spatial subsetting to reduce files to sync
+        increase ftplib timeout to prevent connection drops
     Updated 02/2020: convert from hard to soft tabulation
     Updated 08/2019: include baseline in regular expression patterns
     Updated 06/2018: using python3 compatible octal and input
@@ -157,7 +158,7 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
     USER='', PASSWORD='', BBOX=None, POLYGON=None, LOG=False, LIST=False,
     MODE=None, CLOBBER=False):
     #-- connect and login to ESA ftp server
-    f = ftplib.FTP('science-pds.cryosat.esa.int')
+    f = ftplib.FTP('science-pds.cryosat.esa.int', timeout=360)
     f.login(USER, PASSWORD)
     #-- compile xml parser for lxml
     XMLparser = lxml.etree.XMLParser()

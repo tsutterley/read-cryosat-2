@@ -9,7 +9,6 @@
 *.pyc
 *.m~
 *.m~~
- 
 # Packages #
 ############
 *.7z
@@ -20,7 +19,6 @@
 *.rar
 *.tar
 *.zip
- 
 # Logs and databases #
 ######################
 *.log
@@ -30,7 +28,13 @@
 *.gmtdefaults4
 .RData
 .Rhistory
-
+__pycache__
+build/
+develop-eggs/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 # OS generated files #
 ######################
 .DS_Store
@@ -40,7 +44,6 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
-
 # LaTeX and Vim #
 ######################
 *.aux
@@ -72,3 +75,8 @@ Thumbs.db
 *.mtc0
 *.sw*
 *.hidden
+None*.png
+# Jupyter Checkpoints #
+#######################
+.ipynb_checkpoints
+Untitled.ipynb

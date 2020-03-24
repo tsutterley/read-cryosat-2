@@ -3,6 +3,7 @@ read-cryosat-2
 
 [![Language](https://img.shields.io/badge/python-v3.7-green.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tsutterley/read-cryosat-2/blob/master/LICENSE)
+[![Documentation Status](https://readthedocs.org/projects/read-cryosat-2/badge/?version=latest)](https://read-cryosat-2.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tsutterley/read-cryosat-2/master)
 [![Binder](https://binder.pangeo.io/badge.svg)](https://binder.pangeo.io/v2/gh/tsutterley/read-cryosat-2/master)
 
@@ -15,95 +16,29 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 - [CryoSat-2 Baseline C Improvements](https://earth.esa.int/documents/10174/1773005/C2-Evolution-BaselineC-Level2-V3)  
 - [CryoSat-2 Baseline D Improvements](https://earth.esa.int/documents/10174/1773005/CryoSat-Baseline-D-Evolutions.pdf)  
 
-#### `esa_cryosat_ftp.py`
-Program to sync Cryosat-2 Elevation products from the ESA ftp data dissemination server.  
-Will sync all available CryoSat-2 data for a given product and set of years  
-Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)  
-```bash
-python esa_cryosat_ftp.py --baseline=D --user=<username> --year=2011 SIR_SIN_L2
-```
-where `<username>` is your ESA data dissemination server username  
-your ESA data dissemination password will be entered from the command-line within the program  
-
-#### `esa_cryosat_sync.py`
-Program to sync Cryosat-2 Elevation products from the ESA https Science Server.  
-Will sync all available CryoSat-2 data for a given product and set of years  
-Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)  
-```bash
-python esa_cryosat_sync.py --baseline=D --year=2011 SIR_SIN_L2
-```
-**NOTE:** CryoSat-2 server without javascript rendering seems to be presently offline.  Use the ftp sync program.    
-
-##### `read_cryosat_L1b.py`
-Program to read Level-1B CryoSat waveform data into a python environment.  
-Level-1B waveform data for Baselines A, B and C come as packed [Payload Data System (PDS) files](https://earth.esa.int/documents/10174/125273/CryoSat_L1_Products_Format_Specification).  
-Level-1B data for Baseline D comes as [netCDF4 files](https://earth.esa.int/documents/10174/125272/CryoSat-Baseline-D-Product-Handbook).  
-Units for each variable will match the original files.  
-```python
-import cryosat_toolkit.read_cryosat_L1b as read_cryosat_L1b
-CS_L1b_mds = read_cryosat_L1b(full_filename)
-```
-
-##### `HDF5_cryosat_L1b.py`
-Program to write Level-1B CryoSat waveform data into HDF5 files.  
-Units for each variable should match the original SDS files.  
-```python
-import cryosat_toolkit.read_cryosat_L1b as read_cryosat_L1b
-import cryosat_toolkit.HDF5_cryosat_L1b as HDF5_cryosat_L1b
-MODE = 'SIN'
-BASELINE = 'C'
-CS_L1b_mds = read_cryosat_L1b(full_filename)
-HDF5_cryosat_L1b(CS_L1b_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
-```
-
-##### `read_cryosat_L2.py`
-Program to read Level-2 CryoSat elevation data into a python environment.  
-Level-2 data for Baselines A, B and C come as packed [Payload Data System (PDS) files](https://earth.esa.int/documents/10174/125273/CryoSat_L2_Products_Format_Specification).  
-Level-2 data for Baseline D comes as [netCDF4 files](https://earth.esa.int/documents/10174/125272/CryoSat-Baseline-D-Product-Handbook).  
-Units for each variable will match the original files.  
-```python
-import cryosat_toolkit.read_cryosat_L2 as read_cryosat_L2
-CS_L2_mds = read_cryosat_L2(full_filename)
-```
-
-##### `HDF5_cryosat_L2.py`
-Program to write Level-2 CryoSat elevation data into HDF5 files.  
-Units for each variable should match the original SDS files.  
-```python
-import cryosat_toolkit.read_cryosat_L2 as read_cryosat_L2
-import cryosat_toolkit.HDF5_cryosat_L2 as HDF5_cryosat_L2
-BASELINE = 'C'
-CS_L2_mds = read_cryosat_L2(full_filename)
-HDF5_cryosat_L2(CS_L2_mds, BASELINE, FILENAME=full_HDF5_filename)
-```
-
-##### `read_cryosat_L2I.py`
-Program to read Level-2 Intermediate CryoSat data into a python environment.  
-Level-2I data for Baselines A, B and C come as packed [Payload Data System (PDS) files](https://earth.esa.int/documents/10174/125273/CryoSat_L2_Products_Format_Specification).  
-Level-2I data for Baseline D comes as [netCDF4 files](https://earth.esa.int/documents/10174/125272/CryoSat-Baseline-D-Product-Handbook).  
-Units for each variable will match the original files.  
-```python
-import cryosat_toolkit.read_cryosat_L2I as read_cryosat_L2I
-CS_L2I_mds = read_cryosat_L2I(full_filename)
-```
-
-##### `HDF5_cryosat_L2I.py`
-Program to write Level-2 Intermediate CryoSat data into HDF5 files.  
-Units for each variable should match the original SDS files.  
-```python
-import cryosat_toolkit.read_cryosat_L2I as read_cryosat_L2I
-import cryosat_toolkit.HDF5_cryosat_L2I as HDF5_cryosat_L2I
-MODE = 'SIN'
-BASELINE = 'C'
-CS_L2I_mds = read_cryosat_L2I(full_filename)
-HDF5_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
-```
+#### Programs
+- [`esa_cryosat_ftp.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/esa_cryosat_ftp.md): Syncs CryoSat-2 Elevation products from the ESA ftp data dissemination server   
+- [`esa_cryosat_sync.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/esa_cryosat_sync.md): Syncs CryoSat-2 Elevation products from the ESA https Science Server
+- [`read_cryosat_L1b.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_cryosat_L1b.md): Reads Level-1B CryoSat waveform data into a python environment  
+- [`HDF5_cryosat_L1b.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/HDF5_cryosat_L1b.md): Writes Level-1B CryoSat waveform data into HDF5 files  
+- [`read_cryosat_L2.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_cryosat_L2.md): Reads Level-2 CryoSat elevation data into a python environment  
+- [`HDF5_cryosat_L2.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/HDF5_cryosat_L2.md): Writes Level-2 CryoSat elevation data into HDF5 files  
+- [`read_cryosat_L2I.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_cryosat_L2I.md): Reads Level-2 Intermediate CryoSat data into a python environment  
+- [`HDF5_cryosat_L2I.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/HDF5_cryosat_L2I.md): Writes Level-2 Intermediate CryoSat data into HDF5 files  
+- [`read_geojson_file.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_geojson_file.md): Reads polygons from GeoJSON files  
+- [`read_kml_file.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_kml_file.md): Reads polygons from keyhole markup language files  
+- [`read_shapefile.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_shapefile.md): Reads polygons from ESRI shapefiles  
 
 #### Dependencies
 - [numpy: Scientific Computing Tools For Python](http://www.numpy.org)  
 - [scipy: Scientific Tools for Python](http://www.scipy.org/)  
 - [h5py: Python interface for Hierarchal Data Format 5 (HDF5)](http://h5py.org)  
 - [netCDF4: Python interface to the netCDF C library](https://unidata.github.io/netcdf4-python/netCDF4/index.html)  
+- [gdal: Pythonic interface to the Geospatial Data Abstraction Library (GDAL)](https://pypi.python.org/pypi/GDAL)  
+- [shapely: PostGIS-ish operations outside a database context for Python](http://toblerity.org/shapely/index.html)  
+- [fiona: Python wrapper for vector data access functions from the OGR library](https://fiona.readthedocs.io/en/latest/manual.html)  
+- [geopandas: Python tools for geographic data](http://geopandas.readthedocs.io/)  
+- [pyproj: Python interface to PROJ library](https://pypi.org/project/pyproj/)  
 - [future: Compatibility layer between Python 2 and Python 3](http://python-future.org/)  
 - [lxml: processing XML and HTML in Python](https://pypi.python.org/pypi/lxml)  
 

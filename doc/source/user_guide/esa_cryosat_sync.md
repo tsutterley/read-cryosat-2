@@ -10,6 +10,7 @@ Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJ
 python esa_cryosat_sync.py --baseline=D --year=2011 SIR_SIN_L2
 ```
 **NOTE:** CryoSat-2 server without javascript rendering seems to be presently offline.  Use the ftp sync program.    
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/esa_cryosat_sync.py)  
 
 #### Inputs
  1. CryoSat-2 product to sync with ESA servers

@@ -158,7 +158,7 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
     USER='', PASSWORD='', BBOX=None, POLYGON=None, LOG=False, LIST=False,
     MODE=None, CLOBBER=False):
     #-- connect and login to ESA ftp server
-    f = ftplib.FTP('science-pds.cryosat.esa.int', timeout=360)
+    f = ftplib.FTP('science-pds.cryosat.esa.int', timeout=3600)
     f.login(USER, PASSWORD)
     #-- compile xml parser for lxml
     XMLparser = lxml.etree.XMLParser()

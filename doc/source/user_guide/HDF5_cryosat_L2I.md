@@ -14,6 +14,7 @@ BASELINE = 'C'
 CS_L2I_mds = read_cryosat_L2I(full_filename)
 HDF5_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
 ```
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/cryosat_toolkit/HDF5_cryosat_L2I.py)  
 
 #### Inputs
  1. `CS_L2I_mds`: Python dictionary with groups

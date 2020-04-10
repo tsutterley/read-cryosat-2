@@ -11,6 +11,7 @@ python esa_cryosat_ftp.py --baseline=D --user=<username> --year=2011 SIR_SIN_L2
 ```
 where `<username>` is your ESA data dissemination server username  
 your ESA data dissemination password will be entered from the command-line within the program  
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/esa_cryosat_ftp.py)  
 
 #### Inputs
  1. CryoSat-2 product to sync with ESA servers

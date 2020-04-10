@@ -11,6 +11,7 @@ read_cryosat_L2I.py
 import cryosat_toolkit.read_cryosat_L2I as read_cryosat_L2I
 CS_L2I_mds = read_cryosat_L2I(full_filename)
 ```
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/cryosat_toolkit/read_cryosat_L2I.py)  
 
 #### Inputs
  - `full_filename`: full path of CryoSat .DBL or .nc file

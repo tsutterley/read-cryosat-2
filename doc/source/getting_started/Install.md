@@ -1,5 +1,5 @@
-Install
-=======
+Installation
+============
 
 Presently read-cryosat-2 is only available for use as a [github repository](https://github.com/tsutterley/read-cryosat-2).
 The contents of the repository can be download as a [zipped file](https://github.com/tsutterley/read-cryosat-2/archive/master.zip)  or cloned.

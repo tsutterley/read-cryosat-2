@@ -24,9 +24,9 @@ OPTIONS:
     ATTRIBUTES (read_HDF5_cryosat_L1b): input variable attributes from HDF5 file
 
 PYTHON DEPENDENCIES:
-    numpy: Scientific Computing Tools For Python (http://www.numpy.org)
+    numpy: Scientific Computing Tools For Python (https://numpy.org)
     h5py: Python interface for Hierarchal Data Format 5 (HDF5)
-        (http://h5py.org)
+        (https://www.h5py.org/)
 
 UPDATE HISTORY:
     Updated 02/2020: convert from hard to soft tabulation

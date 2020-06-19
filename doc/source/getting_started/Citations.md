@@ -13,8 +13,8 @@ Altimetry Data from ICESat and CryoSat-2". *Remote Sensing*, 10(11): 1817, 2018.
 
 #### Dependencies
 This software is also dependent on other commonly used Python packages:
-- [numpy: Scientific Computing Tools For Python](http://www.numpy.org)  
-- [scipy: Scientific Tools for Python](http://www.scipy.org/)  
+- [numpy: Scientific Computing Tools For Python](https://numpy.org)  
+- [scipy: Scientific Tools for Python](https://docs.scipy.org/doc//)  
 - [h5py: Python interface for Hierarchal Data Format 5 (HDF5)](http://h5py.org)  
 - [netCDF4: Python interface to the netCDF C library](https://unidata.github.io/netcdf4-python/netCDF4/index.html)  
 - [gdal: Pythonic interface to the Geospatial Data Abstraction Library (GDAL)](https://pypi.python.org/pypi/GDAL)  

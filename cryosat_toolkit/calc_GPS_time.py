@@ -13,7 +13,7 @@ INPUTS:
     micsec: microseconds portion of date variable
 
 PYTHON DEPENDENCIES:
-    numpy: Scientific Computing Tools For Python (http://www.numpy.org)
+    numpy: Scientific Computing Tools For Python (https://numpy.org)
 
 UPDATE HISTORY:
     Written 10/2017

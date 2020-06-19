@@ -16,8 +16,8 @@ OPTIONS:
 
 PYTHON DEPENDENCIES:
     numpy: Scientific Computing Tools For Python
-        http://www.numpy.org
-        http://www.scipy.org/NumPy_for_Matlab_Users
+        https://numpy.org
+        https://numpy.org/doc/stable/user/numpy-for-matlab-users.html
     fiona: Python wrapper for vector data access functions from the OGR library
         https://fiona.readthedocs.io/en/latest/manual.html
     geopandas: Python tools for geographic data

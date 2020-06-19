@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2.py
-Written by Tyler Sutterley (02/2020)
+Written by Tyler Sutterley (06/2020)
 
 Reads CryoSat Level-2 data products from baselines A, B and C
 Reads CryoSat Level-2 netCDF4 data products from baseline D
@@ -18,12 +18,13 @@ OUTPUTS:
 
 PYTHON DEPENDENCIES:
     numpy: Scientific Computing Tools For Python
-        http://www.numpy.org
-        http://www.scipy.org/NumPy_for_Matlab_Users
+        https://numpy.org
+        https://numpy.org/doc/stable/user/numpy-for-matlab-users.html
     netCDF4: Python interface to the netCDF C library
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 06/2020: patch error in CryoSat-2 GDR pointer variables
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
         add scale factors function for converting packed units in binary files
         convert from hard to soft tabulation
@@ -512,8 +513,10 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     #-- use original unscaled units unless UNPACK=True
     fid.set_auto_scale(UNPACK)
     #-- get dimensions
-    n_records, = fid.variables['time_cor_01'].shape
     time_cor_01 = fid.variables['time_cor_01'][:].copy()
+    time_20_ku = fid.variables['time_20_ku'][:].copy()
+    n_records, = time_cor_01.shape
+    n_blocks = 20
     #-- CryoSat-2 1 Hz data fields (Location Group)
     #-- Time and Orbit Parameters plus Measurement Mode
     Data_1Hz = {}
@@ -595,12 +598,10 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
 
     #-- CryoSat-2 20 Hz data fields (Measurement Group)
     #-- Derived from instrument measurement parameters
-    n_blocks = 20
     Data_20Hz = {}
     #-- Time (seconds since 2000-01-01)
     Data_20Hz['Time'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Time'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
-    time_20_ku = fid.variables['time_20_ku'][:].copy()
     #-- Delta between the timestamps for 20Hz record and the 1Hz record
     #-- D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks))
@@ -709,12 +710,26 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     Data_20Hz['Quality_3'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Quality_3'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
     retracker_3_quality_20_ku = fid.variables['retracker_3_quality_20_ku'][:].copy()
-    #-- for each record in the CryoSat file
+
+    #-- find valid records in the CryoSat file
+    #-- GDR data can have indices pointing outside the file
+    #-- reduce to records within the file
+    num_valid_01 = np.zeros((n_records),dtype=np.int)
     for r in range(n_records):
         #-- index for record r
         idx = fid.variables['ind_first_meas_20hz_01'][r].copy()
         #-- number of valid blocks in record r
         cnt = np.copy(fid.variables['num_valid_01'][r])
+        #-- set number of blocks to valid 20Hz measurements within file
+        num_valid_01[r] = np.min([cnt,len(time_20_ku)-(idx+cnt)])
+
+    #-- for each valid record in the CryoSat file
+    valid_indices, = np.nonzero(num_valid_01 > 0)
+    for r in valid_indices:
+        #-- index for record r
+        idx = fid.variables['ind_first_meas_20hz_01'][r].copy()
+        #-- number of valid blocks in record r
+        cnt = np.copy(num_valid_01[r])
         #-- CryoSat-2 Measurements Group for record r
         Data_20Hz['Time'].data[r,:cnt] = time_20_ku[idx:idx+cnt].copy()
         Data_20Hz['Time'].mask[r,:cnt] = False

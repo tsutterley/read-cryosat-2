@@ -1,4 +1,4 @@
-name: example-environment
+name: read-cryosat-2
 channels:
   - conda-forge
 dependencies:

@@ -30,8 +30,8 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 - [`read_shapefile.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_shapefile.md): Reads polygons from ESRI shapefiles  
 
 #### Dependencies
-- [numpy: Scientific Computing Tools For Python](http://www.numpy.org)  
-- [scipy: Scientific Tools for Python](http://www.scipy.org/)  
+- [numpy: Scientific Computing Tools For Python](https://numpy.org)  
+- [scipy: Scientific Tools for Python](https://docs.scipy.org/doc//)  
 - [h5py: Python interface for Hierarchal Data Format 5 (HDF5)](http://h5py.org)  
 - [netCDF4: Python interface to the netCDF C library](https://unidata.github.io/netcdf4-python/netCDF4/index.html)  
 - [gdal: Pythonic interface to the Geospatial Data Abstraction Library (GDAL)](https://pypi.python.org/pypi/GDAL)  

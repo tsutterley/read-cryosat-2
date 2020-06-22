@@ -25,6 +25,7 @@ PYTHON DEPENDENCIES:
 
 UPDATE HISTORY:
     Updated 06/2020: patch error in CryoSat-2 GDR pointer variables
+        using the 1Hz mapping variable ind_meas_1hz_20_ku to remap the index
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
         add scale factors function for converting packed units in binary files
         convert from hard to soft tabulation
@@ -711,25 +712,20 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     Data_20Hz['Quality_3'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
     retracker_3_quality_20_ku = fid.variables['retracker_3_quality_20_ku'][:].copy()
 
-    #-- find valid records in the CryoSat file
+    #-- remap ind_first_meas_20hz_01 for the CryoSat file
     #-- GDR data can have indices pointing outside the file
-    #-- reduce to records within the file
-    num_valid_01 = np.zeros((n_records),dtype=np.int)
+    #-- use the 1Hz mapping variable ind_meas_1hz_20_ku to recalculate the index
+    ind_meas_1hz_20_ku = fid.variables['ind_meas_1hz_20_ku'][:].copy()
+    ind_first_meas_20hz_01 = np.zeros((n_records),dtype=np.int)
+    #-- for each record in the CryoSat file
     for r in range(n_records):
+        #-- GDR data are incorrectly mapped between the 20Hz and 1Hz variables
+        ind_first_meas_20hz_01[r] = (ind_meas_1hz_20_ku == r).argmax()
         #-- index for record r
-        idx = fid.variables['ind_first_meas_20hz_01'][r].copy()
+        # idx = fid.variables['ind_first_meas_20hz_01'][r].copy()
+        idx = ind_first_meas_20hz_01[r].copy()
         #-- number of valid blocks in record r
         cnt = np.copy(fid.variables['num_valid_01'][r])
-        #-- set number of blocks to valid 20Hz measurements within file
-        num_valid_01[r] = np.min([cnt,len(time_20_ku)-(idx+cnt)])
-
-    #-- for each valid record in the CryoSat file
-    valid_indices, = np.nonzero(num_valid_01 > 0)
-    for r in valid_indices:
-        #-- index for record r
-        idx = fid.variables['ind_first_meas_20hz_01'][r].copy()
-        #-- number of valid blocks in record r
-        cnt = np.copy(num_valid_01[r])
         #-- CryoSat-2 Measurements Group for record r
         Data_20Hz['Time'].data[r,:cnt] = time_20_ku[idx:idx+cnt].copy()
         Data_20Hz['Time'].mask[r,:cnt] = False

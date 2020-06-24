@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_sync.py
-Written by Tyler Sutterley (03/2020)
+Written by Tyler Sutterley (06/2020)
 
 This program syncs Cryosat Elevation products
 From the ESA CryoSat-2 Science Server:
@@ -50,6 +50,7 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 06/2020: use json to decode API output
     Updated 03/2020: add spatial subsetting to reduce files to sync
     Updated 02/2020: convert from hard to soft tabulation
     Updated 09/2019: increase urlopen timeout. place regex compilations together
@@ -60,7 +61,6 @@ UPDATE HISTORY:
     Updated 05/2018 for public release.
     Updated 05/2017: exception if ESA Cryosat-2 credentials weren't entered
         using os.makedirs to recursively create directories
-        using getpass to enter server password securely (remove --password)
     Updated 04/2017: minor changes to check_connection function to use ftplib
         updated regular expression for months to include year of interest
     Updated 02/2017: switching username and password to login command
@@ -72,9 +72,10 @@ import sys
 import re
 import os
 import ssl
-import shutil
+import json
 import getopt
-import getpass
+import shutil
+import base64
 import builtins
 import posixpath
 import lxml.etree
@@ -84,8 +85,12 @@ from cryosat_toolkit.read_shapefile import read_shapefile
 from cryosat_toolkit.read_kml_file import read_kml_file
 from cryosat_toolkit.read_geojson_file import read_geojson_file
 if sys.version_info[0] == 2:
+    from cookielib import CookieJar
+    from urllib import urlencode
     import urllib2
 else:
+    from http.cookiejar import CookieJar
+    from urllib.parse import urlencode
     import urllib.request as urllib2
 
 #-- PURPOSE: check internet connection
@@ -174,12 +179,22 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
         fid1 = sys.stdout
 
     #-- CryoSat-2 Science Server url [sic Cry0Sat2_data]
-    HOST = posixpath.join('https://science-pds.cryosat.esa.int','Cry0Sat2_data')
-    #-- compile HTML and xml parsers for lxml
-    HTMLparser = lxml.etree.HTMLParser()
+    #-- static site is no longer available
+    HOST = posixpath.join('https://science-pds.cryosat.esa.int')
+    #-- compile xml parsers for lxml
     XMLparser = lxml.etree.XMLParser()
-    #-- ssl context
-    context = ssl.SSLContext()
+    #-- Create cookie jar for storing cookies
+    cookie_jar = CookieJar()
+    #-- create "opener" (OpenerDirector instance)
+    opener = urllib2.build_opener(
+        urllib2.HTTPSHandler(context=ssl.SSLContext()),
+        urllib2.HTTPCookieProcessor(cookie_jar))
+    #-- Now all calls to urllib2.urlopen use our opener.
+    urllib2.install_opener(opener)
+    #-- All calls to urllib2.urlopen will now use handler
+    #-- Make sure not to include the protocol in with the URL, or
+    #-- HTTPPasswordMgrWithDefaultRealm will be confused.
+
     #-- compile regular expression operator for years to sync
     regex_years = '|'.join('{0:d}'.format(y) for y in YEARS)
     R1 = re.compile('({0})'.format(regex_years), re.VERBOSE)
@@ -234,41 +249,48 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
     else:
         R3 = compile_regex_pattern(PRODUCT, BASELINE)
 
+
     #-- open connection with Cryosat-2 science server at remote directory
-    request = urllib2.Request(url=posixpath.join(HOST,PRODUCT))
-    response = urllib2.urlopen(request,timeout=60,context=context)
-    tree = lxml.etree.parse(response, HTMLparser)
+    parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT)}
+    url = posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
+    request = urllib2.Request(url=url)
+    response = urllib2.urlopen(request,timeout=60)
+    table = json.loads(response.read().decode())
     #-- find remote yearly directories for PRODUCT within YEARS
-    colnames = tree.xpath('//tr/td//a/text()')
-    YRS = [d for i,d in enumerate(colnames) if R1.match(d)]
+    YRS = [t['name'] for t in table['results'] if R1.match(t['name'])]
     for Y in YRS:
         #-- open connection with Cryosat-2 science server at remote directory
-        request = urllib2.Request(url=posixpath.join(HOST,PRODUCT,Y))
-        response = urllib2.urlopen(request,timeout=360,context=context)
-        tree = lxml.etree.parse(response, HTMLparser)
+        parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y)}
+        url = posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
+        request = urllib2.Request(url=url)
+        response = urllib2.urlopen(request,timeout=360)
+        table = json.loads(response.read().decode())
         #-- find remote monthly directories for PRODUCT within year
-        colnames = tree.xpath('//tr/td//a/text()')
-        MNS = [d for i,d in enumerate(colnames) if R2.match(d)]
+        MNS = [t['name'] for t in table['results'] if R2.match(t['name'])]
         for M in MNS:
-            #-- remote and local directory for data product of year and month
-            remote_dir = posixpath.join(HOST,PRODUCT,Y,M)
+            #-- local directory for data product of year and month
             local_dir = os.path.join(DIRECTORY,PRODUCT,Y,M)
             #-- check if local directory exists and recursively create if not
             os.makedirs(local_dir,MODE) if not os.path.exists(local_dir) else None
             #-- open connection with Cryosat-2 science server at remote directory
-            request = urllib2.Request(url=posixpath.join(HOST,PRODUCT,Y,M))
-            response = urllib2.urlopen(request,timeout=360,context=context)
-            tree = lxml.etree.parse(response, HTMLparser)
-            #-- find remote yearly directories for PRODUCT within YEARS
-            colnames = tree.xpath('//tr/td//a/text()')
-            collastmod = tree.xpath('//tr/td[@align="right"][1]/text()')
+            parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y,M)}
+            url=posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
+            request = urllib2.Request(url=url)
+            response = urllib2.urlopen(request,timeout=360)
+            table = json.loads(response.read().decode())
+            #-- find remote files for PRODUCT within year and month
+            colnames = [t['name'] for t in table['results']]
+            collastmod = [t['mtime'] for t in table['results']]
             #-- if spatially subsetting
             if BBOX or POLYGON:
                 #-- find names of valid header files
                 header_files = [f for i,f in enumerate(colnames) if R3.match(f)]
                 for f in sorted(header_files):
                     #-- remote and local versions of the file
-                    remote_file = posixpath.join(remote_dir,f)
+                    parameters = {'file':posixpath.join('Cry0Sat2_data',
+                        PRODUCT,Y,M,f)}
+                    remote_file = posixpath.join(HOST,
+                        '?do=download&{0}'.format(urlencode(parameters)))
                     #-- extract information from filename
                     MI,CLASS,PRD,START,STOP,BSLN,VERS,SFX = R3.findall(f).pop()
                     #-- read XML header file and check if intersecting
@@ -279,10 +301,13 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                         subset=[i for i,f in enumerate(colnames) if R4.match(f)]
                         for i in subset:
                             #-- remote and local versions of the file
-                            remote_file = posixpath.join(remote_dir,colnames[i])
+                            parameters = {'file':posixpath.join('Cry0Sat2_data',
+                                PRODUCT,Y,M,colnames[i])}
+                            remote_file = posixpath.join(HOST,
+                                '?do=download&{0}'.format(urlencode(parameters)))
                             local_file = os.path.join(local_dir,colnames[i])
-                            #-- get last modified date and convert to unix time
-                            remote_mtime = get_mtime(collastmod[i])
+                            #-- get last modified date in unix time
+                            remote_mtime = collastmod[i]
                             http_pull_file(fid1, remote_file, remote_mtime,
                                 local_file, LIST, CLOBBER, MODE)
             else:
@@ -290,10 +315,13 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                 valid_lines = [i for i,f in enumerate(colnames) if R3.match(f)]
                 for i in valid_lines:
                     #-- remote and local versions of the file
-                    remote_file = posixpath.join(remote_dir,colnames[i])
+                    parameters = {'file':posixpath.join('Cry0Sat2_data',
+                        PRODUCT,Y,M,colnames[i])}
+                    remote_file = posixpath.join(HOST,
+                        '?do=download&{0}'.format(urlencode(parameters)))
                     local_file = os.path.join(local_dir,colnames[i])
-                    #-- get last modified date and convert to unix time
-                    remote_mtime = get_mtime(collastmod[i])
+                    #-- get last modified date in unix time
+                    remote_mtime = collastmod[i]
                     #-- check that file is not in file system unless overwriting
                     http_pull_file(fid1, remote_file, remote_mtime, local_file,
                         LIST, CLOBBER, MODE)
@@ -306,7 +334,7 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
 #-- PURPOSE: pull and parse xml header file to check if intersecting subsetter
 def parse_xml_file(remote_file, poly_obj, XMLparser):
     request = urllib2.Request(remote_file)
-    response = urllib2.urlopen(request,timeout=20,context=ssl.SSLContext())
+    response = urllib2.urlopen(request,timeout=20)
     tree = lxml.etree.parse(response,XMLparser)
     #-- extract starting latitude/longitude and ending latitude/longitude
     Start_Lat, = tree.xpath('//Product_Location/Start_Lat/text()')
@@ -348,7 +376,7 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
             #-- Create and submit request. There are a wide range of exceptions
             #-- that can be thrown here, including HTTPError and URLError.
             req = urllib2.Request(remote_file)
-            resp = urllib2.urlopen(req,timeout=360,context=ssl.SSLContext())
+            resp = urllib2.urlopen(req,timeout=360)
             #-- chunked transfer encoding size
             CHUNK = 16 * 1024
             #-- copy contents to local file using chunked transfer encoding
@@ -358,11 +386,6 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
             #-- keep remote modification time of file and local access time
             os.utime(local_file, (os.stat(local_file).st_atime, remote_mtime))
             os.chmod(local_file, MODE)
-
-#-- PURPOSE: returns the Unix timestamp value for a modification time
-def get_mtime(collastmod, FORMAT='%d-%b-%Y %H:%M'):
-    lastmodtime = time.strptime(collastmod.rstrip(), FORMAT)
-    return calendar.timegm(lastmodtime)
 
 #-- PURPOSE: help module to describe the optional input parameters
 def usage():

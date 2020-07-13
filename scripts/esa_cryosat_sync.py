@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 u"""
-esa_cryosat_ftp.py
-Written by Tyler Sutterley (03/2020)
+esa_cryosat_sync.py
+Written by Tyler Sutterley (07/2020)
 
 This program syncs Cryosat Elevation products
-From the ESA Cryosat ftp dissemination server:
+From the ESA CryoSat-2 Science Server:
 https://earth.esa.int/web/guest/-/how-to-access-cryosat-data-6842
 https://earth.esa.int/web/guest/-/products-overview-6975
 
@@ -15,14 +15,12 @@ INPUTS:
         SIR_SIN_L2: CryoSat-2 SARin Mode
 
 CALLING SEQUENCE:
-    python esa_cryosat_ftp.py --baseline=C --user=<username> SIR_SIN_L2
-    where <username> is your ESA data dissemination server username
+    python esa_cryosat_sync.py --baseline=D SIR_SIN_L2
 
 COMMAND LINE OPTIONS:
     --help: list the command line options
     -Y X, --year=X: years to sync separated by commas
     -B X, --baseline=X: CryoSat-2 baseline to sync
-    --user: username for CryoSat-2 FTP servers
     --directory: working data directory (default: current working directory)
     --bbox=X: Bounding box (lonmin,latmin,lonmax,latmax)
     --polygon=X: Georeferenced file containing a set of polygons
@@ -52,15 +50,18 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 07/2020: create compiled lists of filenames and last modified times
+    Updated 06/2020: use json to decode API output
     Updated 03/2020: add spatial subsetting to reduce files to sync
-        increase ftplib timeout to prevent connection drops
     Updated 02/2020: convert from hard to soft tabulation
+    Updated 09/2019: increase urlopen timeout. place regex compilations together
     Updated 08/2019: include baseline in regular expression patterns
+        updated for https Cryosat-2 Science Server
+        ftp program renamed esa_cryosat_ftp.py
     Updated 06/2018: using python3 compatible octal and input
     Updated 05/2018 for public release.
     Updated 05/2017: exception if ESA Cryosat-2 credentials weren't entered
         using os.makedirs to recursively create directories
-        using getpass to enter server password securely (remove --password)
     Updated 04/2017: minor changes to check_connection function to use ftplib
         updated regular expression for months to include year of interest
     Updated 02/2017: switching username and password to login command
@@ -71,29 +72,36 @@ from __future__ import print_function
 import sys
 import re
 import os
-import io
+import ssl
+import json
 import getopt
-import getpass
+import shutil
+import base64
 import builtins
+import posixpath
 import lxml.etree
 import calendar, time
 import shapely.geometry
-import ftplib, posixpath
 from cryosat_toolkit.read_shapefile import read_shapefile
 from cryosat_toolkit.read_kml_file import read_kml_file
 from cryosat_toolkit.read_geojson_file import read_geojson_file
+if sys.version_info[0] == 2:
+    from cookielib import CookieJar
+    from urllib import urlencode
+    import urllib2
+else:
+    from http.cookiejar import CookieJar
+    from urllib.parse import urlencode
+    import urllib.request as urllib2
 
 #-- PURPOSE: check internet connection
-def check_connection(USER, PASSWORD):
-    #-- attempt to connect to ftp host for Cryosat-2 servers
+def check_connection():
+    #-- attempt to connect to https ESA CryoSat-2 Science Server
     try:
-        f = ftplib.FTP('science-pds.cryosat.esa.int')
-        f.login(USER, PASSWORD)
-        f.voidcmd("NOOP")
-    except IOError:
+        HOST = 'https://science-pds.cryosat.esa.int'
+        urllib2.urlopen(HOST,timeout=20,context=ssl.SSLContext())
+    except urllib2.URLError:
         raise RuntimeError('Check internet connection')
-    except ftplib.error_perm:
-        raise RuntimeError('Check login credentials')
     else:
         return True
 
@@ -154,14 +162,8 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     return re.compile(regex_pattern, re.VERBOSE)
 
 #-- PURPOSE: sync local Cryosat-2 files with ESA server
-def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
-    USER='', PASSWORD='', BBOX=None, POLYGON=None, LOG=False, LIST=False,
-    MODE=None, CLOBBER=False):
-    #-- connect and login to ESA ftp server
-    f = ftplib.FTP('science-pds.cryosat.esa.int', timeout=3600)
-    f.login(USER, PASSWORD)
-    #-- compile xml parser for lxml
-    XMLparser = lxml.etree.XMLParser()
+def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
+    POLYGON=None, LOG=False, LIST=False, MODE=None, CLOBBER=False):
 
     #-- create log file with list of synchronized files (or print to terminal)
     if LOG:
@@ -177,11 +179,30 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
         #-- standard output (terminal output)
         fid1 = sys.stdout
 
+    #-- CryoSat-2 Science Server url
+    #-- using the JSON api protocols to retrieve files
+    #-- static site is no longer available
+    HOST = posixpath.join('https://science-pds.cryosat.esa.int')
+    #-- compile xml parsers for lxml
+    XMLparser = lxml.etree.XMLParser()
+    #-- Create cookie jar for storing cookies
+    cookie_jar = CookieJar()
+    #-- create "opener" (OpenerDirector instance)
+    opener = urllib2.build_opener(
+        urllib2.HTTPSHandler(context=ssl.SSLContext()),
+        urllib2.HTTPCookieProcessor(cookie_jar))
+    #-- Now all calls to urllib2.urlopen use our opener.
+    urllib2.install_opener(opener)
+    #-- All calls to urllib2.urlopen will now use handler
+    #-- Make sure not to include the protocol in with the URL, or
+    #-- HTTPPasswordMgrWithDefaultRealm will be confused.
+
     #-- compile regular expression operator for years to sync
     regex_years = '|'.join('{0:d}'.format(y) for y in YEARS)
     R1 = re.compile('({0})'.format(regex_years), re.VERBOSE)
-    #-- initial regular expression pattern for months of the year
-    regex_months = '(' + '|'.join('{0:02d}'.format(m) for m in range(1,13)) + ')'
+    #-- regular expression pattern for months of the year
+    regex_months = '|'.join('{0:02d}'.format(m) for m in range(1,13))
+    R2 = re.compile('({0})'.format(regex_months), re.VERBOSE)
 
     #-- compile the regular expression operator to find CryoSat-2 files
     #-- spatially subset data using bounding box or polygon file
@@ -230,68 +251,118 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
     else:
         R3 = compile_regex_pattern(PRODUCT, BASELINE)
 
+    #-- open connection with Cryosat-2 science server at remote directory
+    #-- [sic Cry0Sat2_data]
+    parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT)}
+    url = posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
+    request = urllib2.Request(url=url)
+    response = urllib2.urlopen(request,timeout=60)
+    table = json.loads(response.read().decode())
     #-- find remote yearly directories for PRODUCT within YEARS
-    YRS = [R1.findall(Y).pop() for Y in f.nlst(PRODUCT) if R1.search(Y)]
+    YRS = [t['name'] for t in table['results'] if R1.match(t['name'])]
     for Y in YRS:
-        #-- compile regular expression operator for months in year to sync
-        R2 = re.compile(posixpath.join(Y,regex_months), re.VERBOSE)
+        #-- open connection with Cryosat-2 science server at remote directory
+        #-- [sic Cry0Sat2_data]
+        parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y)}
+        url = posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
+        request = urllib2.Request(url=url)
+        response = urllib2.urlopen(request,timeout=360)
+        table = json.loads(response.read().decode())
         #-- find remote monthly directories for PRODUCT within year
-        MNS = [R2.findall(M).pop() for M in f.nlst(posixpath.join(PRODUCT,Y))
-            if R2.search(M)]
+        MNS = [t['name'] for t in table['results'] if R2.match(t['name'])]
         for M in MNS:
-            #-- remote and local directory for data product of year and month
-            remote_dir = posixpath.join(PRODUCT,Y,M)
+            #-- local directory for data product of year and month
             local_dir = os.path.join(DIRECTORY,PRODUCT,Y,M)
             #-- check if local directory exists and recursively create if not
             os.makedirs(local_dir,MODE) if not os.path.exists(local_dir) else None
-            #-- get filenames from remote directory
-            valid_lines = [fi for fi in f.nlst(remote_dir) if R3.search(fi)]
+
+            #-- create combined list of filenames and last modified times
+            #-- find remote files for PRODUCT within year and month
+            colnames = []
+            collastmod = []
+            #-- position, maximum number of files to list, flag to check if done
+            pos,maxfiles,prevmax = (0,500,500)
+            #-- iterate to get a compiled list of files
+            #-- will iterate until there are no more files to add to the lists
+            while (maxfiles == prevmax):
+                #-- set previous flag to maximum 
+                prevmax = maxfiles
+                #-- open connection with Cryosat-2 science server at remote directory
+                #-- to list maxfiles number of files at position [sic Cry0Sat2_data]
+                parameters = {'maxfiles':prevmax,'pos':pos,
+                    'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y,M)}
+                url=posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
+                request = urllib2.Request(url=url)
+                response = urllib2.urlopen(request,timeout=360)
+                table = json.loads(response.read().decode())
+                #-- extend lists with new files
+                colnames.extend([t['name'] for t in table['results']])
+                collastmod.extend([t['mtime'] for t in table['results']])
+                #-- update maximum number of files
+                maxfiles = len(table['results'])
+                #-- update position
+                pos += maxfiles
+
             #-- if spatially subsetting
             if BBOX or POLYGON:
-                for line in sorted(valid_lines):
-                    #-- extract filename from regex object
-                    f1 = R3.search(line).group(0)
-                    remote_file = posixpath.join(remote_dir,f1)
-                    local_file = os.path.join(local_dir,f1)
+                #-- find names of valid header files
+                header_files = [f for i,f in enumerate(colnames) if R3.match(f)]
+                for hf in sorted(header_files):
+                    #-- remote and local versions of the file
+                    #-- [sic Cry0Sat2_data]
+                    parameters = {'file':posixpath.join('Cry0Sat2_data',
+                        PRODUCT,Y,M,hf)}
+                    remote_file = posixpath.join(HOST,
+                        '?do=download&{0}'.format(urlencode(parameters)))
                     #-- extract information from filename
-                    MI,CLASS,PRD,START,STOP,BSLN,VERS,SFX = R3.findall(f1).pop()
+                    MI,CLASS,PRD,START,STOP,BSLN,VERS,SFX = R3.findall(hf).pop()
                     #-- read XML header file and check if intersecting
-                    if parse_xml_file(f, remote_file, poly_obj, XMLparser):
+                    if parse_xml_file(remote_file, poly_obj, XMLparser):
                         #-- compile regular expression operator for times
                         R4 = compile_regex_pattern(PRODUCT, BASELINE,
                             START=START, STOP=STOP)
-                        subset=[f2 for f2 in f.nlst(remote_dir) if R4.search(f2)]
-                        for subset_line in subset:
-                            #-- extract filename from regex object
-                            f2 = R4.search(subset_line).group(0)
-                            remote_file = posixpath.join(remote_dir,f2)
-                            local_file = os.path.join(local_dir,f2)
-                            ftp_mirror_file(fid1,f,remote_file,local_file,
-                                LIST,CLOBBER,MODE)
+                        #-- will sync both the data and header files
+                        subset=[i for i,f in enumerate(colnames) if R4.match(f)]
+                        for i in subset:
+                            #-- remote and local versions of the file
+                            #-- [sic Cry0Sat2_data]
+                            parameters = {'file':posixpath.join('Cry0Sat2_data',
+                                PRODUCT,Y,M,colnames[i])}
+                            remote_file = posixpath.join(HOST,
+                                '?do=download&{0}'.format(urlencode(parameters)))
+                            local_file = os.path.join(local_dir,colnames[i])
+                            #-- get last modified date in unix time
+                            remote_mtime = collastmod[i]
+                            http_pull_file(fid1, remote_file, remote_mtime,
+                                local_file, LIST, CLOBBER, MODE)
             else:
-                for line in sorted(valid_lines):
-                    #-- extract filename from regex object
-                    fi = R3.search(line).group(0)
-                    remote_file = posixpath.join(remote_dir,fi)
-                    local_file = os.path.join(local_dir,fi)
-                    ftp_mirror_file(fid1,f,remote_file,local_file,
-                        LIST,CLOBBER,MODE)
+                #-- find lines of valid files
+                valid_lines = [i for i,f in enumerate(colnames) if R3.match(f)]
+                #-- for each data and header file
+                for i in valid_lines:
+                    #-- remote and local versions of the file
+                    #-- [sic Cry0Sat2_data]
+                    parameters = {'file':posixpath.join('Cry0Sat2_data',
+                        PRODUCT,Y,M,colnames[i])}
+                    remote_file = posixpath.join(HOST,
+                        '?do=download&{0}'.format(urlencode(parameters)))
+                    local_file = os.path.join(local_dir,colnames[i])
+                    #-- get last modified date in unix time
+                    remote_mtime = collastmod[i]
+                    #-- check that file is not in file system unless overwriting
+                    http_pull_file(fid1, remote_file, remote_mtime, local_file,
+                        LIST, CLOBBER, MODE)
 
-    #-- close the ftp connection
-    f.quit()
     #-- close log file and set permissions level to MODE
     if LOG:
         fid1.close()
         os.chmod(os.path.join(DIRECTORY,LOGFILE), MODE)
 
 #-- PURPOSE: pull and parse xml header file to check if intersecting subsetter
-def parse_xml_file(ftp, remote_file, poly_obj, XMLparser):
-    #-- copy remote file contents to BytesIO object
-    fileobj = io.BytesIO()
-    ftp.retrbinary('RETR {0}'.format(remote_file),fileobj.write)
-    #-- rewind retrieved binary to start of file
-    fileobj.seek(0)
-    tree = lxml.etree.parse(fileobj,XMLparser)
+def parse_xml_file(remote_file, poly_obj, XMLparser):
+    request = urllib2.Request(remote_file)
+    response = urllib2.urlopen(request,timeout=20)
+    tree = lxml.etree.parse(response,XMLparser)
     #-- extract starting latitude/longitude and ending latitude/longitude
     Start_Lat, = tree.xpath('//Product_Location/Start_Lat/text()')
     Start_Long, = tree.xpath('//Product_Location/Start_Long/text()')
@@ -307,12 +378,10 @@ def parse_xml_file(ftp, remote_file, poly_obj, XMLparser):
 
 #-- PURPOSE: pull file from a remote host checking if file exists locally
 #-- and if the remote file is newer than the local file
-def ftp_mirror_file(fid, ftp, remote_file, local_file, LIST, CLOBBER, MODE):
+def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
     #-- if file exists in file system: check if remote file is newer
     TEST = False
     OVERWRITE = ' (clobber)'
-    #-- get last modified date of remote file and convert into unix time
-    remote_mtime = get_mtime(ftp.sendcmd('MDTM {0}'.format(remote_file)))
     #-- check if local version of file exists
     if os.access(local_file, os.F_OK):
         #-- check last modification time of local file
@@ -327,28 +396,29 @@ def ftp_mirror_file(fid, ftp, remote_file, local_file, LIST, CLOBBER, MODE):
     #-- if file does not exist locally, is to be overwritten, or CLOBBER is set
     if TEST or CLOBBER:
         #-- Printing files transferred
-        args=(posixpath.join('ftp://',ftp.host,remote_file),local_file,OVERWRITE)
-        print('{0} -->\n\t{1}{2}\n'.format(*args), file=fid)
+        print('{0} --> '.format(remote_file), file=fid)
+        print('\t{0}{1}\n'.format(local_file,OVERWRITE), file=fid)
         #-- if executing copy command (not only printing the files)
         if not LIST:
-            #-- copy remote file contents to local file
+            #-- Create and submit request. There are a wide range of exceptions
+            #-- that can be thrown here, including HTTPError and URLError.
+            req = urllib2.Request(remote_file)
+            resp = urllib2.urlopen(req,timeout=360)
+            #-- chunked transfer encoding size
+            CHUNK = 16 * 1024
+            #-- copy contents to local file using chunked transfer encoding
+            #-- transfer should work properly with ascii and binary data formats
             with open(local_file, 'wb') as f:
-                ftp.retrbinary('RETR {0}'.format(remote_file), f.write)
+                shutil.copyfileobj(resp, f, CHUNK)
             #-- keep remote modification time of file and local access time
             os.utime(local_file, (os.stat(local_file).st_atime, remote_mtime))
             os.chmod(local_file, MODE)
-
-#-- PURPOSE: returns the Unix timestamp value for a modification time
-def get_mtime(collastmod, FORMAT="%Y%m%d%H%M%S"):
-    lastmodtime = time.strptime(collastmod[4:], FORMAT)
-    return calendar.timegm(lastmodtime)
 
 #-- PURPOSE: help module to describe the optional input parameters
 def usage():
     print('\nHelp: {}'.format(os.path.basename(sys.argv[0])))
     print(' -Y X, --year=X\t\tYears to sync separated by commas')
     print(' -B X, --baseline=X\tCryoSat Baseline to run')
-    print(' -U X, --user=X\t\tUsername for CryoSat-2 FTP servers')
     print(' --directory=X\t\tWorking data directory')
     print(' --bbox=X\t\tBounding box (lonmin,latmin,lonmax,latmax)')
     print(' --polygon=X\t\tGeoreferenced file containing a set of polygons')
@@ -360,17 +430,16 @@ def usage():
     LOGFILE = 'ESA_CS_{0}_sync_{1}.log'.format('SIR_SIN_L2',today)
     print('     Log file format: {}\n'.format(LOGFILE))
 
-#-- Main program that calls esa_cryosat_ftp()
+#-- Main program that calls esa_cryosat_sync()
 def main():
     #-- Read the system arguments listed after the program
-    long_options = ['help','year=','baseline=','user=','directory=','bbox=',
-        'polygon=','list','log','mode=','clobber']
-    optlist,arglist = getopt.getopt(sys.argv[1:],'hY:B:U:LCM:l',long_options)
+    long_options = ['help','year=','baseline=','directory=','bbox=','polygon=',
+        'list','log','mode=','clobber']
+    optlist,arglist = getopt.getopt(sys.argv[1:],'hY:B:LCM:l',long_options)
 
     #-- command line parameters
-    YEARS = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
+    YEAR = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
     BASELINE = 'D'
-    USER = ''
     DIRECTORY = os.getcwd()
     BBOX = None
     POLYGON = None
@@ -384,11 +453,9 @@ def main():
             usage()
             sys.exit()
         elif opt in ("-Y","--year"):
-            YEARS = [int(Y) for Y in arg.split(',')]
+            YEAR = [int(Y) for Y in arg.split(',')]
         elif opt in ("-B","--baseline"):
             BASELINE = arg.upper()
-        elif opt in ("-U","--user"):
-            USER = arg
         elif opt in ("--directory"):
             DIRECTORY = os.path.expanduser(arg)
         elif opt in ("--bbox",):
@@ -408,20 +475,12 @@ def main():
         #-- Input CryoSat-2 Product (sys.argv[0] is the python code)
         raise Exception('No CryoSat-2 Product Specified')
 
-    #-- ESA CryoSat-2 FTP Server name
-    HOST = 'science-pds.cryosat.esa.int'
-    #-- check that ESA CryoSat-2 FTP Server credentials were entered
-    if not USER:
-        USER = builtins.input('Username for {0}: '.format(HOST))
-    #-- enter password securely from command-line
-    PASSWORD = getpass.getpass('Password for {0}@{1}: '.format(USER,HOST))
-
     #-- check internet connection before attempting to run program
-    if check_connection(USER,PASSWORD):
+    if check_connection():
         for PRODUCT in arglist:
-            esa_cryosat_ftp(PRODUCT, YEARS, USER=USER, PASSWORD=PASSWORD,
-                BASELINE=BASELINE, DIRECTORY=DIRECTORY, BBOX=BBOX,
-                POLYGON=POLYGON, LOG=LOG, LIST=LIST, MODE=MODE, CLOBBER=CLOBBER)
+            esa_cryosat_sync(PRODUCT, YEAR, BASELINE=BASELINE,
+                DIRECTORY=DIRECTORY, BBOX=BBOX, POLYGON=POLYGON,
+                LOG=LOG, LIST=LIST, MODE=MODE, CLOBBER=CLOBBER)
 
 #-- run main program
 if __name__ == '__main__':

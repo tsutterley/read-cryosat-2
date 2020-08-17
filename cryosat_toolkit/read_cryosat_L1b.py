@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L1b.py
-Written by Tyler Sutterley (02/2020)
+Written by Tyler Sutterley (08/2020)
 
 Reads CryoSat Level-1b data products from baselines A, B and C
 Reads CryoSat Level-1b netCDF4 data products from baseline D
-Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
+Supported CryoSat Modes: LRM, SAR, SARin, SID, GDR
 
 INPUTS:
     full_filename: full path of CryoSat .DBL or .nc file
@@ -26,6 +26,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 08/2020: flake8 updates for python3
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
         add scale factors function for converting packed units in binary files
         convert from hard to soft tabulation
@@ -2076,9 +2077,6 @@ def read_cryosat_L1b(full_filename, VERBOSE=False):
         if (MODE == 'LRM'):
             i_record_size = i_record_size_LRM_L1b
             DS_TYPE = 'CS_L1B'
-        elif (MODE == 'FDM'):
-            i_record_size = i_record_size_FDM_L1b
-            DS_TYPE = 'SIR_L1B_FDM'
         elif (MODE == 'SAR'):
             i_record_size = i_record_size_SAR_L1b
             DS_TYPE = 'CS_L1B'

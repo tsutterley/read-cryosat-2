@@ -1,0 +1,57 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python on pull request
+
+on:
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies for Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get install gdal-bin libgdal-dev libproj-dev proj-data proj-bin libgeos-dev
+        sudo apt-get install libhdf5-dev libnetcdf-dev
+        sudo apt-get install libxml2-dev libxslt1-dev
+        pip install --upgrade pip
+        pip install flake8 pytest pytest-cov numpy
+        export CPLUS_INCLUDE_PATH=/usr/include/gdal
+        export C_INCLUDE_PATH=/usr/include/gdal
+        pip install .
+    - name: Install dependencies for MacOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install proj
+        brew install geos
+        brew install gdal
+        brew install hdf5
+        brew install netcdf
+        brew install libxml2
+        brew install libxslt
+        pip install --upgrade pip
+        pip install flake8 pytest pytest-cov numpy
+        pip install .
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest --username=${{ secrets.ESA_FTP_USERNAME }} \
+            --password=${{ secrets.ESA_FTP_PASSWORD }} \

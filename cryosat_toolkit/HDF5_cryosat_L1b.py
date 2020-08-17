@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L1b.py (02/2020)
+HDF5_cryosat_L1b.py (08/2020)
 Reads and Writes HDF5 files for CryoSat-2 Level-1b data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
         (https://www.h5py.org/)
 
 UPDATE HISTORY:
+    Updated 08/2020: flake8 updates for python3
     Updated 02/2020: convert from hard to soft tabulation
     Updated 10/2019: changing Y/N flags to True/False
     Updated 09/2019: updates for Baseline D
@@ -225,7 +226,7 @@ def HDF5_cryosat_L1b(CS_l1b_mds, MODE, BASELINE, FILENAME='', TITLE='',
                 fileID['METADATA']['SPH'].create_group(att_name)
                 for ds_name,ds_val in att_val.items():
                     fileID['METADATA']['SPH'][att_name].attrs[ds_name] = ds_val
-            elif isinstance(att_val,basestring) and att_name:
+            elif isinstance(att_val,str) and att_name:
                 #-- if att_val is string
                 fileID['METADATA']['SPH'].attrs[att_name] = att_val
         #-- Data Set Descriptors (DSD) are all strings
@@ -251,7 +252,7 @@ def HDF5_cryosat_L1b(CS_l1b_mds, MODE, BASELINE, FILENAME='', TITLE='',
                     fileID['METADATA']['SPH'][fi].create_group(att_name)
                     for dsn,dsv in att_val.items():
                         fileID['METADATA']['SPH'][fi][att_name].attrs[dsn] = dsv
-                elif isinstance(att_val,basestring) and att_name:
+                elif isinstance(att_val,str) and att_name:
                     #-- if att_val is string
                     fileID['METADATA']['SPH'][fi].attrs[att_name] = att_val
         #-- Data Set Descriptors (DSD) are all strings
@@ -369,12 +370,10 @@ def read_HDF5_cryosat_L1b(FILENAME, ATTRIBUTES=True, VERBOSE=False):
 #-- PURPOSE: get the number of records and number of blocks in an HDF5 file
 def HDF5_cryosat_L1b_shape(FILENAME):
     #-- Open the HDF5 file for reading
-    fileID = h5py.File(os.path.expanduser(FILENAME), 'r')
-    n_records,n_blocks = CS_l1b_mds['Location']['Day'].shape
-    n_1Hz_wfm = CS_l1b_mds['Waveform_1Hz']['Waveform'].shape[1]
-    n_20Hz_wfm = CS_l1b_mds['Waveform_20Hz']['Waveform'].shape[2]
-    #-- Closing the HDF5 file
-    fileID.close()
+    with h5py.File(os.path.expanduser(FILENAME), 'r') as fid:
+        n_records,n_blocks = fid['Location']['Day'].shape
+        n_1Hz_wfm = fid['Waveform_1Hz']['Waveform'].shape[1]
+        n_20Hz_wfm = fid['Waveform_20Hz']['Waveform'].shape[2]
     return (n_records,n_blocks,n_1Hz_wfm,n_20Hz_wfm)
 
 #-- PURPOSE: get attribute names for baseline

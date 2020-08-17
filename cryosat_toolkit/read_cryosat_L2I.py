@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2I.py
-Written by Tyler Sutterley (02/2020)
+Written by Tyler Sutterley (08/2020)
 
 Reads CryoSat Level-2 Intermediate data products from baselines A, B, BC and C
 Reads CryoSat Level-2 netCDF4 data products from baseline D
@@ -28,6 +28,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 08/2020: flake8 updates for python3
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
         convert from hard to soft tabulation
     Updated 11/2019: empty placeholder dictionary for baseline D DSD headers
@@ -1820,31 +1821,31 @@ def cryosat_scaling_factors():
     #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['SSHA_interp_RMS'] = 1e-3
     #-- Number of forward records interpolated
-    CS_l2i_scale['Data']['SSHA_interp_count_fwd'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['SSHA_interp_count_fwd'] = 1
     #-- Number of backward records interpolated
-    CS_l2i_scale['Data']['SSHA_interp_count_bkwd'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['SSHA_interp_count_bkwd'] = 1
     #-- Distance in time of most forward record interpolated (milli-seconds)
-    CS_l2i_scale['Data']['SSHA_interp_time_fwd'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['SSHA_interp_time_fwd'] = 1e-3
     #-- Distance in time of most backward record interpolated (milli-seconds)
-    CS_l2i_scale['Data']['SSHA_interp_time_bkwd'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['SSHA_interp_time_bkwd'] = 1e-3
     #-- Interpolation error flag
-    CS_l2i_scale['Data']['SSHA_interp_flag'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['SSHA_interp_flag'] = 1
     #-- Measurement mode
-    CS_l2i_scale['Data']['Measurement_Mode'] = np.zeros((n_records),dtype=np.uint32)
+    CS_l2i_scale['Data']['Measurement_Mode'] = 1
     #-- Quality flags
-    CS_l2i_scale['Data']['Quality_flag'] = np.zeros((n_records),dtype=np.uint32)
+    CS_l2i_scale['Data']['Quality_flag'] = 1
     #-- Retracker flags
-    CS_l2i_scale['Data']['Retracker_flag'] = np.zeros((n_records),dtype=np.uint32)
+    CS_l2i_scale['Data']['Retracker_flag'] = 1
     #-- Height calculation details
     #-- Specifies what was applied during the height calculation
-    CS_l2i_scale['Data']['Height_status'] = np.zeros((n_records),dtype=np.uint32)
+    CS_l2i_scale['Data']['Height_status'] = 1
     #-- SAR freeboard status flag
-    CS_l2i_scale['Data']['Freeboard_status'] = np.zeros((n_records),dtype=np.uint32)
+    CS_l2i_scale['Data']['Freeboard_status'] = 1
     #-- Number of averaged echoes or beams
-    CS_l2i_scale['Data']['N_avg'] = np.zeros((n_records),dtype=np.uint16)
+    CS_l2i_scale['Data']['N_avg'] = 1
     #-- Wind Speed packed units (mm/s, 1e-3 m/s)
-    CS_l2i_scale['Data']['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
-    CS_l2i_scale['Data']['Spares1'] = np.zeros((n_records,3),dtype=np.int32)
+    CS_l2i_scale['Data']['Wind_speed'] = 1e-3
+    CS_l2i_scale['Data']['Spares1'] = 1
 
     #-- CryoSat-2 Auxiliary Data Group
     CS_l2i_scale['Auxiliary'] = {}

@@ -28,6 +28,8 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 - [`read_geojson_file.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_geojson_file.md): Reads polygons from GeoJSON files  
 - [`read_kml_file.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_kml_file.md): Reads polygons from keyhole markup language files  
 - [`read_shapefile.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_shapefile.md): Reads polygons from ESRI shapefiles  
+- [`time.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/time.rst): Utilities for calculating time operations  
+- [`utilities.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/utilities.rst): Download and management utilities for syncing time and auxiliary files  
 
 #### Dependencies
 - [numpy: Scientific Computing Tools For Python](https://numpy.org)  

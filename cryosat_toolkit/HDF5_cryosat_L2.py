@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2.py (11/2019)
+HDF5_cryosat_L2.py (08/2020)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -27,6 +27,7 @@ PYTHON DEPENDENCIES:
         (https://www.h5py.org/)
 
 UPDATE HISTORY:
+    Updated 08/2020: flake8 updates for python3
     Updated 02/2020: convert from hard to soft tabulation
     Updated 11/2019: add netCDF4 Time (TAI seconds since 2000-01-01)
     Updated 10/2019: changing Y/N flags to True/False
@@ -132,7 +133,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
                 fileID['METADATA']['SPH'].create_group(att_name)
                 for ds_name,ds_val in att_val.items():
                     fileID['METADATA']['SPH'][att_name].attrs[ds_name] = ds_val
-            elif isinstance(att_val,basestring) and att_name:
+            elif isinstance(att_val,str) and att_name:
                 #-- if att_val is string
                 fileID['METADATA']['SPH'].attrs[att_name] = att_val
         #-- Data Set Descriptors (DSD) are all strings
@@ -158,7 +159,7 @@ def HDF5_cryosat_L2(CS_l2_mds, BASELINE, FILENAME='', TITLE='', HEADER=0,
                     fileID['METADATA']['SPH'][fi].create_group(att_name)
                     for dsn,dsv in att_val.items():
                         fileID['METADATA']['SPH'][fi][att_name].attrs[dsn] = dsv
-                elif isinstance(att_val,basestring) and att_name:
+                elif isinstance(att_val,str) and att_name:
                     #-- if att_val is string
                     fileID['METADATA']['SPH'][fi].attrs[att_name] = att_val
         #-- Data Set Descriptors (DSD) are all strings

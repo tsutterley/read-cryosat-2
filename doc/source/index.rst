@@ -27,3 +27,5 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
     user_guide/read_geojson_file.md
     user_guide/read_kml_file.md
     user_guide/read_shapefile.md
+    user_guide/time.rst
+    user_guide/utilities.rst

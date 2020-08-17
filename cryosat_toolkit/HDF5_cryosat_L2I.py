@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2I.py (10/2019)
+HDF5_cryosat_L2I.py (08/2020)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 intermediary data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
         (https://www.h5py.org/)
 
 UPDATE HISTORY:
+    Updated 08/2020: flake8 updates for python3
     Updated 02/2020: convert from hard to soft tabulation
     Updated 10/2019: changing Y/N flags to True/False
     Updated 04/2019: print HDF5 keys from list for python3 compatibility
@@ -51,8 +52,8 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
     else:
         clobber = 'w-'
 
-    #-- getting HDF5 dataset attributes for each variable
-    CS_l2I_attrib = cryosat_L2I_attributes(MODE, BASELINE)
+    # #-- getting HDF5 dataset attributes for each variable
+    # CS_l2I_attrib = cryosat_L2I_attributes(MODE, BASELINE)
 
     #-- open output HDF5 file
     fileID = h5py.File(os.path.expanduser(FILENAME), clobber)
@@ -110,9 +111,9 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
                 compression='gzip')
             #-- attach dimensions
             h5['Location'][key].dims[0].label='CS_L2I_MDS_REC_SIZE'
-        #-- add HDF5 variable attributes
-        for att_name,att_val in CS_l2I_attrib['Location'][key].items():
-            h5['Location'][key].attrs[att_name] = att_val
+        # #-- add HDF5 variable attributes
+        # for att_name,att_val in CS_l2I_attrib['Location'][key].items():
+        #     h5['Location'][key].attrs[att_name] = att_val
 
     #-- CryoSat-2 Measurement Group
     for key in Geometry_keys:
@@ -132,9 +133,9 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
                 compression='gzip')
             #-- attach dimensions
             h5['Data'][key].dims[0].label='CS_L2I_MDS_REC_SIZE'
-        #-- add HDF5 variable attributes
-        for att_name,att_val in CS_l2I_attrib['Data'][key].items():
-            h5['Data'][key].attrs[att_name] = att_val
+        # #-- add HDF5 variable attributes
+        # for att_name,att_val in CS_l2I_attrib['Data'][key].items():
+        #     h5['Data'][key].attrs[att_name] = att_val
 
     #-- CryoSat-2 Auxiliary Data Group
     for key in Auxiliary_keys:
@@ -180,7 +181,7 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
                 fileID['METADATA']['SPH'].create_group(att_name)
                 for ds_name,ds_val in att_val.items():
                     fileID['METADATA']['SPH'][att_name].attrs[ds_name] = ds_val
-            elif isinstance(att_val,basestring) and att_name:
+            elif isinstance(att_val,str) and att_name:
                 #-- if att_val is string
                 fileID['METADATA']['SPH'].attrs[att_name] = att_val
         #-- Data Set Descriptors (DSD) are all strings
@@ -206,7 +207,7 @@ def HDF5_cryosat_L2I(CS_l2I_mds, MODE, BASELINE, FILENAME='', TITLE='',
                     fileID['METADATA']['SPH'][fi].create_group(att_name)
                     for dsn,dsv in att_val.items():
                         fileID['METADATA']['SPH'][fi][att_name].attrs[dsn] = dsv
-                elif isinstance(att_val,basestring) and att_name:
+                elif isinstance(att_val,str) and att_name:
                     #-- if att_val is string
                     fileID['METADATA']['SPH'][fi].attrs[att_name] = att_val
         #-- Data Set Descriptors (DSD) are all strings
@@ -311,8 +312,6 @@ def read_HDF5_cryosat_L2I(FILENAME, ATTRIBUTES=True, VERBOSE=False):
 #-- PURPOSE: get the number of records in an HDF5 file
 def HDF5_cryosat_L2I_shape(FILENAME):
     #-- Open the HDF5 file for reading
-    fileID = h5py.File(os.path.expanduser(FILENAME), 'r')
-    n_records = CS_l2I_mds['Location']['Day'].shape
-    #-- Closing the HDF5 file
-    fileID.close()
+    with h5py.File(os.path.expanduser(FILENAME), 'r') as fid:
+        n_records,n_blocks = fid['Location']['Day'].shape
     return n_records

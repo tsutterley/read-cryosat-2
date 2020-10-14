@@ -40,7 +40,7 @@ if gdal_output[3]:
 
 setup(
     name='read-cryosat-2',
-    version='1.0.1.7',
+    version='1.0.1.8',
     description='Reads and writes data from the ESA CryoSat-2 mission',
     long_description=long_description,
     long_description_content_type="text/markdown",

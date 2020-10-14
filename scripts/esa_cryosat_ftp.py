@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_ftp.py
-Written by Tyler Sutterley (07/2020)
+Written by Tyler Sutterley (10/2020)
 
 This program syncs Cryosat Elevation products
 From the ESA Cryosat ftp dissemination server:
@@ -20,14 +20,14 @@ CALLING SEQUENCE:
 
 COMMAND LINE OPTIONS:
     --help: list the command line options
-    -Y X, --year=X: years to sync separated by commas
-    -B X, --baseline=X: CryoSat-2 baseline to sync
+    -Y X, --year X: years to sync separated by commas
+    -B X, --baseline X: CryoSat-2 baseline to sync
     --user: username for CryoSat-2 FTP servers
-    -N X, --netrc=X: path to .netrc file for authentication
+    -N X, --netrc X: path to .netrc file for authentication
     --directory: working data directory (default: current working directory)
-    --bbox=X: Bounding box (lonmin,latmin,lonmax,latmax)
-    --polygon=X: Georeferenced file containing a set of polygons
-    -M X, --mode=X: Local permissions mode of the directories and files synced
+    --bbox X: Bounding box (lonmin,latmin,lonmax,latmax)
+    --polygon X: Georeferenced file containing a set of polygons
+    -M X, --mode X: Local permissions mode of the directories and files synced
     --log: output log of files downloaded
     --list: print files to be transferred, but do not execute transfer
     --clobber: Overwrite existing data in transfer
@@ -53,6 +53,7 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 10/2020: using argparse to set parameters
     Updated 07/2020: added netrc option for alternative authentication
     Updated 03/2020: add spatial subsetting to reduce files to sync
         increase ftplib timeout to prevent connection drops
@@ -75,16 +76,14 @@ import re
 import os
 import io
 import netrc
-import getopt
 import getpass
+import argparse
 import builtins
 import lxml.etree
 import calendar, time
-import shapely.geometry
 import ftplib, posixpath
-from cryosat_toolkit.read_shapefile import read_shapefile
-from cryosat_toolkit.read_kml_file import read_kml_file
-from cryosat_toolkit.read_geojson_file import read_geojson_file
+import cryosat_toolkit.polygon
+import shapely.geometry
 
 #-- PURPOSE: check internet connection
 def check_connection(USER, PASSWORD):
@@ -109,7 +108,7 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     #-- RPRO (ReProcessing)
     #-- TEST (Testing)
     #-- LTA_ (Long Term Archive)
-    regex_class = 'OFFL|NRT_|RPRO|TEST|LTA_'
+    regex_class = r'OFFL|NRT_|RPRO|TEST|LTA_'
     #-- CryoSat mission products
     #-- SIR_LRM_1B L1B Product from Low Resolution Mode Processing
     #-- SIR_FDM_1B L1B Product from Fast Delivery Marine Mode Processing
@@ -143,7 +142,7 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     regex_products['SIR_SID_L2I'] = 'SIR_SIDI2_'
     regex_products['SIR_SAR_L2I'] = 'SIR_SARI2_'
     #-- Cryosat baseline Identifier
-    regex_baseline = '({0})'.format(BASELINE) if BASELINE else '(.*?)'
+    regex_baseline = r'({0})'.format(BASELINE) if BASELINE else r'(.*?)'
     #-- CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
     #-- Mission Identifier
     #-- File Class
@@ -152,7 +151,7 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     #-- Validity Stop Date and Time
     #-- Baseline Identifier
     #-- Version Number
-    regex_pattern = '({0})_({1})_({2})_({3})_({4})_{5}(\d+).{6}$'.format('CS',
+    regex_pattern = r'({0})_({1})_({2})_({3})_({4})_{5}(\d+).{6}$'.format('CS',
         regex_class,regex_products[PRODUCT],START,STOP,regex_baseline,SUFFIX)
     return re.compile(regex_pattern, re.VERBOSE)
 
@@ -182,7 +181,7 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
 
     #-- compile regular expression operator for years to sync
     regex_years = '|'.join('{0:d}'.format(y) for y in YEARS)
-    R1 = re.compile('({0})'.format(regex_years), re.VERBOSE)
+    R1 = re.compile(r'({0})'.format(regex_years), re.VERBOSE)
     #-- initial regular expression pattern for months of the year
     regex_months = '(' + '|'.join('{0:02d}'.format(m) for m in range(1,13)) + ')'
 
@@ -191,7 +190,7 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
     if BBOX:
         #-- if using a bounding box to spatially subset data
         #-- only find header files to extract latitude and longitude coordinates
-        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX='(HDR)')
+        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX=r'(HDR)')
         #-- min_lon,min_lat,max_lon,max_lat
         lon = [BBOX[0],BBOX[2],BBOX[2],BBOX[0],BBOX[0]]
         lat = [BBOX[1],BBOX[1],BBOX[3],BBOX[3],BBOX[1]]
@@ -203,26 +202,26 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
     elif POLYGON:
         #-- if using a polygon file to spatially subset data
         #-- only find header files to extract latitude and longitude coordinates
-        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX='(HDR)')
+        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX=r'(HDR)')
         #-- read shapefile, kml/kmz file or GeoJSON file
         fileBasename,fileExtension = os.path.splitext(POLYGON)
         #-- extract file name and subsetter indices lists
-        match_object = re.match('(.*?)(\[(.*?)\])?$',POLYGON)
-        FILE = os.path.expanduser(match_object.group(1))
+        match_object = re.match(r'(.*?)(\[(.*?)\])?$',POLYGON)
+        f = os.path.expanduser(match_object.group(1))
         #-- read specific variables of interest
         v = match_object.group(3).split(',') if match_object.group(2) else None
         #-- get MultiPolygon object from input spatial file
         if fileExtension in ('.shp','.zip'):
             #-- if reading a shapefile or a zipped directory with a shapefile
             ZIP = (fileExtension == '.zip')
-            m = read_shapefile(os.path.expanduser(FILE), VARIABLES=v, ZIP=ZIP)
+            m=cryosat_toolkit.polygon().from_shapefile(f,variables=v,zip=ZIP)
         elif fileExtension in ('.kml','.kmz'):
-            #-- if reading a keyhole markup language (can be compressed)
+            #-- if reading a keyhole markup language (can be compressed kmz)
             KMZ = (fileExtension == '.kmz')
-            m = read_kml_file(os.path.expanduser(FILE), VARIABLES=v, KMZ=KMZ)
+            m=cryosat_toolkit.polygon().from_kml(f,variables=v,kmz=KMZ)
         elif fileExtension in ('.json','.geojson'):
             #-- if reading a GeoJSON file
-            m = read_geojson_file(os.path.expanduser(FILE), VARIABLES=v)
+            m=cryosat_toolkit.polygon().from_geojson(f,variables=v)
         else:
             raise IOError('Unlisted polygon type ({0})'.format(fileExtension))
         #-- calculate the convex hull of the MultiPolygon object for subsetting
@@ -349,96 +348,86 @@ def get_mtime(collastmod, FORMAT="%Y%m%d%H%M%S"):
     lastmodtime = time.strptime(collastmod[4:], FORMAT)
     return calendar.timegm(lastmodtime)
 
-#-- PURPOSE: help module to describe the optional input parameters
-def usage():
-    print('\nHelp: {}'.format(os.path.basename(sys.argv[0])))
-    print(' -Y X, --year=X\t\tYears to sync separated by commas')
-    print(' -B X, --baseline=X\tCryoSat Baseline to run')
-    print(' -U X, --user=X\t\tUsername for CryoSat-2 FTP servers')
-    print(' -N X, --netrc=X\t\tPath to .netrc file for authentication')
-    print(' --directory=X\t\tWorking data directory')
-    print(' --bbox=X\t\tBounding box (lonmin,latmin,lonmax,latmax)')
-    print(' --polygon=X\t\tGeoreferenced file containing a set of polygons')
-    print(' -M X, --mode=X\t\tPermission mode of directories and files synced')
-    print(' -L, --list\t\tOnly print files that are to be transferred')
-    print(' -C, --clobber\t\tOverwrite existing data in transfer')
-    print(' -l, --log\t\tOutput log file')
-    today = time.strftime('%Y-%m-%d',time.localtime())
-    LOGFILE = 'ESA_CS_{0}_sync_{1}.log'.format('SIR_SIN_L2',today)
-    print('     Log file format: {}\n'.format(LOGFILE))
-
 #-- Main program that calls esa_cryosat_ftp()
 def main():
     #-- Read the system arguments listed after the program
-    short_options = 'hY:B:U:N:LCM:l'
-    long_options=['help','year=','baseline=','user=','netrc=','directory=',
-        'bbox=','polygon=','list','log','mode=','clobber']
-    optlist,arglist = getopt.getopt(sys.argv[1:],short_options,long_options)
-
+    parser = argparse.ArgumentParser(
+        description="""Syncs Cryosat Elevation products
+            from the ESA Cryosat ftp dissemination server
+            """
+    )
     #-- command line parameters
-    YEARS = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
-    BASELINE = 'D'
-    USER = ''
-    NETRC = None
-    DIRECTORY = os.getcwd()
-    BBOX = None
-    POLYGON = None
-    LIST = False
-    LOG = False
-    #-- permissions mode of the local directories and files (number in octal)
-    MODE = 0o775
-    CLOBBER = False
-    for opt, arg in optlist:
-        if opt in ('-h','--help'):
-            usage()
-            sys.exit()
-        elif opt in ("-Y","--year"):
-            YEARS = [int(Y) for Y in arg.split(',')]
-        elif opt in ("-B","--baseline"):
-            BASELINE = arg.upper()
-        elif opt in ("-U","--user"):
-            USER = arg
-        elif opt in ("-N","--netrc"):
-            NETRC = os.path.expanduser(arg)
-        elif opt in ("--directory"):
-            DIRECTORY = os.path.expanduser(arg)
-        elif opt in ("--bbox",):
-            BBOX = [float(i) for i in arg.split(',')]
-        elif opt in ("--polygon",):
-            POLYGON = os.path.expanduser(arg)
-        elif opt in ("-L","--list"):
-            LIST = True
-        elif opt in ("-l","--log"):
-            LOG = True
-        elif opt in ("-M","--mode"):
-            MODE = int(arg, 8)
-        elif opt in ("-C","--clobber"):
-            CLOBBER = True
-
-    if not arglist:
-        #-- Input CryoSat-2 Product (sys.argv[0] is the python code)
-        raise Exception('No CryoSat-2 Product Specified')
+    parser.add_argument('product',
+        metavar='PRODUCT', type=str, nargs='+',
+        help='CryoSat-2 Product')
+    #-- ESA ftp credentials
+    parser.add_argument('--user','-U',
+        type=str, default='',
+        help='Username for CryoSat-2 FTP Login')
+    parser.add_argument('--netrc','-N',
+        type=lambda p: os.path.abspath(os.path.expanduser(p)),
+        help='Path to .netrc file for authentication')
+    #-- working data directory
+    parser.add_argument('--directory','-D',
+        type=lambda p: os.path.abspath(os.path.expanduser(p)),
+        default=os.getcwd(),
+        help='Working data directory')
+    #-- CryoSat Baseline
+    parser.add_argument('--baseline','-B',
+        metavar='BASELINE', type=str,
+        default='D', choices=['C','D'],
+        help='CryoSat Baseline to sync')
+    #-- temporal subsetting
+    parser.add_argument('--year','-Y',
+        type=int, nargs='+',
+        help='Years to sync')
+    #-- spatial subsetting
+    parser.add_argument('--bbox','-b',
+        type=float, nargs=4, metavar=('lon_min','lat_min','lon_max','lat_max'),
+        help='Bounding box')
+    parser.add_argument('--polygon','-p',
+        type=lambda p: os.path.abspath(os.path.expanduser(p)),
+        help='Georeferenced file containing a set of polygons')
+    #-- Output log file in form
+    #-- ESA_CS_SIR_SIN_L2_sync_2002-04-01.log
+    parser.add_argument('--log','-l',
+        default=False, action='store_true',
+        help='Output log file')
+    #-- sync options
+    parser.add_argument('--list','-L',
+        default=False, action='store_true',
+        help='Only print files that could be transferred')
+    parser.add_argument('--clobber','-C',
+        default=False, action='store_true',
+        help='Overwrite existing data in transfer')
+    #-- permissions mode of the directories and files synced (number in octal)
+    parser.add_argument('--mode','-M',
+        type=lambda x: int(x,base=8), default=0o775,
+        help='Permission mode of directories and files synced')
+    args = parser.parse_args()
 
     #-- ESA CryoSat-2 FTP Server name
     HOST = 'science-pds.cryosat.esa.int'
     #-- get ESA CryoSat-2 FTP Server credentials
-    if not USER and not NETRC:
+    if not args.user and not args.netrc:
         #-- check that ESA CryoSat-2 FTP Server credentials were entered
-        USER = builtins.input('Username for {0}: '.format(HOST))
+        args.user=builtins.input('Username for {0}: '.format(HOST))
         #-- enter password securely from command-line
-        PASSWORD = getpass.getpass('Password for {0}@{1}: '.format(USER,HOST))
-    elif NETRC:
-        USER,LOGIN,PASSWORD = netrc.netrc(NETRC).authenticators(HOST)
+        PASSWORD=getpass.getpass('Password for {0}@{1}: '.format(args.user,HOST))
+    elif args.netrc:
+        args.user,LOGIN,PASSWORD = netrc.netrc(args.netrc).authenticators(HOST)
     else:
         #-- enter password securely from command-line
-        PASSWORD = getpass.getpass('Password for {0}@{1}: '.format(USER,HOST))
+        PASSWORD=getpass.getpass('Password for {0}@{1}: '.format(args.user,HOST))
 
     #-- check internet connection before attempting to run program
-    if check_connection(USER,PASSWORD):
-        for PRODUCT in arglist:
-            esa_cryosat_ftp(PRODUCT, YEARS, USER=USER, PASSWORD=PASSWORD,
-                BASELINE=BASELINE, DIRECTORY=DIRECTORY, BBOX=BBOX,
-                POLYGON=POLYGON, LOG=LOG, LIST=LIST, MODE=MODE, CLOBBER=CLOBBER)
+    if check_connection(args.user,PASSWORD):
+        for PRODUCT in args.product:
+            esa_cryosat_ftp(PRODUCT, args.years, USER=args.user,
+                PASSWORD=PASSWORD, BASELINE=args.baseline,
+                DIRECTORY=args.directory, BBOX=args.bbox,
+                POLYGON=args.polygon, LOG=args.log, LIST=args.list,
+                CLOBBER=args.clobber, MODE=args.mode)
 
 #-- run main program
 if __name__ == '__main__':

@@ -50,6 +50,7 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 10/2020: using argparse to set parameters
     Updated 07/2020: create compiled lists of filenames and last modified times
     Updated 06/2020: use json to decode API output
     Updated 03/2020: add spatial subsetting to reduce files to sync
@@ -74,33 +75,23 @@ import re
 import os
 import ssl
 import json
-import getopt
 import shutil
-import base64
-import builtins
+import argparse
 import posixpath
 import lxml.etree
 import calendar, time
+import cryosat_toolkit.polygon
+import cryosat_toolkit.utilities
 import shapely.geometry
-from cryosat_toolkit.read_shapefile import read_shapefile
-from cryosat_toolkit.read_kml_file import read_kml_file
-from cryosat_toolkit.read_geojson_file import read_geojson_file
-if sys.version_info[0] == 2:
-    from cookielib import CookieJar
-    from urllib import urlencode
-    import urllib2
-else:
-    from http.cookiejar import CookieJar
-    from urllib.parse import urlencode
-    import urllib.request as urllib2
 
 #-- PURPOSE: check internet connection
 def check_connection():
     #-- attempt to connect to https ESA CryoSat-2 Science Server
     try:
         HOST = 'https://science-pds.cryosat.esa.int'
-        urllib2.urlopen(HOST,timeout=20,context=ssl.SSLContext())
-    except urllib2.URLError:
+        cryosat_toolkit.utilities.urllib2.urlopen(HOST,
+            timeout=20,context=ssl.SSLContext())
+    except cryosat_toolkit.utilities.urllib2.URLError:
         raise RuntimeError('Check internet connection')
     else:
         return True
@@ -114,7 +105,7 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     #-- RPRO (ReProcessing)
     #-- TEST (Testing)
     #-- LTA_ (Long Term Archive)
-    regex_class = 'OFFL|NRT_|RPRO|TEST|LTA_'
+    regex_class = r'OFFL|NRT_|RPRO|TEST|LTA_'
     #-- CryoSat mission products
     #-- SIR_LRM_1B L1B Product from Low Resolution Mode Processing
     #-- SIR_FDM_1B L1B Product from Fast Delivery Marine Mode Processing
@@ -148,7 +139,7 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     regex_products['SIR_SID_L2I'] = 'SIR_SIDI2_'
     regex_products['SIR_SAR_L2I'] = 'SIR_SARI2_'
     #-- Cryosat baseline Identifier
-    regex_baseline = '({0})'.format(BASELINE) if BASELINE else '(.*?)'
+    regex_baseline = r'({0})'.format(BASELINE) if BASELINE else r'(.*?)'
     #-- CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
     #-- Mission Identifier
     #-- File Class
@@ -157,7 +148,7 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     #-- Validity Stop Date and Time
     #-- Baseline Identifier
     #-- Version Number
-    regex_pattern = '({0})_({1})_({2})_({3})_({4})_{5}(\d+).{6}$'.format('CS',
+    regex_pattern = r'({0})_({1})_({2})_({3})_({4})_{5}(\d+).{6}$'.format('CS',
         regex_class,regex_products[PRODUCT],START,STOP,regex_baseline,SUFFIX)
     return re.compile(regex_pattern, re.VERBOSE)
 
@@ -182,34 +173,28 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
     #-- CryoSat-2 Science Server url
     #-- using the JSON api protocols to retrieve files
     #-- static site is no longer available
-    HOST = posixpath.join('https://science-pds.cryosat.esa.int')
+    HOST = 'https://science-pds.cryosat.esa.int'
     #-- compile xml parsers for lxml
     XMLparser = lxml.etree.XMLParser()
-    #-- Create cookie jar for storing cookies
-    cookie_jar = CookieJar()
     #-- create "opener" (OpenerDirector instance)
-    opener = urllib2.build_opener(
-        urllib2.HTTPSHandler(context=ssl.SSLContext()),
-        urllib2.HTTPCookieProcessor(cookie_jar))
-    #-- Now all calls to urllib2.urlopen use our opener.
-    urllib2.install_opener(opener)
+    cryosat_toolkit.utilities.build_opener()
     #-- All calls to urllib2.urlopen will now use handler
     #-- Make sure not to include the protocol in with the URL, or
     #-- HTTPPasswordMgrWithDefaultRealm will be confused.
 
     #-- compile regular expression operator for years to sync
     regex_years = '|'.join('{0:d}'.format(y) for y in YEARS)
-    R1 = re.compile('({0})'.format(regex_years), re.VERBOSE)
+    R1 = re.compile(r'({0})'.format(regex_years), re.VERBOSE)
     #-- regular expression pattern for months of the year
     regex_months = '|'.join('{0:02d}'.format(m) for m in range(1,13))
-    R2 = re.compile('({0})'.format(regex_months), re.VERBOSE)
+    R2 = re.compile(r'({0})'.format(regex_months), re.VERBOSE)
 
     #-- compile the regular expression operator to find CryoSat-2 files
     #-- spatially subset data using bounding box or polygon file
     if BBOX:
         #-- if using a bounding box to spatially subset data
         #-- only find header files to extract latitude and longitude coordinates
-        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX='(HDR)')
+        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX=r'(HDR)')
         #-- min_lon,min_lat,max_lon,max_lat
         lon = [BBOX[0],BBOX[2],BBOX[2],BBOX[0],BBOX[0]]
         lat = [BBOX[1],BBOX[1],BBOX[3],BBOX[3],BBOX[1]]
@@ -221,26 +206,26 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
     elif POLYGON:
         #-- if using a polygon file to spatially subset data
         #-- only find header files to extract latitude and longitude coordinates
-        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX='(HDR)')
+        R3 = compile_regex_pattern(PRODUCT, BASELINE, SUFFIX=r'(HDR)')
         #-- read shapefile, kml/kmz file or GeoJSON file
         fileBasename,fileExtension = os.path.splitext(POLYGON)
         #-- extract file name and subsetter indices lists
-        match_object = re.match('(.*?)(\[(.*?)\])?$',POLYGON)
-        FILE = os.path.expanduser(match_object.group(1))
+        match_object = re.match(r'(.*?)(\[(.*?)\])?$',POLYGON)
+        f = os.path.expanduser(match_object.group(1))
         #-- read specific variables of interest
         v = match_object.group(3).split(',') if match_object.group(2) else None
         #-- get MultiPolygon object from input spatial file
         if fileExtension in ('.shp','.zip'):
             #-- if reading a shapefile or a zipped directory with a shapefile
             ZIP = (fileExtension == '.zip')
-            m = read_shapefile(os.path.expanduser(FILE), VARIABLES=v, ZIP=ZIP)
+            m=cryosat_toolkit.polygon().from_shapefile(f,variables=v,zip=ZIP)
         elif fileExtension in ('.kml','.kmz'):
-            #-- if reading a keyhole markup language (can be compressed)
+            #-- if reading a keyhole markup language (can be compressed kmz)
             KMZ = (fileExtension == '.kmz')
-            m = read_kml_file(os.path.expanduser(FILE), VARIABLES=v, KMZ=KMZ)
+            m=cryosat_toolkit.polygon().from_kml(f,variables=v,kmz=KMZ)
         elif fileExtension in ('.json','.geojson'):
             #-- if reading a GeoJSON file
-            m = read_geojson_file(os.path.expanduser(FILE), VARIABLES=v)
+            m=cryosat_toolkit.polygon().from_geojson(f,variables=v)
         else:
             raise IOError('Unlisted polygon type ({0})'.format(fileExtension))
         #-- calculate the convex hull of the MultiPolygon object for subsetting
@@ -253,20 +238,22 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
 
     #-- open connection with Cryosat-2 science server at remote directory
     #-- [sic Cry0Sat2_data]
-    parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT)}
-    url = posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
-    request = urllib2.Request(url=url)
-    response = urllib2.urlopen(request,timeout=60)
+    parameters = cryosat_toolkit.utilities.urlencode(
+        {'file':posixpath.join('Cry0Sat2_data',PRODUCT)})
+    url = posixpath.join(HOST,'?do=list&{0}'.format(parameters))
+    request = cryosat_toolkit.utilities.urllib2.Request(url=url)
+    response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=60)
     table = json.loads(response.read().decode())
     #-- find remote yearly directories for PRODUCT within YEARS
     YRS = [t['name'] for t in table['results'] if R1.match(t['name'])]
     for Y in YRS:
         #-- open connection with Cryosat-2 science server at remote directory
         #-- [sic Cry0Sat2_data]
-        parameters = {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y)}
-        url = posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
-        request = urllib2.Request(url=url)
-        response = urllib2.urlopen(request,timeout=360)
+        parameters = cryosat_toolkit.utilities.urlencode(
+            {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y)})
+        url = posixpath.join(HOST,'?do=list&{0}'.format(parameters))
+        request = cryosat_toolkit.utilities.urllib2.Request(url=url)
+        response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=360)
         table = json.loads(response.read().decode())
         #-- find remote monthly directories for PRODUCT within year
         MNS = [t['name'] for t in table['results'] if R2.match(t['name'])]
@@ -289,11 +276,11 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                 prevmax = maxfiles
                 #-- open connection with Cryosat-2 science server at remote directory
                 #-- to list maxfiles number of files at position [sic Cry0Sat2_data]
-                parameters = {'maxfiles':prevmax,'pos':pos,
-                    'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y,M)}
-                url=posixpath.join(HOST,'?do=list&{0}'.format(urlencode(parameters)))
-                request = urllib2.Request(url=url)
-                response = urllib2.urlopen(request,timeout=360)
+                parameters = cryosat_toolkit.utilities.urlencode({'maxfiles':prevmax,
+                    'pos':pos,'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y,M)})
+                url=posixpath.join(HOST,'?do=list&{0}'.format(parameters))
+                request = cryosat_toolkit.utilities.urllib2.Request(url=url)
+                response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=360)
                 table = json.loads(response.read().decode())
                 #-- extend lists with new files
                 colnames.extend([t['name'] for t in table['results']])
@@ -310,10 +297,10 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                 for hf in sorted(header_files):
                     #-- remote and local versions of the file
                     #-- [sic Cry0Sat2_data]
-                    parameters = {'file':posixpath.join('Cry0Sat2_data',
-                        PRODUCT,Y,M,hf)}
+                    parameters = cryosat_toolkit.utilities.urlencode(
+                        {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y,M,hf)})
                     remote_file = posixpath.join(HOST,
-                        '?do=download&{0}'.format(urlencode(parameters)))
+                        '?do=download&{0}'.format(parameters))
                     #-- extract information from filename
                     MI,CLASS,PRD,START,STOP,BSLN,VERS,SFX = R3.findall(hf).pop()
                     #-- read XML header file and check if intersecting
@@ -326,10 +313,11 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                         for i in subset:
                             #-- remote and local versions of the file
                             #-- [sic Cry0Sat2_data]
-                            parameters = {'file':posixpath.join('Cry0Sat2_data',
-                                PRODUCT,Y,M,colnames[i])}
+                            parameters = cryosat_toolkit.utilities.urlencode(
+                                {'file':posixpath.join('Cry0Sat2_data',PRODUCT,
+                                Y,M,colnames[i])})
                             remote_file = posixpath.join(HOST,
-                                '?do=download&{0}'.format(urlencode(parameters)))
+                                '?do=download&{0}'.format(parameters))
                             local_file = os.path.join(local_dir,colnames[i])
                             #-- get last modified date in unix time
                             remote_mtime = collastmod[i]
@@ -342,10 +330,11 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                 for i in valid_lines:
                     #-- remote and local versions of the file
                     #-- [sic Cry0Sat2_data]
-                    parameters = {'file':posixpath.join('Cry0Sat2_data',
-                        PRODUCT,Y,M,colnames[i])}
+                    parameters = cryosat_toolkit.utilities.urlencode(
+                        {'file':posixpath.join('Cry0Sat2_data',PRODUCT,
+                        Y,M,colnames[i])})
                     remote_file = posixpath.join(HOST,
-                        '?do=download&{0}'.format(urlencode(parameters)))
+                        '?do=download&{0}'.format(parameters))
                     local_file = os.path.join(local_dir,colnames[i])
                     #-- get last modified date in unix time
                     remote_mtime = collastmod[i]
@@ -360,8 +349,8 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
 
 #-- PURPOSE: pull and parse xml header file to check if intersecting subsetter
 def parse_xml_file(remote_file, poly_obj, XMLparser):
-    request = urllib2.Request(remote_file)
-    response = urllib2.urlopen(request,timeout=20)
+    request = cryosat_toolkit.utilities.urllib2.Request(remote_file)
+    response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=20)
     tree = lxml.etree.parse(response,XMLparser)
     #-- extract starting latitude/longitude and ending latitude/longitude
     Start_Lat, = tree.xpath('//Product_Location/Start_Lat/text()')
@@ -402,8 +391,8 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
         if not LIST:
             #-- Create and submit request. There are a wide range of exceptions
             #-- that can be thrown here, including HTTPError and URLError.
-            req = urllib2.Request(remote_file)
-            resp = urllib2.urlopen(req,timeout=360)
+            req = cryosat_toolkit.utilities.urllib2.Request(remote_file)
+            resp = cryosat_toolkit.utilities.urllib2.urlopen(req,timeout=360)
             #-- chunked transfer encoding size
             CHUNK = 16 * 1024
             #-- copy contents to local file using chunked transfer encoding
@@ -414,73 +403,64 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
             os.utime(local_file, (os.stat(local_file).st_atime, remote_mtime))
             os.chmod(local_file, MODE)
 
-#-- PURPOSE: help module to describe the optional input parameters
-def usage():
-    print('\nHelp: {}'.format(os.path.basename(sys.argv[0])))
-    print(' -Y X, --year=X\t\tYears to sync separated by commas')
-    print(' -B X, --baseline=X\tCryoSat Baseline to run')
-    print(' --directory=X\t\tWorking data directory')
-    print(' --bbox=X\t\tBounding box (lonmin,latmin,lonmax,latmax)')
-    print(' --polygon=X\t\tGeoreferenced file containing a set of polygons')
-    print(' -M X, --mode=X\t\tPermission mode of directories and files synced')
-    print(' -L, --list\t\tOnly print files that are to be transferred')
-    print(' -C, --clobber\t\tOverwrite existing data in transfer')
-    print(' -l, --log\t\tOutput log file')
-    today = time.strftime('%Y-%m-%d',time.localtime())
-    LOGFILE = 'ESA_CS_{0}_sync_{1}.log'.format('SIR_SIN_L2',today)
-    print('     Log file format: {}\n'.format(LOGFILE))
-
 #-- Main program that calls esa_cryosat_sync()
 def main():
     #-- Read the system arguments listed after the program
-    long_options = ['help','year=','baseline=','directory=','bbox=','polygon=',
-        'list','log','mode=','clobber']
-    optlist,arglist = getopt.getopt(sys.argv[1:],'hY:B:LCM:l',long_options)
-
+    parser = argparse.ArgumentParser(
+        description="""Syncs Cryosat Elevation products
+            from the ESA CryoSat-2 Science Server
+            """
+    )
     #-- command line parameters
-    YEAR = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
-    BASELINE = 'D'
-    DIRECTORY = os.getcwd()
-    BBOX = None
-    POLYGON = None
-    LIST = False
-    LOG = False
-    #-- permissions mode of the local directories and files (number in octal)
-    MODE = 0o775
-    CLOBBER = False
-    for opt, arg in optlist:
-        if opt in ('-h','--help'):
-            usage()
-            sys.exit()
-        elif opt in ("-Y","--year"):
-            YEAR = [int(Y) for Y in arg.split(',')]
-        elif opt in ("-B","--baseline"):
-            BASELINE = arg.upper()
-        elif opt in ("--directory"):
-            DIRECTORY = os.path.expanduser(arg)
-        elif opt in ("--bbox",):
-            BBOX = [float(i) for i in arg.split(',')]
-        elif opt in ("--polygon",):
-            POLYGON = os.path.expanduser(arg)
-        elif opt in ("-L","--list"):
-            LIST = True
-        elif opt in ("-l","--log"):
-            LOG = True
-        elif opt in ("-M","--mode"):
-            MODE = int(arg, 8)
-        elif opt in ("-C","--clobber"):
-            CLOBBER = True
-
-    if not arglist:
-        #-- Input CryoSat-2 Product (sys.argv[0] is the python code)
-        raise Exception('No CryoSat-2 Product Specified')
+    parser.add_argument('product',
+        metavar='PRODUCT', type=str, nargs='+',
+        help='CryoSat-2 Product')
+    #-- working data directory
+    parser.add_argument('--directory','-D',
+        type=lambda p: os.path.abspath(os.path.expanduser(p)),
+        default=os.getcwd(),
+        help='Working data directory')
+    #-- CryoSat Baseline
+    parser.add_argument('--baseline','-B',
+        metavar='BASELINE', type=str,
+        default='D', choices=['C','D'],
+        help='CryoSat Baseline to sync')
+    #-- temporal subsetting
+    parser.add_argument('--year','-Y',
+        type=int, nargs='+',
+        help='Years to sync')
+    #-- spatial subsetting
+    parser.add_argument('--bbox','-b',
+        type=float, nargs=4, metavar=('lon_min','lat_min','lon_max','lat_max'),
+        help='Bounding box')
+    parser.add_argument('--polygon','-p',
+        type=lambda p: os.path.abspath(os.path.expanduser(p)),
+        help='Georeferenced file containing a set of polygons')
+    #-- Output log file in form
+    #-- ESA_CS_SIR_SIN_L2_sync_2002-04-01.log
+    parser.add_argument('--log','-l',
+        default=False, action='store_true',
+        help='Output log file')
+    #-- sync options
+    parser.add_argument('--list','-L',
+        default=False, action='store_true',
+        help='Only print files that could be transferred')
+    parser.add_argument('--clobber','-C',
+        default=False, action='store_true',
+        help='Overwrite existing data in transfer')
+    #-- permissions mode of the directories and files synced (number in octal)
+    parser.add_argument('--mode','-M',
+        type=lambda x: int(x,base=8), default=0o775,
+        help='Permission mode of directories and files synced')
+    args = parser.parse_args()
 
     #-- check internet connection before attempting to run program
     if check_connection():
-        for PRODUCT in arglist:
-            esa_cryosat_sync(PRODUCT, YEAR, BASELINE=BASELINE,
-                DIRECTORY=DIRECTORY, BBOX=BBOX, POLYGON=POLYGON,
-                LOG=LOG, LIST=LIST, MODE=MODE, CLOBBER=CLOBBER)
+        for PRODUCT in args.product:
+            esa_cryosat_sync(PRODUCT, args.year,
+                BASELINE=args.baseline, DIRECTORY=args.directory,
+                BBOX=args.bbox, POLYGON=args.polygon, LOG=args.log,
+                LIST=args.list, CLOBBER=args.clobber, MODE=args.mode)
 
 #-- run main program
 if __name__ == '__main__':

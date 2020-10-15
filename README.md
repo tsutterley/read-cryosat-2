@@ -25,9 +25,7 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 - [`HDF5_cryosat_L2.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/HDF5_cryosat_L2.md): Writes Level-2 CryoSat elevation data into HDF5 files  
 - [`read_cryosat_L2I.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_cryosat_L2I.md): Reads Level-2 Intermediate CryoSat data into a python environment  
 - [`HDF5_cryosat_L2I.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/HDF5_cryosat_L2I.md): Writes Level-2 Intermediate CryoSat data into HDF5 files  
-- [`read_geojson_file.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_geojson_file.md): Reads polygons from GeoJSON files  
-- [`read_kml_file.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_kml_file.md): Reads polygons from keyhole markup language files  
-- [`read_shapefile.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/read_shapefile.md): Reads polygons from ESRI shapefiles  
+- [`polygon.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/polygon.md): Reads polygons from GeoJSON, kml/kmz or ESRI shapefile files   
 - [`time.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/time.rst): Utilities for calculating time operations  
 - [`utilities.py`](https://github.com/tsutterley/read-cryosat-2/blob/master/doc/source/user_guide/utilities.rst): Download and management utilities for syncing time and auxiliary files  
 

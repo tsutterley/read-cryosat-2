@@ -24,9 +24,11 @@ import lxml.etree
 import calendar,time
 if sys.version_info[0] == 2:
     from cookielib import CookieJar
+    from urllib import urlencode
     import urllib2
 else:
     from http.cookiejar import CookieJar
+    from urllib.parse import urlencode
     import urllib.request as urllib2
 
 def get_data_path(relpath):
@@ -269,3 +271,27 @@ def from_http(HOST,timeout=None,local=None,hash='',chunk=16384,
         #-- return the bytesIO object
         remote_buffer.seek(0)
         return remote_buffer
+
+#-- PURPOSE: create opener for downloading from ESA https server
+def build_opener(context=ssl.SSLContext()):
+    """
+    build urllib opener for ESA CryoSat-2 Science Server 
+
+    Keyword arguments
+    -----------------
+    context: SSL context for opener object
+    """
+    #-- https://docs.python.org/3/howto/urllib2.html#id5
+    handler = []
+    #-- Create cookie jar for storing cookies
+    cookie_jar = CookieJar()
+    handler.append(urllib2.HTTPCookieProcessor(cookie_jar))
+    #-- SSL context handler
+    handler.append(urllib2.HTTPSHandler(context=context))
+    #-- create "opener" (OpenerDirector instance)
+    opener = urllib2.build_opener(*handler)
+    #-- Now all calls to urllib2.urlopen use our opener.
+    urllib2.install_opener(opener)
+    #-- All calls to urllib2.urlopen will now use handler
+    #-- Make sure not to include the protocol in with the URL, or
+    #-- HTTPPasswordMgrWithDefaultRealm will be confused.

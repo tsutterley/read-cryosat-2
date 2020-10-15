@@ -125,3 +125,11 @@ General Methods
         `verbose`: print file transfer information
 
         `mode`: permissions mode of output local file
+
+.. method:: cryosat_toolkit.utilities.build_opener(context=ssl.SSLContext())
+
+    build urllib opener for ESA CryoSat-2 Science Server
+
+    Keyword arguments:
+
+        `context`: SSL context for opener object

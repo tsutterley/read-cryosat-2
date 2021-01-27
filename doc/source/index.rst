@@ -5,15 +5,16 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
 
 .. toctree::
     :maxdepth: 2
-    :caption: Getting Started:
+    :caption: Getting Started
 
-    getting_started/Install.md
-    getting_started/Resources.md
-    getting_started/Citations.md
+    getting_started/Install.rst
+    getting_started/Resources.rst
+    getting_started/Citations.rst
 
 .. toctree::
     :maxdepth: 1
-    :caption: User Guide:
+    :hidden:
+    :caption: User Guide
 
     user_guide/calc_GPS_time.md
     user_guide/esa_cryosat_ftp.md

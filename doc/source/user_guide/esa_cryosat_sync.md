@@ -1,15 +1,15 @@
 esa_cryosat_sync.py
 ===================
 
-Program to sync Cryosat-2 Elevation products from the ESA https Science Server.  
-Will sync all available CryoSat-2 data for a given product and set of years  
-Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)  
+Program to sync Cryosat-2 Elevation products from the ESA https Science Server.
+Will sync all available CryoSat-2 data for a given product and set of years
+Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)
 
 #### Calling Sequence
 ```bash
 python esa_cryosat_sync.py --baseline D --year 2011 SIR_SIN_L2
 ```
-[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/esa_cryosat_sync.py)  
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/esa_cryosat_sync.py)
 
 #### Inputs
  1. CryoSat-2 product to sync with ESA servers

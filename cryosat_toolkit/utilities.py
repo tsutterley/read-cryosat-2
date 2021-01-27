@@ -158,7 +158,7 @@ def ftp_list(HOST,username=None,password=None,timeout=None,basename=False,
 
 #-- PURPOSE: download a file from a ftp host
 def from_ftp(HOST,username=None,password=None,timeout=None,local=None,hash='',
-    chunk=16384,verbose=False,mode=0o775):
+    chunk=8192,verbose=False,mode=0o775):
     """
     Download a file from a ftp host
 
@@ -196,7 +196,8 @@ def from_ftp(HOST,username=None,password=None,timeout=None,local=None,hash='',
         ftp_remote_path = posixpath.join(*HOST[1:])
         #-- copy remote file contents to bytesIO object
         remote_buffer = io.BytesIO()
-        ftp.retrbinary('RETR {0}'.format(ftp_remote_path), remote_buffer.write)
+        ftp.retrbinary('RETR {0}'.format(ftp_remote_path),
+            remote_buffer.write, blocksize=chunk)
         remote_buffer.seek(0)
         #-- save file basename with bytesIO object
         remote_buffer.filename = HOST[-1]
@@ -275,7 +276,7 @@ def from_http(HOST,timeout=None,local=None,hash='',chunk=16384,
 #-- PURPOSE: create opener for downloading from ESA https server
 def build_opener(context=ssl.SSLContext()):
     """
-    build urllib opener for ESA CryoSat-2 Science Server 
+    build urllib opener for ESA CryoSat-2 Science Server
 
     Keyword arguments
     -----------------

@@ -10,7 +10,7 @@ Download and management utilities for syncing time and auxiliary files
 
 `Source code`__
 
-.. __: https://github.com/tsutterley/read-cryosat-2/blob/master/cryosat_toolkit/utilities.py
+.. __: https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/utilities.py
 
 
 General Methods

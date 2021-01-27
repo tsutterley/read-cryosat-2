@@ -1,9 +1,9 @@
 read_cryosat_L1b.py
 ===================
 
- - Reads Level-1B CryoSat waveform data into a python environment.  
- - Level-1B waveform data for Baselines A, B and C come as packed [Payload Data System (PDS) files](https://earth.esa.int/documents/10174/125273/CryoSat_L1_Products_Format_Specification).  
- - Level-1B data for Baseline D comes as [netCDF4 files](https://earth.esa.int/documents/10174/125272/CryoSat-Baseline-D-Product-Handbook).  
+ - Reads Level-1B CryoSat waveform data into a python environment.
+ - Level-1B waveform data for Baselines A, B and C come as packed [Payload Data System (PDS) files](https://earth.esa.int/documents/10174/125273/CryoSat_L1_Products_Format_Specification).
+ - Level-1B data for Baseline D comes as [netCDF4 files](https://earth.esa.int/documents/10174/125272/CryoSat-Baseline-D-Product-Handbook).
  - Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
 #### Calling Sequence
@@ -11,7 +11,7 @@ read_cryosat_L1b.py
 import cryosat_toolkit.read_cryosat_L1b as read_cryosat_L1b
 CS_L1b_mds = read_cryosat_L1b(full_filename)
 ```
-[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/cryosat_toolkit/read_cryosat_L1b.py)  
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/read_cryosat_L1b.py)
 
 #### Inputs
  - `full_filename`: full path of CryoSat .DBL or .nc file

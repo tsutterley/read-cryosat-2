@@ -25,7 +25,7 @@ Reading a kmz file containing polygons
 
 `Source code`__
 
-.. __: https://github.com/tsutterley/read-cryosat-2/blob/master/cryosat_toolkit/polygon.py
+.. __: https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/polygon.py
 
 
 General Attributes and Methods
@@ -57,9 +57,10 @@ General Attributes and Methods
 
         Options:
 
-            `variables` reduce to a specific set of identifiers
+            `variables`: reduce to a specific set of identifiers
 
         Returns:
+
             `mpoly_obj`: shapely multipolygon object
 
 
@@ -73,9 +74,10 @@ General Attributes and Methods
 
             `kmz`: input file is compressed
 
-            `variables` reduce to a specific set of identifiers
+            `variables`: reduce to a specific set of identifiers
 
         Returns:
+
             `mpoly_obj`: shapely multipolygon object
 
 
@@ -88,8 +90,9 @@ General Attributes and Methods
         Options:
 
             `zip` input file is compressed
-            
-            `variables` reduce to a specific set of identifiers
+
+            `variables`: reduce to a specific set of identifiers
 
         Returns:
+
             `mpoly_obj`: shapely multipolygon object

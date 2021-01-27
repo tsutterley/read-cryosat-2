@@ -37,7 +37,7 @@ Convert a calendar date into Modified Julian Days
 
 `Source code`__
 
-.. __: https://github.com/tsutterley/read-cryosat-2/blob/master/cryosat_toolkit/time.py
+.. __: https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/time.py
 
 
 General Methods

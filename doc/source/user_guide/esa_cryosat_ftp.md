@@ -1,9 +1,9 @@
 esa_cryosat_ftp.py
 ==================
 
-Syncs CryoSat-2 Elevation products from the ESA ftp data dissemination server.  
-Will sync all available CryoSat-2 data for a given product and set of years  
-Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)  
+Syncs CryoSat-2 Elevation products from the ESA ftp data dissemination server.
+Will sync all available CryoSat-2 data for a given product and set of years
+Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJSON)
 
 #### Calling Sequence
 ```bash
@@ -11,7 +11,7 @@ python esa_cryosat_ftp.py --baseline D --user <username> --year 2011 SIR_SIN_L2
 ```
 where `<username>` is your ESA data dissemination server username  
 your ESA data dissemination password will be entered from the command-line within the program  
-[Source code](https://github.com/tsutterley/read-cryosat-2/blob/master/esa_cryosat_ftp.py)  
+[Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/esa_cryosat_ftp.py)
 
 #### Inputs
  1. CryoSat-2 product to sync with ESA servers

@@ -16,6 +16,10 @@ with open("README.md", "r") as fh:
 with open('requirements.txt') as fh:
     install_requires = fh.read().splitlines()
 
+# get version
+with open('version.txt') as fh:
+    version = fh.read()
+
 # list of all scripts to be included with package
 scripts=[os.path.join('scripts',f) for f in os.listdir('scripts') if f.endswith('.py')]
 
@@ -40,7 +44,7 @@ if gdal_output[3]:
 
 setup(
     name='read-cryosat-2',
-    version='1.0.1.8',
+    version=version,
     description='Reads and writes data from the ESA CryoSat-2 mission',
     long_description=long_description,
     long_description_content_type="text/markdown",

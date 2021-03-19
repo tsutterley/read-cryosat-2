@@ -23,16 +23,25 @@ General Methods
 
     Arguments:
 
-        `relpath`: local relative path as list or string
+        ``relpath``: local relative path as list or string
 
 
-.. method:: cryosat_toolkit.utilities.get_hash(local)
+.. method:: cryosat_toolkit.utilities.get_hash(local, algorithm='MD5')
 
-    Get the MD5 hash value from a local file
+    Get the hash value from a local file or BytesIO object
 
     Arguments:
 
-        `local`: path to file
+        ``local``: path to file
+
+
+    Keyword arguments:
+
+        ``algorithm``: hashing algorithm for checksum validation
+
+            ``'MD5'``: Message Digest
+
+            ``'sha1'``: Secure Hash Algorithm
 
 
 .. method:: cryosat_toolkit.utilities.get_unix_time(time_string, format='%Y-%m-%d %H:%M:%S')
@@ -41,11 +50,26 @@ General Methods
 
     Arguments:
 
-        `time_string`: formatted time string to parse
+        ``time_string``: formatted time string to parse
 
     Keyword arguments:
 
-        `format`: format for input time string
+        ``format``: format for input time string
+
+
+.. method:: cryosat_toolkit.utilities.check_ftp_connection(HOST,username=None,password=None)
+
+    Check internet connection with ftp host
+
+    Arguments:
+
+        ``HOST``: remote ftp host
+
+    Keyword arguments:
+
+        ``username``: ftp username
+
+        ``password``: ftp password
 
 
 .. method:: cryosat_toolkit.utilities.ftp_list(HOST,username,password,timeout=None,basename=False,pattern=None,sort=False)
@@ -54,27 +78,27 @@ General Methods
 
     Arguments:
 
-        `HOST`: remote ftp host path split as list
+        ``HOST``: remote ftp host path split as list
 
     Keyword arguments:
 
-        `username`: ftp server username
+        ``username``: ftp server username
 
-        `password`: ftp server password
+        ``password``: ftp server password
 
-        `timeout`: timeout in seconds for blocking operations
+        ``timeout``: timeout in seconds for blocking operations
 
-        `basename`: return the file or directory basename instead of the full path
+        ``basename``: return the file or directory basename instead of the full path
 
-        `pattern`: regular expression pattern for reducing list
+        ``pattern``: regular expression pattern for reducing list
 
-        `sort`: sort output list
+        ``sort``: sort output list
 
     Returns:
 
-        `output`: list of items in a directory
+        ``output``: list of items in a directory
 
-        `mtimes`: list of last modification times for items in the directory
+        ``mtimes``: list of last modification times for items in the directory
 
 
 .. method:: cryosat_toolkit.utilities.from_ftp(HOST,username,password,timeout=None,local=None,hash='',chunk=16384,verbose=False,mode=0o775)
@@ -83,25 +107,25 @@ General Methods
 
     Arguments:
 
-        `HOST`: remote ftp host path split as list
+        ``HOST``: remote ftp host path split as list
 
     Keyword arguments:
 
-        `username`: ftp server username
+        ``username``: ftp server username
 
-        `password`: ftp server password
+        ``password``: ftp server password
 
-        `timeout`: timeout in seconds for blocking operations
+        ``timeout``: timeout in seconds for blocking operations
 
-        `local`: path to local file
+        ``local``: path to local file
 
-        `hash`: MD5 hash of local file
+        ``hash``: MD5 hash of local file
 
-        `chunk`: chunk size for transfer encoding
+        ``chunk``: chunk size for transfer encoding
 
-        `verbose`: print file transfer information
+        ``verbose``: print file transfer information
 
-        `mode`: permissions mode of output local file
+        ``mode``: permissions mode of output local file
 
 
 .. method:: cryosat_toolkit.utilities.from_http(HOST,timeout=None,local=None,hash='',chunk=16384,verbose=False,mode=0o775)
@@ -110,21 +134,21 @@ General Methods
 
     Arguments:
 
-        `HOST`: remote http host path split as list
+        ``HOST``: remote http host path split as list
 
     Keyword arguments:
 
-        `timeout`: timeout in seconds for blocking operations
+        ``timeout``: timeout in seconds for blocking operations
 
-        `local`: path to local file
+        ``local``: path to local file
 
-        `hash`: MD5 hash of local file
+        ``hash``: MD5 hash of local file
 
-        `chunk`: chunk size for transfer encoding
+        ``chunk``: chunk size for transfer encoding
 
-        `verbose`: print file transfer information
+        ``verbose``: print file transfer information
 
-        `mode`: permissions mode of output local file
+        ``mode``: permissions mode of output local file
 
 .. method:: cryosat_toolkit.utilities.build_opener(context=ssl.SSLContext())
 
@@ -132,4 +156,4 @@ General Methods
 
     Keyword arguments:
 
-        `context`: SSL context for opener object
+        ``context``: SSL context for opener object

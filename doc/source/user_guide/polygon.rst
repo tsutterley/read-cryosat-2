@@ -11,16 +11,15 @@ Reading an ESRI shapefile containing polygons
 
 .. code-block:: python
 
-    from gravity_toolkit.polygon import polygon
+    from cryosat_toolkit.polygon import polygon
     mpoly_obj = polygon().from_shapefile(path_to_esri_shapefile)
 
 Reading a kmz file containing polygons
 
 .. code-block:: python
 
-    from gravity_toolkit.polygon import polygon
+    from cryosat_toolkit.polygon import polygon
     mpoly_obj = polygon().from_kml(path_to_kmz_file,kmz=True)
-
 
 
 `Source code`__
@@ -53,46 +52,52 @@ General Attributes and Methods
 
         Reads polygons from GeoJSON files
 
-        Inputs: full path of input GeoJSON file (.json, .geojson)
+        Arguments:
 
-        Options:
+            full path of input GeoJSON file (.json, .geojson)
 
-            `variables`: reduce to a specific set of identifiers
+        Keyword arguments:
+
+            ``variables``: reduce to a specific set of identifiers
 
         Returns:
 
-            `mpoly_obj`: shapely multipolygon object
+            ``mpoly_obj``: shapely multipolygon object
 
 
     .. method:: object.from_kml(filename, kmz=False, variables=None)
 
         Reads polygons from keyhole markup language files
 
-        Inputs: full path of input markup file (.kml, .kmz)
+        Arguments:
 
-        Options:
+            full path of input markup file (.kml, .kmz)
 
-            `kmz`: input file is compressed
+        Keyword arguments:
 
-            `variables`: reduce to a specific set of identifiers
+            ``kmz``: input file is compressed
+
+            ``variables``: reduce to a specific set of identifiers
 
         Returns:
 
-            `mpoly_obj`: shapely multipolygon object
+            ``mpoly_obj``: shapely multipolygon object
 
 
     .. method:: object.from_shapefile(filename, zip=False, variables=None)
 
         read ESRI shapefiles
 
-        Inputs: full path of input shapefile (*.shp)
+        Arguments:
 
-        Options:
+            full path of input shapefile (*.shp)
 
-            `zip` input file is compressed
+        Keyword arguments:
 
-            `variables`: reduce to a specific set of identifiers
+            ``zip`` input file is compressed
+
+            ``variables``: reduce to a specific set of identifiers
 
         Returns:
 
-            `mpoly_obj`: shapely multipolygon object
+            ``mpoly_obj``: shapely multipolygon object

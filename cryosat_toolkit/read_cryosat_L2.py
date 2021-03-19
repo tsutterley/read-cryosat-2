@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2.py
-Written by Tyler Sutterley (06/2020)
+Written by Tyler Sutterley (02/2021)
 
 Reads CryoSat Level-2 data products from baselines A, B and C
 Reads CryoSat Level-2 netCDF4 data products from baseline D
@@ -24,6 +24,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 02/2021: replaced numpy bool to prevent deprecation warning
     Updated 06/2020: patch error in CryoSat-2 GDR pointer variables
         using the 1Hz mapping variable ind_meas_1hz_20_ku to remap the index
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
@@ -132,51 +133,51 @@ def cryosat_baseline_AB(fid,record_size,n_records):
     #-- Delta between the timestamps for 20Hz record and the 1Hz record
     #-- D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['D_time_mics'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['D_time_mics'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lat'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Lat'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Lat'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lon'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Lon'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Lon'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Measured elevation above ellipsoid from retracker: packed units (mm, 1e-3 m)
     Data_20Hz['Elev'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Elev'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['SSHA_interp'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Interpolated Sea Surface Height measurement count
     Data_20Hz['SSHA_interp_count'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['SSHA_interp_count'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp_count'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp_RMS'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['SSHA_interp_RMS'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp_RMS'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Sigma Zero Backscatter for retracker: packed units (1e-2 dB)
     Data_20Hz['Sig0'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Sig0'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Peakiness: packed units (1e-2)
     Data_20Hz['Peakiness'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint16)
-    Data_20Hz['Peakiness'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Peakiness'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Freeboard: packed units (mm, 1e-3 m)
     #-- -9999 default value indicates computation has not been performed
     Data_20Hz['Freeboard'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Freeboard'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Freeboard'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Number of averaged echoes or beams
     Data_20Hz['N_avg'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['N_avg'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['N_avg'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Spare1'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Spare1'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Quality flags
     Data_20Hz['Quality_flag'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint32)
-    Data_20Hz['Quality_flag'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_flag'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Spare2'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Spare2'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Spare3'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Spare3'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare4'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Spare4'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Spare4'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare5'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Spare5'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Spare5'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- for each record in the CryoSat file
     for r in range(n_records):
         #-- CryoSat-2 Location Group for record r
@@ -350,67 +351,67 @@ def cryosat_baseline_C(fid,record_size,n_records):
     #-- Delta between the timestamps for 20Hz record and the 1Hz record
     #-- D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['D_time_mics'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['D_time_mics'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lat'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Lat'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Lat'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lon'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Lon'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Lon'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     Data_20Hz['Elev_1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Elev_1'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev_1'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     Data_20Hz['Elev_2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Elev_2'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev_2'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     Data_20Hz['Elev_3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Elev_3'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev_3'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     Data_20Hz['Sig0_1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Sig0_1'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0_1'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     Data_20Hz['Sig0_2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Sig0_2'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0_2'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     Data_20Hz['Sig0_3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Sig0_3'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0_3'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Freeboard: packed units (mm, 1e-3 m)
     #-- -9999 default value indicates computation has not been performed
     Data_20Hz['Freeboard'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Freeboard'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Freeboard'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['SSHA_interp'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Interpolated Sea Surface Height measurement count
     Data_20Hz['SSHA_interp_count'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['SSHA_interp_count'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp_count'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp_RMS'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['SSHA_interp_RMS'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp_RMS'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Peakiness: packed units (1e-2)
     Data_20Hz['Peakiness'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint16)
-    Data_20Hz['Peakiness'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Peakiness'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Number of averaged echoes or beams
     Data_20Hz['N_avg'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['N_avg'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['N_avg'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
-    Data_20Hz['Spare1'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Spare1'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Quality flags
     Data_20Hz['Quality_flag'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint32)
-    Data_20Hz['Quality_flag'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_flag'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Corrections Application Flag
     Data_20Hz['Corrections_flag'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint32)
-    Data_20Hz['Corrections_flag'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Corrections_flag'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Quality metric for retracker 1
     Data_20Hz['Quality_1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Quality_1'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_1'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Quality metric for retracker 2
     Data_20Hz['Quality_2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Quality_2'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_2'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- Quality metric for retracker 3
     Data_20Hz['Quality_3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
-    Data_20Hz['Quality_3'].mask = np.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_3'].mask = np.ones((n_records,n_blocks),dtype=bool)
     #-- for each record in the CryoSat file
     for r in range(n_records):
         #-- CryoSat-2 Location Group for record r
@@ -551,7 +552,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     Data_1Hz['Abs_Orbit'] = np.zeros((n_records),dtype=np.uint32)
     Data_1Hz['Abs_Orbit'][:] = np.uint32(fid.abs_orbit_number)
     #-- add ascending/descending flag to 1Hz data (A=ascending,D=descending)
-    Data_1Hz['Ascending_flag'] = np.zeros((n_records),dtype=np.bool)
+    Data_1Hz['Ascending_flag'] = np.zeros((n_records),dtype=bool)
     Data_1Hz['Ascending_flag'][:] = (fid.ascending_flag == 'A')
 
     #-- CryoSat-2 geophysical corrections (External Corrections Group)
@@ -602,114 +603,114 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     Data_20Hz = {}
     #-- Time (seconds since 2000-01-01)
     Data_20Hz['Time'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Time'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Time'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     #-- Delta between the timestamps for 20Hz record and the 1Hz record
     #-- D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['D_time_mics'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['D_time_mics'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     #-- Lat: packed units
     Data_20Hz['Lat'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Lat'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Lat'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     lat_poca_20_ku = fid.variables['lat_poca_20_ku'][:].copy()
     #-- Lon: packed units
     Data_20Hz['Lon'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Lon'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Lon'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     lon_poca_20_ku = fid.variables['lon_poca_20_ku'][:].copy()
     #-- Measured elevation above ellipsoid from retracker 1
     Data_20Hz['Elev_1'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Elev_1'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_1_20_ku = fid.variables['height_1_20_ku'][:].copy()
     #-- Measured elevation above ellipsoid from retracker 2
     Data_20Hz['Elev_2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Elev_2'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_2_20_ku = fid.variables['height_2_20_ku'][:].copy()
     #-- Measured elevation above ellipsoid from retracker 3
     Data_20Hz['Elev_3'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Elev_3'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Elev_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_3_20_ku = fid.variables['height_3_20_ku'][:].copy()
     #-- Sigma Zero Backscatter for retracker 1
     Data_20Hz['Sig0_1'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Sig0_1'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     sig0_1_20_ku = fid.variables['sig0_1_20_ku'][:].copy()
     #-- Sigma Zero Backscatter for retracker 2
     Data_20Hz['Sig0_2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Sig0_2'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     sig0_2_20_ku = fid.variables['sig0_2_20_ku'][:].copy()
     #-- Sigma Zero Backscatter for retracker 3
     Data_20Hz['Sig0_3'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Sig0_3'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sig0_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     sig0_3_20_ku = fid.variables['sig0_3_20_ku'][:].copy()
     #-- Measured range from the satellite CoM to the surface from retracker 1
     Data_20Hz['Range_1'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Range_1'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Range_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     range_1_20_ku = fid.variables['range_1_20_ku'][:].copy()
     #-- Measured range from the satellite CoM to the surface from retracker 2
     Data_20Hz['Range_2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Range_2'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Range_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     range_2_20_ku = fid.variables['range_2_20_ku'][:].copy()
     #-- Measured range from the satellite CoM to the surface from retracker 3
     Data_20Hz['Range_3'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Range_3'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Range_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     range_3_20_ku = fid.variables['range_3_20_ku'][:].copy()
     #-- Freeboard
     Data_20Hz['Freeboard'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Freeboard'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Freeboard'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     freeboard_20_ku = fid.variables['freeboard_20_ku'][:].copy()
     #-- Sea ice Floe height
     Data_20Hz['Sea_Ice_Lead'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Sea_Ice_Lead'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sea_Ice_Lead'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_sea_ice_floe_20_ku = fid.variables['height_sea_ice_floe_20_ku'][:].copy()
     #-- Sea ice lead height
     Data_20Hz['Sea_Ice_Floe'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Sea_Ice_Floe'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Sea_Ice_Floe'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_sea_ice_lead_20_ku = fid.variables['height_sea_ice_lead_20_ku'][:].copy()
     #-- Interpolated Sea Surface Height Anomaly
     Data_20Hz['SSHA_interp'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['SSHA_interp'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     ssha_interp_20_ku = fid.variables['ssha_interp_20_ku'][:].copy()
     #-- Interpolated Sea Surface Height measurement count
     Data_20Hz['SSHA_interp_count'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['SSHA_interp_count'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp_count'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     ssha_interp_numval_20_ku = fid.variables['ssha_interp_numval_20_ku'][:].copy()
     #-- Interpolation quality estimate RSS
     Data_20Hz['SSHA_interp_RMS'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['SSHA_interp_RMS'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['SSHA_interp_RMS'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     ssha_interp_rms_20_ku = fid.variables['ssha_interp_rms_20_ku'][:].copy()
     #-- Peakiness
     Data_20Hz['Peakiness'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Peakiness'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Peakiness'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     peakiness_20_ku = fid.variables['peakiness_20_ku'][:].copy()
     #-- Number of averaged echoes or beams
     Data_20Hz['N_avg'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['N_avg'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['N_avg'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     echo_avg_numval_20_ku = fid.variables['echo_avg_numval_20_ku'][:].copy()
     #-- Quality flags
     Data_20Hz['Quality_flag'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Quality_flag'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_flag'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     flag_prod_status_20_ku = fid.variables['flag_prod_status_20_ku'][:].copy()
     #-- Corrections Application Flag
     Data_20Hz['Corrections_flag'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Corrections_flag'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Corrections_flag'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     flag_cor_applied_20_ku = fid.variables['flag_cor_applied_20_ku'][:].copy()
     #-- Measurement mode
     Data_20Hz['Measurement_Mode'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Measurement_Mode'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Measurement_Mode'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     flag_instr_mode_op_20_ku = fid.variables['flag_instr_mode_op_20_ku'][:].copy()
     #-- Surface Type
     Data_20Hz['Surf_type'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Surf_type'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Surf_type'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     surf_type_20_ku = fid.variables['surf_type_20_ku'][:].copy()
     #-- Quality metric for retracker 1
     Data_20Hz['Quality_1'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Quality_1'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     retracker_1_quality_20_ku = fid.variables['retracker_1_quality_20_ku'][:].copy()
     #-- Quality metric for retracker 2
     Data_20Hz['Quality_2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Quality_2'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     retracker_2_quality_20_ku = fid.variables['retracker_2_quality_20_ku'][:].copy()
     #-- Quality metric for retracker 3
     Data_20Hz['Quality_3'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Quality_3'].mask = np.ma.ones((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Quality_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     retracker_3_quality_20_ku = fid.variables['retracker_3_quality_20_ku'][:].copy()
 
     #-- remap ind_first_meas_20hz_01 for the CryoSat file
@@ -1287,7 +1288,7 @@ def read_cryosat_L2(full_filename, VERBOSE=False):
             CS_L2_mds['Data_1Hz']['Abs_Orbit']=np.zeros((j_num_DSR),dtype=np.uint32)
             CS_L2_mds['Data_1Hz']['Abs_Orbit'][:]=np.uint32(s_MPH_fields['ABS_ORBIT'])
             #-- add ascending/descending flag to 1Hz data (A=ascending,D=descending)
-            CS_L2_mds['Data_1Hz']['Ascending_flag']=np.zeros((j_num_DSR),dtype=np.bool)
+            CS_L2_mds['Data_1Hz']['Ascending_flag']=np.zeros((j_num_DSR),dtype=bool)
             if (s_SPH_fields['ASCENDING_FLAG'] == 'A'):
                 CS_L2_mds['Data_1Hz']['Ascending_flag'][:] = True
             #-- close the input CryoSat binary file

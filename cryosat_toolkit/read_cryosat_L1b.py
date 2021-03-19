@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L1b.py
-Written by Tyler Sutterley (08/2020)
+Written by Tyler Sutterley (02/2021)
 
 Reads CryoSat Level-1b data products from baselines A, B and C
 Reads CryoSat Level-1b netCDF4 data products from baseline D
@@ -26,6 +26,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 02/2021: replaced numpy bool to prevent deprecation warning
     Updated 08/2020: flake8 updates for python3
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
         add scale factors function for converting packed units in binary files
@@ -964,113 +965,113 @@ def cryosat_baseline_D(full_filename, MODE, UNPACK=False):
     Location = {}
     #-- MDS Time
     Location['Time'] = np.ma.zeros((n_records,n_blocks))
-    Location['Time'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Time'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     time_20_ku = fid.variables['time_20_ku'][:].copy()
     #-- Time: day part
     Location['Day'] = np.ma.zeros((n_records,n_blocks))
-    Location['Day'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Day'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     #-- Time: second part
     Location['Second'] = np.ma.zeros((n_records,n_blocks))
-    Location['Second'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Second'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     #-- Time: microsecond part
     Location['Micsec'] = np.ma.zeros((n_records,n_blocks))
-    Location['Micsec'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Micsec'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     #-- USO correction factor
     Location['USO_Corr'] = np.ma.zeros((n_records,n_blocks))
-    Location['USO_Corr'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['USO_Corr'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     uso_cor_20_ku = fid.variables['uso_cor_20_ku'][:].copy()
     #-- Mode ID
     Location['Mode_ID'] = np.ma.zeros((n_records,n_blocks))
-    Location['Mode_ID'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Mode_ID'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_mode_op_20_ku =fid.variables['flag_instr_mode_op_20_ku'][:].copy()
     #-- Mode Flags
     Location['Mode_flags'] = np.ma.zeros((n_records,n_blocks))
-    Location['Mode_flags'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Mode_flags'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_mode_flags_20_ku =fid.variables['flag_instr_mode_flags_20_ku'][:].copy()
     #-- Platform attitude control mode
     Location['Att_control'] = np.ma.zeros((n_records,n_blocks))
-    Location['Att_control'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Att_control'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_mode_att_ctrl_20_ku =fid.variables['flag_instr_mode_att_ctrl_20_ku'][:].copy()
     #-- Instrument configuration
     Location['Inst_config'] = np.ma.zeros((n_records,n_blocks))
-    Location['Inst_config'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Inst_config'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_conf_rx_flags_20_ku = fid.variables['flag_instr_conf_rx_flags_20_ku'][:].copy()
     #-- acquisition band
     Location['Inst_band'] = np.ma.zeros((n_records,n_blocks))
-    Location['Inst_band'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Inst_band'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_conf_rx_bwdt_20_ku = fid.variables['flag_instr_conf_rx_bwdt_20_ku'][:].copy()
     #-- instrument channel
     Location['Inst_channel'] = np.ma.zeros((n_records,n_blocks))
-    Location['Inst_channel'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Inst_channel'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_conf_rx_in_use_20_ku = fid.variables['flag_instr_conf_rx_in_use_20_ku'][:].copy()
     #-- tracking mode
     Location['Tracking_mode'] = np.ma.zeros((n_records,n_blocks))
-    Location['Tracking_mode'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Tracking_mode'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_conf_rx_trk_mode_20_ku = fid.variables['flag_instr_conf_rx_trk_mode_20_ku'][:].copy()
     #-- Source sequence counter
     Location['SSC'] = np.ma.zeros((n_records,n_blocks))
-    Location['SSC'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['SSC'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     seq_count_20_ku = fid.variables['seq_count_20_ku'][:].copy()
     #-- Record Counter
     Location['Rec_Count'] = np.ma.zeros((n_records,n_blocks))
-    Location['Rec_Count'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Rec_Count'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     rec_count_20_ku = fid.variables['rec_count_20_ku'][:].copy()
     #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lat'] = np.ma.zeros((n_records,n_blocks))
-    Location['Lat'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Lat'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     lat_20_ku = fid.variables['lat_20_ku'][:].copy()
     #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lon'] = np.ma.zeros((n_records,n_blocks))
-    Location['Lon'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Lon'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     lon_20_ku = fid.variables['lon_20_ku'][:].copy()
     #-- Alt: packed units (mm, 1e-3 m)
     #-- Altitude of COG above reference ellipsoid (interpolated value)
     Location['Alt'] = np.ma.zeros((n_records,n_blocks))
-    Location['Alt'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Alt'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     alt_20_ku = fid.variables['alt_20_ku'][:].copy()
     #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
     Location['Alt_rate'] = np.ma.zeros((n_records,n_blocks))
-    Location['Alt_rate'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Alt_rate'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     orb_alt_rate_20_ku = fid.variables['orb_alt_rate_20_ku'][:].copy()
     #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
     #-- ITRF= International Terrestrial Reference Frame
     Location['Sat_velocity'] = np.ma.zeros((n_records,n_blocks,3))
-    Location['Sat_velocity'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Sat_velocity'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     sat_vel_vec_20_ku = fid.variables['sat_vel_vec_20_ku'][:].copy()
     #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     #-- CRF= CryoSat Reference Frame.
     Location['Real_beam'] = np.ma.zeros((n_records,n_blocks,3))
-    Location['Real_beam'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Real_beam'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     beam_dir_vec_20_ku = fid.variables['beam_dir_vec_20_ku'][:].copy()
     #-- Interferometric baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Baseline'] = np.ma.zeros((n_records,n_blocks,3))
-    Location['Baseline'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Baseline'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     inter_base_vec_20_ku = fid.variables['inter_base_vec_20_ku'][:].copy()
     #-- Star Tracker ID
     Location['ST_ID'] = np.ma.zeros((n_records,n_blocks))
-    Location['ST_ID'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['ST_ID'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_instr_conf_rx_str_in_use_20_ku = fid.variables['flag_instr_conf_rx_str_in_use_20_ku'][:].copy()
     #-- Antenna Bench Roll Angle (Derived from star trackers)
     #-- packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Roll'] = np.ma.zeros((n_records,n_blocks))
-    Location['Roll'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Roll'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     off_nadir_roll_angle_str_20_ku = fid.variables['off_nadir_roll_angle_str_20_ku'][:].copy()
     #-- Antenna Bench Pitch Angle (Derived from star trackers)
     #-- packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Pitch'] = np.ma.zeros((n_records,n_blocks))
-    Location['Pitch'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Pitch'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     off_nadir_pitch_angle_str_20_ku = fid.variables['off_nadir_pitch_angle_str_20_ku'][:].copy()
     #-- Antenna Bench Yaw Angle (Derived from star trackers)
     #-- packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Yaw'] = np.ma.zeros((n_records,n_blocks))
-    Location['Yaw'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['Yaw'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     off_nadir_yaw_angle_str_20_ku = fid.variables['off_nadir_yaw_angle_str_20_ku'][:].copy()
     #-- Measurement Confidence Data Flags
     #-- Generally the MCD flags indicate problems when set
     #-- If MCD is 0 then no problems or non-nominal conditions were detected
     #-- Serious errors are indicated by setting bit 31
     Location['MCD'] = np.ma.zeros((n_records,n_blocks))
-    Location['MCD'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Location['MCD'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_mcd_20_ku = fid.variables['flag_mcd_20_ku'][:].copy()
 
     #-- CryoSat-2 Measurement Group
@@ -1078,97 +1079,97 @@ def cryosat_baseline_D(full_filename, MODE, UNPACK=False):
     Data_20Hz = {}
     #-- Window Delay reference (two-way) corrected for instrument delays
     Data_20Hz['TD'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['TD'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['TD'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     window_del_20_ku = fid.variables['window_del_20_ku'][:].copy()
     #-- H0 Initial Height Word from telemetry
     Data_20Hz['H_0'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['H_0'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['H_0'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     h0_applied_20_ku = fid.variables['h0_applied_20_ku'][:].copy()
     #-- COR2 Height Rate: on-board tracker height rate over the radar cycle
     Data_20Hz['COR2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['COR2'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['COR2'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     cor2_applied_20_ku = fid.variables['cor2_applied_20_ku'][:].copy()
     #-- Coarse Range Word (LAI) derived from telemetry
     Data_20Hz['LAI'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['LAI'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['LAI'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     h0_lai_word_20_ku = fid.variables['h0_lai_word_20_ku'][:].copy()
     #-- Fine Range Word (FAI) derived from telemetry
     Data_20Hz['FAI'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['FAI'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['FAI'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     h0_fai_word_20_ku = fid.variables['h0_fai_word_20_ku'][:].copy()
     #-- Automatic Gain Control Channel 1: AGC gain applied on Rx channel 1.
     #-- Gain calibration corrections are applied (Sum of AGC stages 1 and 2
     #-- plus the corresponding corrections) (dB/100)
     Data_20Hz['AGC_CH1'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['AGC_CH1'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['AGC_CH1'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     agc_ch1_20_ku = fid.variables['agc_ch1_20_ku'][:].copy()
     #-- Automatic Gain Control Channel 2: AGC gain applied on Rx channel 2.
     #-- Gain calibration corrections are applied (dB/100)
     Data_20Hz['AGC_CH2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['AGC_CH2'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['AGC_CH2'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     agc_ch2_20_ku = fid.variables['agc_ch2_20_ku'][:].copy()
     #-- Total Fixed Gain On Channel 1: gain applied by the RF unit. (dB/100)
     Data_20Hz['TR_gain_CH1'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['TR_gain_CH1'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['TR_gain_CH1'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     tot_gain_ch1_20_ku = fid.variables['tot_gain_ch1_20_ku'][:].copy()
     #-- Total Fixed Gain On Channel 2: gain applied by the RF unit. (dB/100)
     Data_20Hz['TR_gain_CH2'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['TR_gain_CH2'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['TR_gain_CH2'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     tot_gain_ch2_20_ku = fid.variables['tot_gain_ch2_20_ku'][:].copy()
     #-- Transmit Power in microWatts
     Data_20Hz['TX_Power'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['TX_Power'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['TX_Power'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     transmit_pwr_20_ku = fid.variables['transmit_pwr_20_ku'][:].copy()
     #-- Doppler range correction: Radial component (mm)
     #-- computed for the component of satellite velocity in the nadir direction
     Data_20Hz['Doppler_range'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Doppler_range'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Doppler_range'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     dop_cor_20_ku = fid.variables['dop_cor_20_ku'][:].copy()
     #-- Value of Doppler Angle for the first single look echo (1e-7 radians)
     Data_20Hz['Doppler_angle_start'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Doppler_angle_start'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Doppler_angle_start'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     dop_angle_start_20_ku = fid.variables['dop_angle_start_20_ku'][:].copy()
     #-- Value of Doppler Angle for the last single look echo (1e-7 radians)
     Data_20Hz['Doppler_angle_stop'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Doppler_angle_stop'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Doppler_angle_stop'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     dop_angle_stop_20_ku = fid.variables['dop_angle_stop_20_ku'][:].copy()
     #-- Instrument Range Correction: transmit-receive antenna (mm)
     #-- Calibration correction to range on channel 1 computed from CAL1.
     Data_20Hz['TR_inst_range'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['TR_inst_range'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['TR_inst_range'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     instr_cor_range_tx_rx_20_ku = fid.variables['instr_cor_range_tx_rx_20_ku'][:].copy()
     #-- Instrument Range Correction: receive-only antenna (mm)
     #-- Calibration correction to range on channel 2 computed from CAL1.
     Data_20Hz['R_inst_range'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['R_inst_range'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['R_inst_range'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     instr_cor_range_rx_20_ku = fid.variables['instr_cor_range_rx_20_ku'][:].copy()
     #-- Instrument Gain Correction: transmit-receive antenna (dB/100)
     #-- Calibration correction to gain on channel 1 computed from CAL1
     Data_20Hz['TR_inst_gain'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['TR_inst_gain'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['TR_inst_gain'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     instr_cor_gain_tx_rx_20_ku = fid.variables['instr_cor_gain_tx_rx_20_ku'][:].copy()
     #-- Instrument Gain Correction: receive-only (dB/100)
     #-- Calibration correction to gain on channel 2 computed from CAL1
     Data_20Hz['R_inst_gain'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['R_inst_gain'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['R_inst_gain'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     instr_cor_gain_rx_20_ku = fid.variables['instr_cor_gain_rx_20_ku'][:].copy()
     #-- Internal Phase Correction (microradians)
     Data_20Hz['Internal_phase'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Internal_phase'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Internal_phase'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     instr_int_ph_cor_20_ku = fid.variables['instr_int_ph_cor_20_ku'][:].copy()
     #-- External Phase Correction (microradians)
     Data_20Hz['External_phase'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['External_phase'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['External_phase'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     instr_ext_ph_cor_20_ku = fid.variables['instr_ext_ph_cor_20_ku'][:].copy()
     #-- Noise Power measurement (dB/100)
     Data_20Hz['Noise_power'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Noise_power'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Noise_power'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     noise_power_20_ku = fid.variables['noise_power_20_ku'][:].copy()
     #-- Phase slope correction (microradians)
     #-- Computed from the CAL-4 packets during the azimuth impulse response
     #-- amplitude (SARIN only). Set from the latest available CAL-4 packet.
     Data_20Hz['Phase_slope'] = np.ma.zeros((n_records,n_blocks))
-    Data_20Hz['Phase_slope'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Data_20Hz['Phase_slope'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     ph_slope_cor_20_ku = fid.variables['ph_slope_cor_20_ku'][:].copy()
 
     #-- CryoSat-2 External Corrections Group
@@ -1247,46 +1248,46 @@ def cryosat_baseline_D(full_filename, MODE, UNPACK=False):
     Waveform_20Hz = {}
     #-- Echo Scale Factor (to scale echo to watts)
     Waveform_20Hz['Linear_Wfm_Multiplier'] = np.ma.zeros((n_records,n_blocks))
-    Waveform_20Hz['Linear_Wfm_Multiplier'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Waveform_20Hz['Linear_Wfm_Multiplier'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     echo_scale_factor_20_ku = fid.variables['echo_scale_factor_20_ku'][:].copy()
     #-- Echo Scale Power (a power of 2)
     Waveform_20Hz['Power2_Wfm_Multiplier'] = np.ma.zeros((n_records,n_blocks))
-    Waveform_20Hz['Power2_Wfm_Multiplier'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Waveform_20Hz['Power2_Wfm_Multiplier'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     echo_scale_pwr_20_ku = fid.variables['echo_scale_pwr_20_ku'][:].copy()
     #-- Number of echoes averaged
     Waveform_20Hz['N_avg_echoes'] = np.ma.zeros((n_records,n_blocks))
-    Waveform_20Hz['N_avg_echoes'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Waveform_20Hz['N_avg_echoes'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     echo_numval_20_ku = fid.variables['echo_numval_20_ku'][:].copy()
     #-- Flags for errors or information about 20Hz waveform
     Waveform_20Hz['Flags'] = np.ma.zeros((n_records,n_blocks))
-    Waveform_20Hz['Flags'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+    Waveform_20Hz['Flags'].mask = np.zeros((n_records,n_blocks),dtype=bool)
     flag_echo_20_ku = fid.variables['flag_echo_20_ku'][:].copy()
     #-- CryoSat-2 mode specific waveform variables
     if (MODE == 'LRM'):
         #-- Low-Resolution Mode
         #-- Averaged Power Echo Waveform [128]
         Waveform_20Hz['Waveform'] = np.ma.zeros((n_records,n_blocks,n_LRM_RW))
-        Waveform_20Hz['Waveform'].mask = np.zeros((n_records,n_blocks,n_LRM_RW),dtype=np.bool)
+        Waveform_20Hz['Waveform'].mask = np.zeros((n_records,n_blocks,n_LRM_RW),dtype=bool)
         pwr_waveform_20_ku = fid.variables['pwr_waveform_20_ku'][:].copy()
     elif (MODE == 'SAR'):
         #-- SAR Mode
         #-- Averaged Power Echo Waveform [256]
         Waveform_20Hz['Waveform'] = np.ma.zeros((n_records,n_blocks,n_SAR_D_RW))
-        Waveform_20Hz['Waveform'].mask = np.zeros((n_records,n_blocks,n_SAR_D_RW),dtype=np.bool)
+        Waveform_20Hz['Waveform'].mask = np.zeros((n_records,n_blocks,n_SAR_D_RW),dtype=bool)
         pwr_waveform_20_ku = fid.variables['pwr_waveform_20_ku'][:].copy()
     elif (MODE == 'SIN'):
         #-- SARIN Mode
         #-- Averaged Power Echo Waveform [1024]
         Waveform_20Hz['Waveform'] = np.ma.zeros((n_records,n_blocks,n_SARIN_D_RW))
-        Waveform_20Hz['Waveform'].mask = np.zeros((n_records,n_blocks,n_SARIN_D_RW),dtype=np.bool)
+        Waveform_20Hz['Waveform'].mask = np.zeros((n_records,n_blocks,n_SARIN_D_RW),dtype=bool)
         pwr_waveform_20_ku = fid.variables['pwr_waveform_20_ku'][:].copy()
         #-- Coherence [1024]: packed units (1/1000)
         Waveform_20Hz['Coherence'] = np.ma.zeros((n_records,n_blocks,n_SARIN_D_RW))
-        Waveform_20Hz['Coherence'].mask = np.zeros((n_records,n_blocks,n_SARIN_D_RW),dtype=np.bool)
+        Waveform_20Hz['Coherence'].mask = np.zeros((n_records,n_blocks,n_SARIN_D_RW),dtype=bool)
         coherence_waveform_20_ku = fid.variables['coherence_waveform_20_ku'][:].copy()
         #-- Phase Difference [1024]: packed units (microradians)
         Waveform_20Hz['Phase_diff'] = np.ma.zeros((n_records,n_blocks,n_SARIN_D_RW))
-        Waveform_20Hz['Phase_diff'].mask = np.zeros((n_records,n_blocks,n_SARIN_D_RW),dtype=np.bool)
+        Waveform_20Hz['Phase_diff'].mask = np.zeros((n_records,n_blocks,n_SARIN_D_RW),dtype=bool)
         ph_diff_waveform_20_ku = fid.variables['ph_diff_waveform_20_ku'][:].copy()
 
     #-- Beam Behavior Parameters
@@ -1294,52 +1295,52 @@ def cryosat_baseline_D(full_filename, MODE, UNPACK=False):
         Waveform_20Hz['Beam'] = {}
         #-- Standard Deviation of Gaussian fit to range integrated stack power.
         Waveform_20Hz['Beam']['SD'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['SD'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['SD'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_std_20_ku = fid.variables['stack_std_20_ku'][:].copy()
         #-- Stack Center: Mean of Gaussian fit to range integrated stack power.
         Waveform_20Hz['Beam']['Center'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Center'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Center'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_centre_20_ku = fid.variables['stack_centre_20_ku'][:].copy()
         #-- Stack amplitude parameter scaled in dB/100.
         Waveform_20Hz['Beam']['Amplitude'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Amplitude'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Amplitude'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_scaled_amplitude_20_ku = fid.variables['stack_scaled_amplitude_20_ku'][:].copy()
         #-- 3rd moment: providing the degree of asymmetry of the range integrated
         #-- stack power distribution.
         Waveform_20Hz['Beam']['Skewness'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Skewness'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Skewness'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_skewness_20_ku = fid.variables['stack_skewness_20_ku'][:].copy()
         #-- 4th moment: Measure of peakiness of range integrated stack power distribution.
         Waveform_20Hz['Beam']['Kurtosis'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Kurtosis'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Kurtosis'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_kurtosis_20_ku = fid.variables['stack_kurtosis_20_ku'][:].copy()
         #-- Stack peakiness computed from the range integrated power of the single look echoes
         Waveform_20Hz['Beam']['Peakiness'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Peakiness'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Peakiness'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_peakiness_20_ku = fid.variables['stack_peakiness_20_ku'][:].copy()
         #-- Stack residuals of Gaussian that fits the range integrated power of the single look echoes
         Waveform_20Hz['Beam']['RMS'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['RMS'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['RMS'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_gaussian_fitting_residuals_20_ku = fid.variables['stack_gaussian_fitting_residuals_20_ku'][:].copy()
         #-- Standard deviation as a function of boresight angle (microradians)
         Waveform_20Hz['Beam']['SD_boresight_angle'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['SD_boresight_angle'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['SD_boresight_angle'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_std_angle_20_ku = fid.variables['stack_std_angle_20_ku'][:].copy()
         #-- Stack Center angle as a function of boresight angle (microradians)
         Waveform_20Hz['Beam']['Center_boresight_angle'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Center_boresight_angle'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Center_boresight_angle'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_centre_angle_20_ku = fid.variables['stack_centre_angle_20_ku'][:].copy()
         #-- Stack Center angle as a function of look angle (microradians)
         Waveform_20Hz['Beam']['Center_look_angle'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Center_look_angle'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Center_look_angle'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_centre_look_angle_20_ku = fid.variables['stack_centre_look_angle_20_ku'][:].copy()
         #-- Number of contributing beams in the stack before weighting
         Waveform_20Hz['Beam']['Number'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Number'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Number'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_number_before_weighting_20_ku = fid.variables['stack_number_before_weighting_20_ku'][:].copy()
         #-- Number of contributing beams in the stack after weighting
         Waveform_20Hz['Beam']['Weighted_Number'] = np.ma.zeros((n_records,n_blocks))
-        Waveform_20Hz['Beam']['Weighted_Number'].mask = np.zeros((n_records,n_blocks),dtype=np.bool)
+        Waveform_20Hz['Beam']['Weighted_Number'].mask = np.zeros((n_records,n_blocks),dtype=bool)
         stack_number_after_weighting_20_ku = fid.variables['stack_number_after_weighting_20_ku'][:].copy()
 
     #-- for each record in the CryoSat file

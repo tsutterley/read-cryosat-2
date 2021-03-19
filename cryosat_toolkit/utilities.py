@@ -1,9 +1,11 @@
 """
 utilities.py
-Written by Tyler Sutterley (08/2020)
+Written by Tyler Sutterley (03/2021)
 Download and management utilities for syncing time and auxiliary files
 
 UPDATE HISTORY:
+    Updated 03/2021: added sha1 option for retrieving file hashes
+    Updated 01/2021: added ftp connection check
     Written 08/2020
 """
 from __future__ import print_function
@@ -48,21 +50,36 @@ def get_data_path(relpath):
     elif isinstance(relpath,str):
         return os.path.join(filepath,relpath)
 
-#-- PURPOSE: get the MD5 hash value of a file
-def get_hash(local):
+#-- PURPOSE: get the hash value of a file
+def get_hash(local, algorithm='MD5'):
     """
-    Get the MD5 hash value from a local file
+    Get the hash value from a local file or BytesIO object
 
     Arguments
     ---------
-    local: path to file
+    local: BytesIO object or path to file
+
+    Keyword Arguments
+    -----------------
+    algorithm: hashing algorithm for checksum validation
+        MD5: Message Digest
+        sha1: Secure Hash Algorithm
     """
-    #-- check if local file exists
-    if os.access(os.path.expanduser(local),os.F_OK):
+    #-- check if open file object or if local file exists
+    if isinstance(local, io.IOBase):
+        if (algorithm == 'MD5'):
+            return hashlib.md5(local.getvalue()).hexdigest()
+        elif (algorithm == 'sha1'):
+            return hashlib.sha1(local.getvalue()).hexdigest()
+    elif os.access(os.path.expanduser(local),os.F_OK):
         #-- generate checksum hash for local file
         #-- open the local_file in binary read mode
         with open(os.path.expanduser(local), 'rb') as local_buffer:
-            return hashlib.md5(local_buffer.read()).hexdigest()
+            #-- generate checksum hash for a given type
+            if (algorithm == 'MD5'):
+                return hashlib.md5(local_buffer.read()).hexdigest()
+            elif (algorithm == 'sha1'):
+                return hashlib.sha1(local_buffer.read()).hexdigest()
     else:
         return ''
 
@@ -85,6 +102,32 @@ def get_unix_time(time_string, format='%Y-%m-%d %H:%M:%S'):
         return None
     else:
         return calendar.timegm(parsed_time)
+
+#-- PURPOSE: check ftp connection
+def check_ftp_connection(HOST,username=None,password=None):
+    """
+    Check internet connection with ftp host
+
+    Arguments
+    ---------
+    HOST: remote ftp host
+
+    Keyword arguments
+    -----------------
+    username: ftp username
+    password: ftp password
+    """
+    #-- attempt to connect to ftp host
+    try:
+        f = ftplib.FTP(HOST)
+        f.login(username, password)
+        f.voidcmd("NOOP")
+    except IOError:
+        raise RuntimeError('Check internet connection')
+    except ftplib.error_perm:
+        raise RuntimeError('Check login credentials')
+    else:
+        return True
 
 #-- PURPOSE: list a directory on a ftp host
 def ftp_list(HOST,username=None,password=None,timeout=None,basename=False,

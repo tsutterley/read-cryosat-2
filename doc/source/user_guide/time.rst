@@ -50,15 +50,15 @@ General Methods
 
     Arguments:
 
-        `delta_time`: seconds since epoch1
+        ``delta_time``: seconds since epoch1
 
     Keyword arguments:
 
-        `epoch1`: epoch for input delta_time
+        ``epoch1``: epoch for input delta_time
 
-        `epoch2`: epoch for output delta_time
+        ``epoch2``: epoch for output delta_time
 
-        `scale`: scaling factor for converting time to output units
+        ``scale``: scaling factor for converting time to output units
 
 
 .. method:: cryosat_toolkit.time.convert_calendar_dates(year, month, day, hour=0.0, minute=0.0, second=0.0, epoch=None)
@@ -67,21 +67,21 @@ General Methods
 
     Arguments:
 
-        `year`: calendar month
+        ``year``: calendar month
 
-        `month`: month of the year
+        ``month``: month of the year
 
-        `day`: day of the month
+        ``day``: day of the month
 
     Keyword arguments:
 
-        `hour`: hour of the day
+        ``hour``: hour of the day
 
-        `minute`: minute of the hour
+        ``minute``: minute of the hour
 
-        `second`: second of the minute
+        ``second``: second of the minute
 
-        `epoch`: epoch for output delta_time
+        ``epoch``: epoch for output delta_time
 
 
 .. method:: cryosat_toolkit.time.count_leap_seconds(GPS_Time)
@@ -90,7 +90,7 @@ General Methods
 
     Arguments:
 
-        `GPS_Time`: seconds since January 6, 1980 at 00:00:00
+        ``GPS_Time``: seconds since January 6, 1980 at 00:00:00
 
 
 .. method:: cryosat_toolkit.time.get_leap_seconds()
@@ -106,6 +106,6 @@ General Methods
 
     Keyword arguments:
 
-        `verbose`: print file information about output file
+        ``verbose``: print file information about output file
 
-        `mode`: permissions mode of output file
+        ``mode``: permissions mode of output file

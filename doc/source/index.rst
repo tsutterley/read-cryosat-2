@@ -8,6 +8,7 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
     :caption: Getting Started
 
     getting_started/Install.rst
+    getting_started/Contributing.rst
     getting_started/Resources.rst
     getting_started/Citations.rst
 

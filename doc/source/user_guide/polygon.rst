@@ -90,7 +90,7 @@ General Attributes and Methods
 
         Arguments:
 
-            full path of input shapefile (*.shp)
+            full path of input shapefile (.shp)
 
         Keyword arguments:
 

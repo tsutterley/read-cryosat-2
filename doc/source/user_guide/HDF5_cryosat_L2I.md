@@ -16,7 +16,7 @@ HDF5_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
 ```
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/HDF5_cryosat_L2I.py)
 
-#### Inputs
+#### Arguments
  1. `CS_L2I_mds`: Python dictionary with groups
      * 'Location': Time and Orbit Parameters
      * 'Geometry': Elevation Corrections and Flags
@@ -27,7 +27,7 @@ HDF5_cryosat_L2I(CS_L2I_mds, MODE, BASELINE, FILENAME=full_HDF5_filename)
  2. `MODE`: CryoSat-2 Modes  (LRM, SAR, SARin, FDM, SID, GDR)
  3. `BASELINE`: CryoSat-2 baseline (A, B, C, D)
 
-#### Options
+#### Keyword arguments
  - `FILENAME`: output HDF5 file name
  - `TITLE`: output file description
  - `HEADER`: output CryoSat-2 file headers (MPH, SPH, DSD)

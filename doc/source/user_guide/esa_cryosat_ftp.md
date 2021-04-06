@@ -9,8 +9,8 @@ Can spatially subset using a bounding box or a polygon file (shp, kml, kmz, GeoJ
 ```bash
 python esa_cryosat_ftp.py --baseline D --user <username> --year 2011 SIR_SIN_L2
 ```
-where `<username>` is your ESA data dissemination server username  
-your ESA data dissemination password will be entered from the command-line within the program  
+where `<username>` is your ESA data dissemination server username
+
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/esa_cryosat_ftp.py)
 
 #### Inputs

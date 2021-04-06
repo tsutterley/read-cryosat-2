@@ -13,10 +13,10 @@ n_leaps = count_leap_seconds(GPS_Time)
 ```
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/calc_GPS_time.py)
 
-#### Inputs
+#### Arguments
  1. `day`: day portion of CryoSat-2 date variable
  2. `second`: seconds portion of CryoSat-2 date variable
  3. `micsec`: microseconds portion of CryoSat-2 date variable
 
-#### Outputs
+#### Returns
  - GPS time (seconds since 1980-01-06T00:00:00)

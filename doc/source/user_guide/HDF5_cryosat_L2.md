@@ -15,7 +15,7 @@ HDF5_cryosat_L2(CS_L2_mds, BASELINE, FILENAME=full_HDF5_filename)
 ```
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/HDF5_cryosat_L2.py)
 
-#### Inputs
+#### Arguments
  1. `CS_L2_mds`: Python dictionary with groups
      * 'Data_1Hz': Time and Orbit Parameters
      * 'Corrections': Elevation Corrections and Flags
@@ -23,7 +23,7 @@ HDF5_cryosat_L2(CS_L2_mds, BASELINE, FILENAME=full_HDF5_filename)
      * 'METADATA': MPH, SPH and DSD Header data
  2. `BASELINE`: CryoSat-2 baseline (A, B, C, D)
 
-#### Options
+#### Keyword arguments
  - `FILENAME`: output HDF5 file name
  - `TITLE`: output file description
  - `HEADER`: output CryoSat-2 file headers (MPH, SPH, DSD)

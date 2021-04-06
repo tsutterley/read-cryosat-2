@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-20.04, macos-latest]
         python-version: [3.6, 3.7, 3.8]
 
     steps:
@@ -22,8 +22,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies for Linux
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-20.04'
       run: |
+        sudo apt-get update
         sudo apt-get install gdal-bin libgdal-dev libproj-dev proj-data proj-bin libgeos-dev
         sudo apt-get install libhdf5-dev libnetcdf-dev
         sudo apt-get install libxml2-dev libxslt1-dev
@@ -53,5 +54,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest --username=${{ secrets.ESA_FTP_USERNAME }} \
+        pytest --verbose --capture=no --username=${{ secrets.ESA_FTP_USERNAME }} \
             --password=${{ secrets.ESA_FTP_PASSWORD }} \

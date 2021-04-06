@@ -13,10 +13,10 @@ CS_L2_mds = read_cryosat_L2(full_filename)
 ```
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/read_cryosat_L2.py)
 
-#### Inputs
+#### Arguments
  - `full_filename`: full path of CryoSat .DBL or .nc file
 
-#### Options
+#### Keyword arguments
  - `CS_L2_mds`: Python dictionary with groups:
      * 'Data_1Hz': Time and Orbit Parameters
      * 'Corrections': Elevation Corrections and Flags

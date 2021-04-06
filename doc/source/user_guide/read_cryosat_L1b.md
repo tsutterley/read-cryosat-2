@@ -13,10 +13,10 @@ CS_L1b_mds = read_cryosat_L1b(full_filename)
 ```
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/cryosat_toolkit/read_cryosat_L1b.py)
 
-#### Inputs
+#### Arguments
  - `full_filename`: full path of CryoSat .DBL or .nc file
 
-#### Options
+#### Keyword arguments
  - `CS_L1b_mds`: Python dictionary with groups:
      * 'Location': Time and Orbit Group
      * 'Data': Measurements Group

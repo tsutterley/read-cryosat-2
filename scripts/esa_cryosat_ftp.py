@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_ftp.py
-Written by Tyler Sutterley (10/2020)
+Written by Tyler Sutterley (04/2021)
 
 This program syncs Cryosat Elevation products
 From the ESA Cryosat ftp dissemination server:
@@ -53,6 +53,8 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 04/2021: set a default netrc file and check access
+        default credentials from environmental variables
     Updated 10/2020: using argparse to set parameters
     Updated 07/2020: added netrc option for alternative authentication
     Updated 03/2020: add spatial subsetting to reduce files to sync
@@ -366,6 +368,7 @@ def main():
         help='Username for CryoSat-2 FTP Login')
     parser.add_argument('--netrc','-N',
         type=lambda p: os.path.abspath(os.path.expanduser(p)),
+        default=os.path.join(os.path.expanduser('~'),'.netrc'),
         help='Path to .netrc file for authentication')
     #-- working data directory
     parser.add_argument('--directory','-D',
@@ -409,13 +412,13 @@ def main():
     #-- ESA CryoSat-2 FTP Server name
     HOST = 'science-pds.cryosat.esa.int'
     #-- get ESA CryoSat-2 FTP Server credentials
-    if not args.user and not args.netrc:
+    if not args.user and not os.access(args.netrc,os.F_OK):
         #-- check that ESA CryoSat-2 FTP Server credentials were entered
         args.user=builtins.input('Username for {0}: '.format(HOST))
         #-- enter password securely from command-line
         PASSWORD=getpass.getpass('Password for {0}@{1}: '.format(args.user,HOST))
-    elif args.netrc:
-        args.user,LOGIN,PASSWORD = netrc.netrc(args.netrc).authenticators(HOST)
+    elif not args.user and os.access(args.netrc,os.F_OK):
+        args.user,_,PASSWORD = netrc.netrc(args.netrc).authenticators(HOST)
     else:
         #-- enter password securely from command-line
         PASSWORD=getpass.getpass('Password for {0}@{1}: '.format(args.user,HOST))

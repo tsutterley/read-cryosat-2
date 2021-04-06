@@ -17,7 +17,7 @@ contributed most recently to the following work:
 Contributors
 ############
 
-- `Tyler Sutterley (University of Washington) <http://psc.apl.uw.edu/people/investigators/tyler-sutterley/>`_
+.. include:: ../../../CONTRIBUTORS.rst
 
 Development
 ###########
@@ -30,7 +30,7 @@ Please see the `Contribution Guidelines <./Contributing.html>`_ for more informa
 Problem Reports
 ###############
 
-If you have found a problem in pyTMD, or you would like to suggest an improvement or modification,
+If you have found a problem in this software, or you would like to suggest an improvement or modification,
 please submit a `GitHub issue <https://github.com/tsutterley/read-cryosat-2/issues>`_ and we will get back to you.
 
 Dependencies

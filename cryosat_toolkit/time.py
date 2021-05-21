@@ -8,7 +8,7 @@ PYTHON DEPENDENCIES:
     numpy: Scientific Computing Tools For Python (https://numpy.org)
 
 PROGRAM DEPENDENCIES:
-    utilities: download and management utilities for syncing files
+    utilities.py: download and management utilities for syncing files
 
 UPDATE HISTORY:
     Updated 04/2021: replaced numpy int/float to prevent deprecation warnings

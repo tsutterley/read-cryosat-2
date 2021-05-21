@@ -21,6 +21,8 @@ python esa_cryosat_sync.py --baseline D --year 2011 SIR_SIN_L2
  - `-B X`, `--baseline X`: CryoSat-2 baseline to sync
  - `--bbox X`: Bounding box (lonmin,latmin,lonmax,latmax)
  - `--polygon X`: Georeferenced file containing a set of polygons
+ - `-t X`, `--timeout X`: Timeout in seconds for blocking operations
+ - `-r X`, `--retry X`: Connection retry attempts
  - `-M X`, `--mode X`: Permission mode of directories and files synced
  - `-l`, `--log`: Output log file
  - `-L`, `--list`: Only print files that are to be transferred

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_ftp.py
-Written by Tyler Sutterley (04/2021)
+Written by Tyler Sutterley (05/2021)
 
 This program syncs Cryosat Elevation products
 From the ESA Cryosat ftp dissemination server:
@@ -27,6 +27,8 @@ COMMAND LINE OPTIONS:
     --directory: working data directory (default: current working directory)
     --bbox X: Bounding box (lonmin,latmin,lonmax,latmax)
     --polygon X: Georeferenced file containing a set of polygons
+    -t X, --timeout X: Timeout in seconds for blocking operations
+    -r X, --retry X: Connection retry attempts
     -M X, --mode X: Local permissions mode of the directories and files synced
     --log: output log of files downloaded
     --list: print files to be transferred, but do not execute transfer
@@ -53,6 +55,7 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 05/2021: added options for connection timeout and retry attempts
     Updated 04/2021: set a default netrc file and check access
         default credentials from environmental variables
     Updated 10/2020: using argparse to set parameters
@@ -102,8 +105,8 @@ def check_connection(USER, PASSWORD):
         return True
 
 #-- PURPOSE: compile regular expression operator to find CryoSat-2 files
-def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
-    SUFFIX='(DBL|HDR|nc)'):
+def compile_regex_pattern(PRODUCT, BASELINE, START=r'\d+T?\d+', STOP=r'\d+T?\d+',
+    SUFFIX=r'(DBL|HDR|nc)'):
     #-- CryoSat file class
     #-- OFFL (Off Line Processing/Systematic)
     #-- NRT_ (Near Real Time)
@@ -159,10 +162,10 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
 
 #-- PURPOSE: sync local Cryosat-2 files with ESA server
 def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
-    USER='', PASSWORD='', BBOX=None, POLYGON=None, LOG=False, LIST=False,
-    MODE=None, CLOBBER=False):
+    USER='', PASSWORD='', BBOX=None, POLYGON=None, TIMEOUT=None,
+    RETRY=1, LOG=False, LIST=False, MODE=None, CLOBBER=False):
     #-- connect and login to ESA ftp server
-    f = ftplib.FTP('science-pds.cryosat.esa.int', timeout=3600)
+    f = ftplib.FTP('science-pds.cryosat.esa.int', timeout=TIMEOUT)
     f.login(USER, PASSWORD)
     #-- compile xml parser for lxml
     XMLparser = lxml.etree.XMLParser()
@@ -273,7 +276,7 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
                             remote_file = posixpath.join(remote_dir,f2)
                             local_file = os.path.join(local_dir,f2)
                             ftp_mirror_file(fid1,f,remote_file,local_file,
-                                LIST,CLOBBER,MODE)
+                                RETRY=RETRY,LIST=LIST,CLOBBER=CLOBBER,MODE=MODE)
             else:
                 #-- for each data and header file
                 for line in sorted(valid_lines):
@@ -282,7 +285,7 @@ def esa_cryosat_ftp(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
                     remote_file = posixpath.join(remote_dir,fi)
                     local_file = os.path.join(local_dir,fi)
                     ftp_mirror_file(fid1,f,remote_file,local_file,
-                        LIST,CLOBBER,MODE)
+                        RETRY=RETRY,LIST=LIST,CLOBBER=CLOBBER,MODE=MODE)
 
     #-- close the ftp connection
     f.quit()
@@ -314,7 +317,8 @@ def parse_xml_file(ftp, remote_file, poly_obj, XMLparser):
 
 #-- PURPOSE: pull file from a remote host checking if file exists locally
 #-- and if the remote file is newer than the local file
-def ftp_mirror_file(fid, ftp, remote_file, local_file, LIST, CLOBBER, MODE):
+def ftp_mirror_file(fid, ftp, remote_file, local_file, RETRY=1,
+    LIST=False, CLOBBER=False, MODE=0o775):
     #-- if file exists in file system: check if remote file is newer
     TEST = False
     OVERWRITE = ' (clobber)'
@@ -338,9 +342,20 @@ def ftp_mirror_file(fid, ftp, remote_file, local_file, LIST, CLOBBER, MODE):
         print('{0} -->\n\t{1}{2}\n'.format(*args), file=fid)
         #-- if executing copy command (not only printing the files)
         if not LIST:
-            #-- copy remote file contents to local file
-            with open(local_file, 'wb') as f:
-                ftp.retrbinary('RETR {0}'.format(remote_file), f.write)
+            #-- attempt to download up to the number of retries
+            retry_counter = 0
+            while (retry_counter < RETRY):
+                try:
+                    #-- copy remote file contents to local file
+                    with open(local_file, 'wb') as f:
+                        ftp.retrbinary('RETR {0}'.format(remote_file), f.write)
+                    break
+                except TimeoutError:
+                    pass
+                retry_counter += 1
+            #-- check if maximum number of retries were reached
+            if (retry_counter == RETRY):
+                raise TimeoutError('Maximum number of retries reached')
             #-- keep remote modification time of file and local access time
             os.utime(local_file, (os.stat(local_file).st_atime, remote_mtime))
             os.chmod(local_file, MODE)
@@ -391,6 +406,13 @@ def main():
     parser.add_argument('--polygon','-p',
         type=lambda p: os.path.abspath(os.path.expanduser(p)),
         help='Georeferenced file containing a set of polygons')
+    #-- connection timeout and number of retry attempts
+    parser.add_argument('--timeout','-t',
+        type=int, default=360,
+        help='Timeout in seconds for blocking operations')
+    parser.add_argument('--retry','-r',
+        type=int, default=5,
+        help='Connection retry attempts')
     #-- Output log file in form
     #-- ESA_CS_SIR_SIN_L2_sync_2002-04-01.log
     parser.add_argument('--log','-l',
@@ -428,9 +450,9 @@ def main():
         for PRODUCT in args.product:
             esa_cryosat_ftp(PRODUCT, args.years, USER=args.user,
                 PASSWORD=PASSWORD, BASELINE=args.baseline,
-                DIRECTORY=args.directory, BBOX=args.bbox,
-                POLYGON=args.polygon, LOG=args.log, LIST=args.list,
-                CLOBBER=args.clobber, MODE=args.mode)
+                DIRECTORY=args.directory, BBOX=args.bbox, POLYGON=args.polygon,
+                TIMEOUT=args.timeout, RETRY=args.retry, LOG=args.log,
+                LIST=args.list, CLOBBER=args.clobber, MODE=args.mode)
 
 #-- run main program
 if __name__ == '__main__':

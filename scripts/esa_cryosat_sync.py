@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_sync.py
-Written by Tyler Sutterley (07/2020)
+Written by Tyler Sutterley (05/2021)
 
 This program syncs Cryosat Elevation products
 From the ESA CryoSat-2 Science Server:
@@ -24,6 +24,8 @@ COMMAND LINE OPTIONS:
     --directory: working data directory (default: current working directory)
     --bbox=X: Bounding box (lonmin,latmin,lonmax,latmax)
     --polygon=X: Georeferenced file containing a set of polygons
+    -t X, --timeout X: Timeout in seconds for blocking operations
+    -r X, --retry X: Connection retry attempts
     -M X, --mode=X: Local permissions mode of the directories and files synced
     --log: output log of files downloaded
     --list: print files to be transferred, but do not execute transfer
@@ -50,6 +52,7 @@ PYTHON DEPENDENCIES:
         (http://python-future.org/)
 
 UPDATE HISTORY:
+    Updated 05/2021: added options for connection timeout and retry attempts
     Updated 10/2020: using argparse to set parameters
     Updated 07/2020: create compiled lists of filenames and last modified times
     Updated 06/2020: use json to decode API output
@@ -97,8 +100,8 @@ def check_connection():
         return True
 
 #-- PURPOSE: compile regular expression operator to find CryoSat-2 files
-def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
-    SUFFIX='(DBL|HDR|nc)'):
+def compile_regex_pattern(PRODUCT, BASELINE, START=r'\d+T?\d+', STOP=r'\d+T?\d+',
+    SUFFIX=r'(DBL|HDR|nc)'):
     #-- CryoSat file class
     #-- OFFL (Off Line Processing/Systematic)
     #-- NRT_ (Near Real Time)
@@ -153,8 +156,9 @@ def compile_regex_pattern(PRODUCT, BASELINE, START='\d+T?\d+', STOP='\d+T?\d+',
     return re.compile(regex_pattern, re.VERBOSE)
 
 #-- PURPOSE: sync local Cryosat-2 files with ESA server
-def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
-    POLYGON=None, LOG=False, LIST=False, MODE=None, CLOBBER=False):
+def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None,
+    BBOX=None, POLYGON=None, TIMEOUT=None, RETRY=1, LOG=False,
+    LIST=False, MODE=None, CLOBBER=False):
 
     #-- create log file with list of synchronized files (or print to terminal)
     if LOG:
@@ -242,7 +246,7 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
         {'file':posixpath.join('Cry0Sat2_data',PRODUCT)})
     url = posixpath.join(HOST,'?do=list&{0}'.format(parameters))
     request = cryosat_toolkit.utilities.urllib2.Request(url=url)
-    response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=60)
+    response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=TIMEOUT)
     table = json.loads(response.read().decode())
     #-- find remote yearly directories for PRODUCT within YEARS
     YRS = [t['name'] for t in table['results'] if R1.match(t['name'])]
@@ -253,7 +257,8 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
             {'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y)})
         url = posixpath.join(HOST,'?do=list&{0}'.format(parameters))
         request = cryosat_toolkit.utilities.urllib2.Request(url=url)
-        response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=360)
+        response = cryosat_toolkit.utilities.urllib2.urlopen(request,
+            timeout=TIMEOUT)
         table = json.loads(response.read().decode())
         #-- find remote monthly directories for PRODUCT within year
         MNS = [t['name'] for t in table['results'] if R2.match(t['name'])]
@@ -272,7 +277,7 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
             #-- iterate to get a compiled list of files
             #-- will iterate until there are no more files to add to the lists
             while (maxfiles == prevmax):
-                #-- set previous flag to maximum 
+                #-- set previous flag to maximum
                 prevmax = maxfiles
                 #-- open connection with Cryosat-2 science server at remote directory
                 #-- to list maxfiles number of files at position [sic Cry0Sat2_data]
@@ -280,7 +285,8 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                     'pos':pos,'file':posixpath.join('Cry0Sat2_data',PRODUCT,Y,M)})
                 url=posixpath.join(HOST,'?do=list&{0}'.format(parameters))
                 request = cryosat_toolkit.utilities.urllib2.Request(url=url)
-                response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=360)
+                response = cryosat_toolkit.utilities.urllib2.urlopen(request,
+                    timeout=TIMEOUT)
                 table = json.loads(response.read().decode())
                 #-- extend lists with new files
                 colnames.extend([t['name'] for t in table['results']])
@@ -304,7 +310,7 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                     #-- extract information from filename
                     MI,CLASS,PRD,START,STOP,BSLN,VERS,SFX = R3.findall(hf).pop()
                     #-- read XML header file and check if intersecting
-                    if parse_xml_file(remote_file, poly_obj, XMLparser):
+                    if parse_xml_file(remote_file, poly_obj, XMLparser, TIMEOUT):
                         #-- compile regular expression operator for times
                         R4 = compile_regex_pattern(PRODUCT, BASELINE,
                             START=START, STOP=STOP)
@@ -322,7 +328,8 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                             #-- get last modified date in unix time
                             remote_mtime = collastmod[i]
                             http_pull_file(fid1, remote_file, remote_mtime,
-                                local_file, LIST, CLOBBER, MODE)
+                                local_file, TIMEOUT=TIMEOUT, RETRY=RETRY,
+                                LIST=LIST, CLOBBER=CLOBBER, MODE=MODE)
             else:
                 #-- find lines of valid files
                 valid_lines = [i for i,f in enumerate(colnames) if R3.match(f)]
@@ -340,7 +347,8 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
                     remote_mtime = collastmod[i]
                     #-- check that file is not in file system unless overwriting
                     http_pull_file(fid1, remote_file, remote_mtime, local_file,
-                        LIST, CLOBBER, MODE)
+                        TIMEOUT=TIMEOUT, RETRY=RETRY, LIST=LIST, CLOBBER=CLOBBER,
+                        MODE=MODE)
 
     #-- close log file and set permissions level to MODE
     if LOG:
@@ -348,9 +356,9 @@ def esa_cryosat_sync(PRODUCT, YEARS, BASELINE=None, DIRECTORY=None, BBOX=None,
         os.chmod(os.path.join(DIRECTORY,LOGFILE), MODE)
 
 #-- PURPOSE: pull and parse xml header file to check if intersecting subsetter
-def parse_xml_file(remote_file, poly_obj, XMLparser):
+def parse_xml_file(remote_file, poly_obj, XMLparser, timeout):
     request = cryosat_toolkit.utilities.urllib2.Request(remote_file)
-    response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=20)
+    response = cryosat_toolkit.utilities.urllib2.urlopen(request,timeout=timeout)
     tree = lxml.etree.parse(response,XMLparser)
     #-- extract starting latitude/longitude and ending latitude/longitude
     Start_Lat, = tree.xpath('//Product_Location/Start_Lat/text()')
@@ -367,7 +375,8 @@ def parse_xml_file(remote_file, poly_obj, XMLparser):
 
 #-- PURPOSE: pull file from a remote host checking if file exists locally
 #-- and if the remote file is newer than the local file
-def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
+def http_pull_file(fid,remote_file,remote_mtime,local_file,TIMEOUT=None,
+    RETRY=1,LIST=False,CLOBBER=False,MODE=0o775):
     #-- if file exists in file system: check if remote file is newer
     TEST = False
     OVERWRITE = ' (clobber)'
@@ -392,13 +401,24 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,LIST,CLOBBER,MODE):
             #-- Create and submit request. There are a wide range of exceptions
             #-- that can be thrown here, including HTTPError and URLError.
             req = cryosat_toolkit.utilities.urllib2.Request(remote_file)
-            resp = cryosat_toolkit.utilities.urllib2.urlopen(req,timeout=360)
+            resp = cryosat_toolkit.utilities.urllib2.urlopen(req,timeout=TIMEOUT)
             #-- chunked transfer encoding size
             CHUNK = 16 * 1024
             #-- copy contents to local file using chunked transfer encoding
             #-- transfer should work properly with ascii and binary data formats
-            with open(local_file, 'wb') as f:
-                shutil.copyfileobj(resp, f, CHUNK)
+            #-- attempt to download up to the number of retries
+            retry_counter = 0
+            while (retry_counter < RETRY):
+                try:
+                    with open(local_file, 'wb') as f:
+                        shutil.copyfileobj(resp, f, CHUNK)
+                    break
+                except TimeoutError:
+                    pass
+                retry_counter += 1
+            #-- check if maximum number of retries were reached
+            if (retry_counter == RETRY):
+                raise TimeoutError('Maximum number of retries reached')
             #-- keep remote modification time of file and local access time
             os.utime(local_file, (os.stat(local_file).st_atime, remote_mtime))
             os.chmod(local_file, MODE)
@@ -436,6 +456,13 @@ def main():
     parser.add_argument('--polygon','-p',
         type=lambda p: os.path.abspath(os.path.expanduser(p)),
         help='Georeferenced file containing a set of polygons')
+    #-- connection timeout and number of retry attempts
+    parser.add_argument('--timeout','-t',
+        type=int, default=360,
+        help='Timeout in seconds for blocking operations')
+    parser.add_argument('--retry','-r',
+        type=int, default=5,
+        help='Connection retry attempts')
     #-- Output log file in form
     #-- ESA_CS_SIR_SIN_L2_sync_2002-04-01.log
     parser.add_argument('--log','-l',
@@ -457,8 +484,8 @@ def main():
     #-- check internet connection before attempting to run program
     if check_connection():
         for PRODUCT in args.product:
-            esa_cryosat_sync(PRODUCT, args.year,
-                BASELINE=args.baseline, DIRECTORY=args.directory,
+            esa_cryosat_sync(PRODUCT, args.year, BASELINE=args.baseline,
+                DIRECTORY=args.directory, TIMEOUT=args.timeout, RETRY=args.retry,
                 BBOX=args.bbox, POLYGON=args.polygon, LOG=args.log,
                 LIST=args.list, CLOBBER=args.clobber, MODE=args.mode)
 

@@ -12,18 +12,18 @@ python esa_cryosat_sync.py --baseline D --year 2011 SIR_SIN_L2
 [Source code](https://github.com/tsutterley/read-cryosat-2/blob/main/esa_cryosat_sync.py)
 
 #### Inputs
- 1. CryoSat-2 product to sync with ESA servers
+1. CryoSat-2 product to sync with ESA servers
 
 #### Command Line Options
- - `-h`, `--help`: list the command line options
- - `-D X`, `--directory X`: Working Data Directory
- - `-Y X`, `--year X`: years to sync separated by commas
- - `-B X`, `--baseline X`: CryoSat-2 baseline to sync
- - `--bbox X`: Bounding box (lonmin,latmin,lonmax,latmax)
- - `--polygon X`: Georeferenced file containing a set of polygons
- - `-t X`, `--timeout X`: Timeout in seconds for blocking operations
- - `-r X`, `--retry X`: Connection retry attempts
- - `-M X`, `--mode X`: Permission mode of directories and files synced
- - `-l`, `--log`: Output log file
- - `-L`, `--list`: Only print files that are to be transferred
- - `--clobber`: Overwrite existing data in transfer
+- `-h`, `--help`: list the command line options
+- `-D X`, `--directory X`: Working Data Directory
+- `-Y X`, `--year X`: years to sync separated by commas
+- `-B X`, `--baseline X`: CryoSat-2 baseline to sync
+- `-b X`, `--bbox X`: Bounding box (lonmin,latmin,lonmax,latmax)
+- `-p X`, `--polygon X`: Georeferenced file containing a set of polygons
+- `-t X`, `--timeout X`: Timeout in seconds for blocking operations
+- `-r X`, `--retry X`: Connection retry attempts
+- `-M X`, `--mode X`: Permission mode of directories and files synced
+- `-l`, `--log`: Output log file
+- `-L`, `--list`: Only print files that are to be transferred
+- `-C`, `--clobber`: Overwrite existing data in transfer

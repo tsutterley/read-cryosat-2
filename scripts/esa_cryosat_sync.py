@@ -20,16 +20,16 @@ CALLING SEQUENCE:
 COMMAND LINE OPTIONS:
     --help: list the command line options
     -Y X, --year=X: years to sync separated by commas
-    -B X, --baseline=X: CryoSat-2 baseline to sync
-    --directory: working data directory (default: current working directory)
-    --bbox=X: Bounding box (lonmin,latmin,lonmax,latmax)
-    --polygon=X: Georeferenced file containing a set of polygons
+    -B X, --baseline X: CryoSat-2 baseline to sync
+    -D X, --directory X: working data directory (default: current working directory)
+    -b X, --bbox=X: Bounding box (lonmin,latmin,lonmax,latmax)
+    -p X, --polygon=X: Georeferenced file containing a set of polygons
     -t X, --timeout X: Timeout in seconds for blocking operations
     -r X, --retry X: Connection retry attempts
     -M X, --mode=X: Local permissions mode of the directories and files synced
-    --log: output log of files downloaded
-    --list: print files to be transferred, but do not execute transfer
-    --clobber: Overwrite existing data in transfer
+    -l, --log: output log of files downloaded
+    -L, --list: print files to be transferred, but do not execute transfer
+    -C, --clobber: Overwrite existing data in transfer
 
 PYTHON DEPENDENCIES:
     lxml: Pythonic XML and HTML processing library using libxml2/libxslt

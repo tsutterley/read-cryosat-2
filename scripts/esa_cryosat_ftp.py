@@ -22,17 +22,18 @@ COMMAND LINE OPTIONS:
     --help: list the command line options
     -Y X, --year X: years to sync separated by commas
     -B X, --baseline X: CryoSat-2 baseline to sync
-    --user: username for CryoSat-2 FTP servers
+    -U X, --user X: Username for ESA ftp data dissemination server
+    -P X, --password: Password for ESA ftp data dissemination server
     -N X, --netrc X: path to .netrc file for authentication
-    --directory: working data directory (default: current working directory)
-    --bbox X: Bounding box (lonmin,latmin,lonmax,latmax)
-    --polygon X: Georeferenced file containing a set of polygons
+    -D X, --directory: working data directory (default: current working directory)
+    -b X, --bbox X: Bounding box (lonmin,latmin,lonmax,latmax)
+    -p X, --polygon X: Georeferenced file containing a set of polygons
     -t X, --timeout X: Timeout in seconds for blocking operations
     -r X, --retry X: Connection retry attempts
     -M X, --mode X: Local permissions mode of the directories and files synced
-    --log: output log of files downloaded
-    --list: print files to be transferred, but do not execute transfer
-    --clobber: Overwrite existing data in transfer
+    -l, --log: output log of files downloaded
+    -L, --list: print files to be transferred, but do not execute transfer
+    -C, --clobber: Overwrite existing data in transfer
 
 PYTHON DEPENDENCIES:
     lxml: Pythonic XML and HTML processing library using libxml2/libxslt
@@ -56,6 +57,7 @@ PYTHON DEPENDENCIES:
 
 UPDATE HISTORY:
     Updated 05/2021: added options for connection timeout and retry attempts
+        use try/except for retrieving netrc credentials
     Updated 04/2021: set a default netrc file and check access
         default credentials from environmental variables
     Updated 10/2020: using argparse to set parameters
@@ -382,8 +384,11 @@ def main():
         help='CryoSat-2 Product')
     #-- ESA ftp credentials
     parser.add_argument('--user','-U',
-        type=str, default='',
+        type=str, default=os.environ.get('CRYOSAT_FTP_USERNAME'),
         help='Username for CryoSat-2 FTP Login')
+    parser.add_argument('--password','-P',
+        type=str, default=os.environ.get('CRYOSAT_FTP_PASSWORD'),
+        help='Password for CryoSat-2 FTP Login')
     parser.add_argument('--netrc','-N',
         type=lambda p: os.path.abspath(os.path.expanduser(p)),
         default=os.path.join(os.path.expanduser('~'),'.netrc'),
@@ -437,22 +442,23 @@ def main():
     #-- ESA CryoSat-2 FTP Server name
     HOST = 'science-pds.cryosat.esa.int'
     #-- get ESA CryoSat-2 FTP Server credentials
-    if not args.user and not os.access(args.netrc,os.F_OK):
+    try:
+        args.user,_,args.password = netrc.netrc(args.netrc).authenticators(HOST)
+    except:
         #-- check that ESA CryoSat-2 FTP Server credentials were entered
-        args.user=builtins.input('Username for {0}: '.format(HOST))
+        if not args.user:
+            prompt = 'Username for {0}: '.format(HOST)
+            args.user = builtins.input(prompt)
         #-- enter password securely from command-line
-        PASSWORD=getpass.getpass('Password for {0}@{1}: '.format(args.user,HOST))
-    elif not args.user and os.access(args.netrc,os.F_OK):
-        args.user,_,PASSWORD = netrc.netrc(args.netrc).authenticators(HOST)
-    else:
-        #-- enter password securely from command-line
-        PASSWORD=getpass.getpass('Password for {0}@{1}: '.format(args.user,HOST))
+        if not args.password:
+            prompt = 'Password for {0}@{1}: '.format(args.user,HOST)
+            args.password = getpass.getpass(prompt)
 
     #-- check internet connection before attempting to run program
-    if check_connection(args.user,PASSWORD):
+    if check_connection(args.user,args.password):
         for PRODUCT in args.product:
             esa_cryosat_ftp(PRODUCT, args.years, USER=args.user,
-                PASSWORD=PASSWORD, BASELINE=args.baseline,
+                PASSWORD=args.password, BASELINE=args.baseline,
                 DIRECTORY=args.directory, BBOX=args.bbox, POLYGON=args.polygon,
                 TIMEOUT=args.timeout, RETRY=args.retry, LOG=args.log,
                 LIST=args.list, CLOBBER=args.clobber, MODE=args.mode)

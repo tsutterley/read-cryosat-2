@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2I.py
-Written by Tyler Sutterley (08/2020)
+Written by Tyler Sutterley (05/2021)
 
 Reads CryoSat Level-2 Intermediate data products from baselines A, B, BC and C
 Reads CryoSat Level-2 netCDF4 data products from baseline D
@@ -28,6 +28,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 05/2021: use raw binary string prefixes (rb) for regular expressions
     Updated 08/2020: flake8 updates for python3
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening
         convert from hard to soft tabulation
@@ -1963,19 +1964,19 @@ def read_MPH(full_filename):
     #-- number of text lines in standard MPH
     n_MPH_lines = 41
     #-- check that first line of header matches PRODUCT
-    if not bool(re.match(b'PRODUCT\=\"(.*)(?=\")',file_contents[0])):
+    if not bool(re.match(br'PRODUCT\=\"(.*)(?=\")',file_contents[0])):
         raise IOError('File does not start with a valid PDS MPH')
     #-- read MPH header text
     s_MPH_fields = {}
     for i in range(n_MPH_lines):
         #-- use regular expression operators to read headers
-        if bool(re.match(b'(.*?)\=\"(.*)(?=\")',file_contents[i])):
+        if bool(re.match(br'(.*?)\=\"(.*)(?=\")',file_contents[i])):
             #-- data fields within quotes
-            field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
+            field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
             s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
-        elif bool(re.match(b'(.*?)\=(.*)',file_contents[i])):
+        elif bool(re.match(br'(.*?)\=(.*)',file_contents[i])):
             #-- data fields without quotes
-            field,value=re.findall(b'(.*?)\=(.*)',file_contents[i]).pop()
+            field,value=re.findall(br'(.*?)\=(.*)',file_contents[i]).pop()
             s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
     #-- Return block name array to calling function
@@ -1991,43 +1992,43 @@ def read_SPH(full_filename,j_sph_size):
     #-- number of text lines in standard MPH
     n_MPH_lines = 41
     #-- compile regular expression operator for reading headers
-    rx = re.compile(b'(.*?)\=\"?(.*)',re.VERBOSE)
+    rx = re.compile(br'(.*?)\=\"?(.*)',re.VERBOSE)
     #-- check first line of header matches SPH_DESCRIPTOR
-    if not bool(re.match(b'SPH\_DESCRIPTOR\=',file_contents[n_MPH_lines+1])):
+    if not bool(re.match(br'SPH\_DESCRIPTOR\=',file_contents[n_MPH_lines+1])):
         raise IOError('File does not have a valid PDS DSD')
     #-- read SPH header text (no binary control characters)
     s_SPH_lines = [li for li in file_contents[n_MPH_lines+1:] if rx.match(li)
-        and not re.search(b'[^\x20-\x7e]+',li)]
+        and not re.search(br'[^\x20-\x7e]+',li)]
 
     #-- extract SPH header text
     s_SPH_fields = {}
     c = 0
     while (c < len(s_SPH_lines)):
         #-- check if line is within DS_NAME portion of SPH header
-        if bool(re.match(b'DS_NAME',s_SPH_lines[c])):
+        if bool(re.match(br'DS_NAME',s_SPH_lines[c])):
             #-- add dictionary for DS_NAME
-            field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
+            field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
             key = value.decode('utf-8').rstrip()
             s_SPH_fields[key] = {}
             for line in s_SPH_lines[c+1:c+7]:
-                if bool(re.match(b'(.*?)\=\"(.*)(?=\")',line)):
+                if bool(re.match(br'(.*?)\=\"(.*)(?=\")',line)):
                     #-- data fields within quotes
-                    dsfield,dsvalue=re.findall(b'(.*?)\=\"(.*)(?=\")',line).pop()
+                    dsfield,dsvalue=re.findall(br'(.*?)\=\"(.*)(?=\")',line).pop()
                     s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
-                elif bool(re.match(b'(.*?)\=(.*)',line)):
+                elif bool(re.match(br'(.*?)\=(.*)',line)):
                     #-- data fields without quotes
-                    dsfield,dsvalue=re.findall(b'(.*?)\=(.*)',line).pop()
+                    dsfield,dsvalue=re.findall(br'(.*?)\=(.*)',line).pop()
                     s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
             #-- add 6 to counter to go to next entry
             c += 6
         #-- use regular expression operators to read headers
-        elif bool(re.match(b'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c])):
+        elif bool(re.match(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c])):
             #-- data fields within quotes
-            field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
+            field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
             s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
-        elif bool(re.match(b'(.*?)\=(.*)',s_SPH_lines[c])):
+        elif bool(re.match(br'(.*?)\=(.*)',s_SPH_lines[c])):
             #-- data fields without quotes
-            field,value=re.findall(b'(.*?)\=(.*)',s_SPH_lines[c]).pop()
+            field,value=re.findall(br'(.*?)\=(.*)',s_SPH_lines[c]).pop()
             s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         #-- add 1 to counter to go to next line
         c += 1
@@ -2049,16 +2050,16 @@ def read_DSD(full_filename):
 
     #-- Level-2 CryoSat DS_NAMES within files
     regex_patterns = []
-    regex_patterns.append(b'DS_NAME\="SIR_LRM_L2(_I)?[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_LRMIL2[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_SAR_L2(A|B)?(_I)?[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_SARIL2(A|B)?[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_FDM_L2[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_SIN_L2(_I)?[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_SINIL2[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_SID_L2(_I)?[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_SIDIL2[\s+]*"')
-    regex_patterns.append(b'DS_NAME\="SIR_GDR_2(A|B|_)?[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_LRM_L2(_I)?[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_LRMIL2[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_SAR_L2(A|B)?(_I)?[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_SARIL2(A|B)?[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_FDM_L2[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_SIN_L2(_I)?[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_SINIL2[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_SID_L2(_I)?[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_SIDIL2[\s+]*"')
+    regex_patterns.append(br'DS_NAME\="SIR_GDR_2(A|B|_)?[\s+]*"')
     #-- find the DSD starting line within the SPH header
     c = 0
     Flag = False
@@ -2079,13 +2080,13 @@ def read_DSD(full_filename):
     s_DSD_fields = {}
     for i in range(DSD_START,DSD_START+n_DSD_lines):
         #-- use regular expression operators to read headers
-        if bool(re.match(b'(.*?)\=\"(.*)(?=\")',file_contents[i])):
+        if bool(re.match(br'(.*?)\=\"(.*)(?=\")',file_contents[i])):
             #-- data fields within quotes
-            field,value=re.findall(b'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
+            field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
             s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
-        elif bool(re.match(b'(.*?)\=(.*)',file_contents[i])):
+        elif bool(re.match(br'(.*?)\=(.*)',file_contents[i])):
             #-- data fields without quotes
-            field,value=re.findall(b'(.*?)\=(.*)',file_contents[i]).pop()
+            field,value=re.findall(br'(.*?)\=(.*)',file_contents[i]).pop()
             s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
     #-- Return block name array to calling function
@@ -2102,7 +2103,7 @@ def read_cryosat_L2I(full_filename, VERBOSE=False):
     #-- RPRO (ReProcessing)
     #-- TEST (Testing)
     #-- LTA_ (Long Term Archive)
-    regex_class = 'OFFL|NRT_|RPRO|TEST|LTA_'
+    regex_class = r'OFFL|NRT_|RPRO|TEST|LTA_'
     #-- CryoSat mission products
     #-- SIR_LRM_2 L2 Product from Low Resolution Mode Processing
     #-- SIR_FDM_2 L2 Product from Fast Delivery Marine Mode Processing
@@ -2114,8 +2115,8 @@ def read_cryosat_L2I(full_filename, VERBOSE=False):
     #-- SIR_SINI2 In-depth L2 Product from SIN Processing
     #-- SIR_SIDI2 In-depth L2 Product from SIN Degraded Process.
     #-- SIR_SARI2 In-depth L2 Product from SAR Processing
-    regex_products = ('SIR_LRM_2|SIR_FDM_2|SIR_SIN_2|SIR_SID_2|'
-    'SIR_SAR_2|SIR_GDR_2|SIR_LRMI2|SIR_SINI2|SIR_SIDI2|SIR_SARI2')
+    regex_products = (r'SIR_LRM_2|SIR_FDM_2|SIR_SIN_2|SIR_SID_2|'
+        r'SIR_SAR_2|SIR_GDR_2|SIR_LRMI2|SIR_SINI2|SIR_SIDI2|SIR_SARI2')
     #-- CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
     #-- Mission Identifier
     #-- File Class
@@ -2124,7 +2125,7 @@ def read_cryosat_L2I(full_filename, VERBOSE=False):
     #-- Validity Stop Date and Time
     #-- Baseline Identifier
     #-- Version Number
-    regex_pattern = '(.*?)_({0})_({1})__(\d+T?\d+)_(\d+T?\d+)_(.*?)(\d+)'
+    regex_pattern = r'(.*?)_({0})_({1})__(\d+T?\d+)_(\d+T?\d+)_(.*?)(\d+)'
     rx = re.compile(regex_pattern.format(regex_class,regex_products),re.VERBOSE)
     #-- extract file information from filename
     MI,CLASS,PRODUCT,START,STOP,BASELINE,VERSION=rx.findall(fileBasename).pop()

@@ -19,7 +19,7 @@ CALLING SEQUENCE:
 
 COMMAND LINE OPTIONS:
     --help: list the command line options
-    -Y X, --year=X: years to sync separated by commas
+    -Y X, --year=X: years to sync
     -B X, --baseline X: CryoSat-2 baseline to sync
     -D X, --directory X: working data directory (default: current working directory)
     -b X, --bbox=X: Bounding box (lonmin,latmin,lonmax,latmax)

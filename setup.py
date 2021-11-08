@@ -52,7 +52,7 @@ if gdal_output[3]:
     install_requires[gdal_index] = 'gdal=={0}'.format(gdal_output[3])
 
 setup(
-    name='read-cryosat-2',
+    name='cryosat-toolkit',
     version=version,
     description=description,
     long_description=long_description,

@@ -20,7 +20,7 @@ CALLING SEQUENCE:
 
 COMMAND LINE OPTIONS:
     --help: list the command line options
-    -Y X, --year X: years to sync separated by commas
+    -Y X, --year X: years to sync
     -B X, --baseline X: CryoSat-2 baseline to sync
     -U X, --user X: Username for ESA ftp data dissemination server
     -P X, --password: Password for ESA ftp data dissemination server

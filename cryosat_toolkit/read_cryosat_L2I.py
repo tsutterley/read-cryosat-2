@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2I.py
-Written by Tyler Sutterley (05/2021)
+Written by Tyler Sutterley (05/2022)
 
 Reads CryoSat Level-2 Intermediate data products from baselines A, B, BC and C
-Reads CryoSat Level-2 netCDF4 data products from baseline D
+Reads CryoSat Level-2 netCDF4 data products from baseline D and E
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
 INPUTS:
@@ -28,6 +28,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 05/2022: added docstrings in numpy documentation format
     Updated 05/2021: use raw binary string prefixes (rb) for regular expressions
     Updated 08/2020: flake8 updates for python3
     Updated 02/2020: tilde-expansion of cryosat-2 files before opening

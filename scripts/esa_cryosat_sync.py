@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_sync.py
-Written by Tyler Sutterley (05/2021)
+Written by Tyler Sutterley (05/2022)
 
 This program syncs Cryosat Elevation products
 From the ESA CryoSat-2 Science Server:
@@ -15,7 +15,7 @@ INPUTS:
         SIR_SIN_L2: CryoSat-2 SARin Mode
 
 CALLING SEQUENCE:
-    python esa_cryosat_sync.py --baseline=D SIR_SIN_L2
+    python esa_cryosat_sync.py --baseline D SIR_SIN_L2
 
 COMMAND LINE OPTIONS:
     --help: list the command line options
@@ -49,9 +49,10 @@ PYTHON DEPENDENCIES:
     pyproj: Python interface to PROJ library
         https://pypi.org/project/pyproj/
     future: Compatibility layer between Python 2 and Python 3
-        (http://python-future.org/)
+        http://python-future.org/
 
 UPDATE HISTORY:
+    Updated 05/2022: use argparse descriptions within documentation
     Updated 05/2021: added options for connection timeout and retry attempts
     Updated 10/2020: using argparse to set parameters
     Updated 07/2020: create compiled lists of filenames and last modified times
@@ -86,18 +87,6 @@ import calendar, time
 import cryosat_toolkit.polygon
 import cryosat_toolkit.utilities
 import shapely.geometry
-
-#-- PURPOSE: check internet connection
-def check_connection():
-    #-- attempt to connect to https ESA CryoSat-2 Science Server
-    try:
-        HOST = 'https://science-pds.cryosat.esa.int'
-        cryosat_toolkit.utilities.urllib2.urlopen(HOST,
-            timeout=20,context=ssl.SSLContext())
-    except cryosat_toolkit.utilities.urllib2.URLError:
-        raise RuntimeError('Check internet connection')
-    else:
-        return True
 
 #-- PURPOSE: compile regular expression operator to find CryoSat-2 files
 def compile_regex_pattern(PRODUCT, BASELINE, START=r'\d+T?\d+', STOP=r'\d+T?\d+',
@@ -428,8 +417,8 @@ def http_pull_file(fid,remote_file,remote_mtime,local_file,TIMEOUT=None,
             os.utime(local_file, (os.stat(local_file).st_atime, remote_mtime))
             os.chmod(local_file, MODE)
 
-#-- Main program that calls esa_cryosat_sync()
-def main():
+#-- PURPOSE: create argument parser
+def arguments():
     #-- Read the system arguments listed after the program
     parser = argparse.ArgumentParser(
         description="""Syncs Cryosat Elevation products
@@ -484,10 +473,18 @@ def main():
     parser.add_argument('--mode','-M',
         type=lambda x: int(x,base=8), default=0o775,
         help='Permission mode of directories and files synced')
-    args = parser.parse_args()
+    #-- return the parser
+    return parser
+
+#-- This is the main part of the program that calls the individual functions
+def main():
+    #-- Read the system arguments listed after the program
+    parser = arguments()
+    args,_ = parser.parse_known_args()
 
     #-- check internet connection before attempting to run program
-    if check_connection():
+    HOST = 'https://science-pds.cryosat.esa.int'
+    if cryosat_toolkit.utilities.check_connection(HOST):
         for PRODUCT in args.product:
             esa_cryosat_sync(PRODUCT, args.year, BASELINE=args.baseline,
                 DIRECTORY=args.directory, TIMEOUT=args.timeout, RETRY=args.retry,

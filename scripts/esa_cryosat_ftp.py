@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 esa_cryosat_ftp.py
-Written by Tyler Sutterley (05/2021)
+Written by Tyler Sutterley (05/2022)
 
 This program syncs Cryosat Elevation products
 From the ESA Cryosat ftp dissemination server:
@@ -15,7 +15,7 @@ INPUTS:
         SIR_SIN_L2: CryoSat-2 SARin Mode
 
 CALLING SEQUENCE:
-    python esa_cryosat_ftp.py --baseline=C --user=<username> SIR_SIN_L2
+    python esa_cryosat_ftp.py --baseline C --user <username> SIR_SIN_L2
     where <username> is your ESA data dissemination server username
 
 COMMAND LINE OPTIONS:
@@ -53,9 +53,10 @@ PYTHON DEPENDENCIES:
     pyproj: Python interface to PROJ library
         https://pypi.org/project/pyproj/
     future: Compatibility layer between Python 2 and Python 3
-        (http://python-future.org/)
+        http://python-future.org/
 
 UPDATE HISTORY:
+    Updated 05/2022: use argparse descriptions within documentation
     Updated 05/2021: added options for connection timeout and retry attempts
         use try/except for retrieving netrc credentials
     Updated 04/2021: set a default netrc file and check access
@@ -89,22 +90,9 @@ import builtins
 import lxml.etree
 import calendar, time
 import ftplib, posixpath
-import cryosat_toolkit.polygon
 import shapely.geometry
-
-#-- PURPOSE: check internet connection
-def check_connection(USER, PASSWORD):
-    #-- attempt to connect to ftp host for Cryosat-2 servers
-    try:
-        f = ftplib.FTP('science-pds.cryosat.esa.int')
-        f.login(USER, PASSWORD)
-        f.voidcmd("NOOP")
-    except IOError:
-        raise RuntimeError('Check internet connection')
-    except ftplib.error_perm:
-        raise RuntimeError('Check login credentials')
-    else:
-        return True
+import cryosat_toolkit.polygon
+import cryosat_toolkit.utilities
 
 #-- PURPOSE: compile regular expression operator to find CryoSat-2 files
 def compile_regex_pattern(PRODUCT, BASELINE, START=r'\d+T?\d+', STOP=r'\d+T?\d+',
@@ -370,9 +358,8 @@ def get_mtime(collastmod, FORMAT="%Y%m%d%H%M%S"):
     lastmodtime = time.strptime(collastmod[4:], FORMAT)
     return calendar.timegm(lastmodtime)
 
-#-- Main program that calls esa_cryosat_ftp()
-def main():
-    #-- Read the system arguments listed after the program
+#-- PURPOSE: create argument parser
+def arguments():
     parser = argparse.ArgumentParser(
         description="""Syncs Cryosat Elevation products
             from the ESA Cryosat ftp dissemination server
@@ -386,7 +373,7 @@ def main():
     parser.add_argument('--user','-U',
         type=str, default=os.environ.get('CRYOSAT_FTP_USERNAME'),
         help='Username for CryoSat-2 FTP Login')
-    parser.add_argument('--password','-P',
+    parser.add_argument('--password','-W',
         type=str, default=os.environ.get('CRYOSAT_FTP_PASSWORD'),
         help='Password for CryoSat-2 FTP Login')
     parser.add_argument('--netrc','-N',
@@ -437,7 +424,14 @@ def main():
     parser.add_argument('--mode','-M',
         type=lambda x: int(x,base=8), default=0o775,
         help='Permission mode of directories and files synced')
-    args = parser.parse_args()
+    #-- return the parser
+    return parser
+
+#-- This is the main part of the program that calls the individual functions
+def main():
+    #-- Read the system arguments listed after the program
+    parser = arguments()
+    args,_ = parser.parse_known_args()
 
     #-- ESA CryoSat-2 FTP Server name
     HOST = 'science-pds.cryosat.esa.int'
@@ -455,7 +449,8 @@ def main():
             args.password = getpass.getpass(prompt)
 
     #-- check internet connection before attempting to run program
-    if check_connection(args.user,args.password):
+    if cryosat_toolkit.utilities.check_ftp_connection(HOST,
+        username=args.user, password=args.password):
         for PRODUCT in args.product:
             esa_cryosat_ftp(PRODUCT, args.years, USER=args.user,
                 PASSWORD=args.password, BASELINE=args.baseline,

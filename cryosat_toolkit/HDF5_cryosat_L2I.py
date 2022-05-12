@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 u"""
-HDF5_cryosat_L2I.py (08/2020)
+HDF5_cryosat_L2I.py (05/2022)
 Reads and Writes HDF5 files for CryoSat-2 Level-2 intermediary data products
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
@@ -29,6 +29,7 @@ PYTHON DEPENDENCIES:
         (https://www.h5py.org/)
 
 UPDATE HISTORY:
+    Updated 05/2022: added docstrings in numpy documentation format
     Updated 08/2020: flake8 updates for python3
     Updated 02/2020: convert from hard to soft tabulation
     Updated 10/2019: changing Y/N flags to True/False

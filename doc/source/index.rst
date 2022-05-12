@@ -17,15 +17,15 @@ Python tools to read waveform and geolocated elevation data from the ESA CryoSat
     :hidden:
     :caption: User Guide
 
-    user_guide/calc_GPS_time.md
-    user_guide/esa_cryosat_ftp.md
-    user_guide/esa_cryosat_sync.md
+    user_guide/calc_GPS_time.rst
+    user_guide/esa_cryosat_ftp.rst
+    user_guide/esa_cryosat_sync.rst
     user_guide/polygon.rst
-    user_guide/HDF5_cryosat_L1b.md
-    user_guide/HDF5_cryosat_L2.md
-    user_guide/HDF5_cryosat_L2I.md
-    user_guide/read_cryosat_L1b.md
-    user_guide/read_cryosat_L2.md
-    user_guide/read_cryosat_L2I.md
+    user_guide/HDF5_cryosat_L1b.rst
+    user_guide/HDF5_cryosat_L2.rst
+    user_guide/HDF5_cryosat_L2I.rst
+    user_guide/read_cryosat_L1b.rst
+    user_guide/read_cryosat_L2.rst
+    user_guide/read_cryosat_L2I.rst
     user_guide/time.rst
     user_guide/utilities.rst

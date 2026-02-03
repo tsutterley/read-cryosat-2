@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 u"""
-version.py (04/2021)
+version.py (11/2023)
 Gets version number of a package
 """
-from pkg_resources import get_distribution
+import importlib.metadata
 
+# package metadata
+metadata = importlib.metadata.metadata("cryosat_toolkit")
 # get version
-version = get_distribution("cryosat_toolkit").version
+version = metadata["version"]
 # append "v" before the version
-full_version = "v{0}".format(version)
+full_version = f"v{version}"
+# get project name
+project_name = metadata["Name"]

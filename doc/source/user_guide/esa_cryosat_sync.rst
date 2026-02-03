@@ -11,7 +11,7 @@ esa_cryosat_sync.py
 .. __: https://github.com/tsutterley/read-cryosat-2/blob/main/esa_cryosat_sync.py
 
 .. argparse::
-    :filename: ../../scripts/esa_cryosat_sync.py
+    :filename: esa_cryosat_sync.py
     :func: arguments
     :prog: esa_cryosat_sync.py
     :nodescription:

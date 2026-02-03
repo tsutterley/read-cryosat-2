@@ -66,16 +66,16 @@ class polygon(object):
             input filename
         """
         self.filename = os.path.expanduser(filename)
-        #-- check if file presently exists with input case
+        # check if file presently exists with input case
         if not os.access(self.filename,os.F_OK):
-            #-- search for filename without case dependence
+            # search for filename without case dependence
             basename = os.path.basename(filename)
             directory = os.path.dirname(os.path.expanduser(filename))
             f = [f for f in os.listdir(directory) if re.match(basename,f,re.I)]
             if not f:
                 raise IOError('{0} not found in file system'.format(filename))
             self.filename = os.path.join(directory,f.pop())
-        #-- print the input filename
+        # print the input filename
         logging.debug(self.filename)
         return self
 
@@ -100,7 +100,7 @@ class polygon(object):
         # read the GeoJSON file
         gj = geopandas.read_file(self.filename)
 
-        #-- converting x,y from polygon projection to output EPSG
+        # converting x,y from polygon projection to output EPSG
         crs1 = pyproj.CRS.from_string(gj.crs['init'])
         crs2 = pyproj.CRS.from_string("epsg:{0:d}".format(self.epsg))
         transformer = pyproj.Transformer.from_crs(crs1, crs2, always_xy=True)
@@ -162,7 +162,7 @@ class polygon(object):
         else:
             kml = geopandas.read_file(self.filename)
 
-        #-- converting x,y from polygon projection to output EPSG
+        # converting x,y from polygon projection to output EPSG
         crs1 = pyproj.CRS.from_string(kml.crs['init'])
         crs2 = pyproj.CRS.from_string("epsg:{0:d}".format(self.epsg))
         transformer = pyproj.Transformer.from_crs(crs1, crs2, always_xy=True)
@@ -220,7 +220,7 @@ class polygon(object):
             # read the shapefile and extract entities
             shape = fiona.open(self.filename,'r')
 
-        #-- converting x,y from polygon projection to output EPSG
+        # converting x,y from polygon projection to output EPSG
         crs1 = pyproj.CRS.from_string(shape.crs['init'])
         crs2 = pyproj.CRS.from_string("epsg:{0:d}".format(self.epsg))
         transformer = pyproj.Transformer.from_crs(crs1, crs2, always_xy=True)

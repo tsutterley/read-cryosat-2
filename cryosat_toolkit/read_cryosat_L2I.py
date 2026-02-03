@@ -50,61 +50,61 @@ import netCDF4
 import numpy as np
 import scipy.interpolate
 
-#-- PURPOSE: Initiate L2I MDS variables for CryoSat Baselines A and B
+# PURPOSE: Initiate L2I MDS variables for CryoSat Baselines A and B
 def cryosat_baseline_AB(fid,record_size,n_records):
-    #-- CryoSat-2 Location Group
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 Location Group
+    # Time and Orbit Parameters plus Measurement Mode
     Location = {}
-    #-- Time: day part
+    # Time: day part
     Location['Day'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Location['Sec'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Location['Micsec'] = np.zeros((n_records),dtype=np.uint32)
-    #-- USO correction factor
+    # USO correction factor
     Location['USO_Corr'] = np.zeros((n_records),dtype=np.int32)
-    #-- Mode ID
+    # Mode ID
     Location['Mode_ID'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Source sequence counter
+    # Source sequence counter
     Location['SSC'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Instrument configuration
+    # Instrument configuration
     Location['Inst_config'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Record Counter
+    # Record Counter
     Location['Rec_Count'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lon'] = np.zeros((n_records),dtype=np.int32)
-    #-- Alt: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Location['Alt'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
+    # Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
     Location['Alt_rate'] = np.zeros((n_records),dtype=np.int32)
-    #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
+    # Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
     Location['Sat_velocity'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Real_beam'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Baseline'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Measurement Confidence Data
+    # Measurement Confidence Data
     Location['MCD'] = np.zeros((n_records),dtype=np.uint32)
 
-    #-- CryoSat-2 Measurement Group
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 Measurement Group
+    # Derived from instrument measurement parameters
     Data = {}
-    #-- Measured elevation above ellipsoid from retracker: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker: packed units (mm, 1e-3 m)
     Data['Elev'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker: packed units (1e-2 dB)
     Data['Sig0'] = np.zeros((n_records),dtype=np.int32)
-    #-- SWH packed units (mm, 1e-3)
+    # SWH packed units (mm, 1e-3)
     Data['SWH'] = np.zeros((n_records),dtype=np.int32)
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     Data['Peakiness'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction: packed units (mm, 1e-3 m)
+    # Retracked range correction: packed units (mm, 1e-3 m)
     Data['Retrack_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked sigma 0 correction: packed units (1e-2 dB)
+    # Retracked sigma 0 correction: packed units (1e-2 dB)
     Data['Retrack_sig0'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retrackers 3-13 output
+    # Retrackers 3-13 output
     Data['Retrack_3'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_4'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_5'] = np.zeros((n_records),dtype=np.int32)
@@ -116,64 +116,64 @@ def cryosat_baseline_AB(fid,record_size,n_records):
     Data['Retrack_11'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_12'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_13'] = np.zeros((n_records),dtype=np.int32)
-    #-- Power echo shape parameter: packed units (dB/100)
+    # Power echo shape parameter: packed units (dB/100)
     Data['echo_shape'] = np.zeros((n_records),dtype=np.int32)
-    #-- Beam behaviour parameter: unitless code number related to
-    #-- surface characteristics
+    # Beam behaviour parameter: unitless code number related to
+    # surface characteristics
     Data['BB_parameter'] = np.zeros((n_records,50),dtype=np.int16)
-    #-- Cross track angle: packed units (micro radians)
+    # Cross track angle: packed units (micro radians)
     Data['X_Track_Angle'] = np.zeros((n_records),dtype=np.int32)
-    #-- Leading edge coherence at retrack point 1/1000
+    # Leading edge coherence at retrack point 1/1000
     Data['Coherence'] = np.zeros((n_records),dtype=np.int32)
-    #-- Interpolated Ocean Height: packed units (mm above ellipsoid)
+    # Interpolated Ocean Height: packed units (mm above ellipsoid)
     Data['Ocean_ht'] = np.zeros((n_records),dtype=np.int32)
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     Data['Freeboard'] = np.zeros((n_records),dtype=np.int32)
-    #-- Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SHA'] = np.zeros((n_records),dtype=np.int32)
-    #-- Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SSHA_interp'] = np.zeros((n_records),dtype=np.int32)
-    #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
+    # Error in ocean height interpolation: packed units (mm, 1e-3 m)
     Data['SSHA_interp_RMS'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Number of forward records interpolated
+    # Number of forward records interpolated
     Data['SSHA_interp_count_fwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Number of backward records interpolated
+    # Number of backward records interpolated
     Data['SSHA_interp_count_bkwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Distance in time of most forward record interpolated (milli-seconds)
+    # Distance in time of most forward record interpolated (milli-seconds)
     Data['SSHA_interp_time_fwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Distance in time of most backward record interpolated (milli-seconds)
+    # Distance in time of most backward record interpolated (milli-seconds)
     Data['SSHA_interp_time_bkwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Interpolation error flag
+    # Interpolation error flag
     Data['SSHA_interp_flag'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Measurement mode
+    # Measurement mode
     Data['Measurement_Mode'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Quality flags
+    # Quality flags
     Data['Quality_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Retracker flags
+    # Retracker flags
     Data['Retracker_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Height calculation details
-    #-- Specifies what was applied during the height calculation
+    # Height calculation details
+    # Specifies what was applied during the height calculation
     Data['Height_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- SAR freeboard status flag
+    # SAR freeboard status flag
     Data['Freeboard_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data['N_avg'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Data['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
     Data['Spares1'] = np.zeros((n_records,3),dtype=np.int32)
 
-    #-- CryoSat-2 Auxiliary Data Group
+    # CryoSat-2 Auxiliary Data Group
     Auxiliary = {}
-    #-- Ice Concentration packed units (%/1000)
+    # Ice Concentration packed units (%/1000)
     Auxiliary['Ice_conc'] = np.zeros((n_records),dtype=np.int32)
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Auxiliary['Snow_depth'] = np.zeros((n_records),dtype=np.int32)
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Auxiliary['Snow_density'] = np.zeros((n_records),dtype=np.int32)
-    #-- Discriminator result
+    # Discriminator result
     Auxiliary['Discriminator'] = np.zeros((n_records),dtype=np.int32)
-    #-- SARin discriminator parameters 1-10
+    # SARin discriminator parameters 1-10
     Auxiliary['SARIN_disc_1'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_2'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_3'] = np.zeros((n_records),dtype=np.int32)
@@ -184,89 +184,89 @@ def cryosat_baseline_AB(fid,record_size,n_records):
     Auxiliary['SARIN_disc_8'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_9'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_10'] = np.zeros((n_records),dtype=np.int32)
-    #-- Discriminator flags
+    # Discriminator flags
     Auxiliary['Discrim_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Slope model correction (Attitude of echo in micro-degrees)
+    # Slope model correction (Attitude of echo in micro-degrees)
     Auxiliary['Attitude'] = np.zeros((n_records),dtype=np.int32)
-    #-- Slope model correction (Azimuth of echo in micro-degrees)
+    # Slope model correction (Azimuth of echo in micro-degrees)
     Auxiliary['Azimuth'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original latitude of the satellite (micro-degrees)
+    # The original latitude of the satellite (micro-degrees)
     Auxiliary['Lat_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original longitude of the satellite (micro-degrees)
+    # The original longitude of the satellite (micro-degrees)
     Auxiliary['Lon_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ambiguity indicator
+    # Ambiguity indicator
     Auxiliary['Ambiguity'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
+    # Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
     Auxiliary['MSS_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- Geoid standard Model: packed units (mm, 1e-3 m)
+    # Geoid standard Model: packed units (mm, 1e-3 m)
     Auxiliary['Geoid_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- ODLE standard Model: packed units (mm, 1e-3 m)
+    # ODLE standard Model: packed units (mm, 1e-3 m)
     Auxiliary['ODLE'] = np.zeros((n_records),dtype=np.int32)
-    #-- The interpolated elevation value obtained from the DEM (mm)
+    # The interpolated elevation value obtained from the DEM (mm)
     Auxiliary['DEM_elev'] = np.zeros((n_records),dtype=np.int32)
-    #-- Identification of DEM used in SARin ambiguity test
+    # Identification of DEM used in SARin ambiguity test
     Auxiliary['DEM_ID'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['Spares2'] = np.zeros((n_records,4),dtype=np.int32)
 
-    #-- CryoSat-2 External Corrections Group
+    # CryoSat-2 External Corrections Group
     Geometry = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['dryTrop'] = np.zeros((n_records),dtype=np.int32)
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['wetTrop'] = np.zeros((n_records),dtype=np.int32)
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['InvBar'] = np.zeros((n_records),dtype=np.int32)
-    #-- Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['DAC'] = np.zeros((n_records),dtype=np.int32)
-    #-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+    # GIM Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_GIM'] = np.zeros((n_records),dtype=np.int32)
-    #-- Model Ionospheric Correction packed units (mm, 1e-3 m)
+    # Model Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['ocTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['lpeTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Geometry['olTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Geometry['seTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Geometry['gpTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     Geometry['Surf_type'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Geometry['Corr_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Correction Error Flag
+    # Correction Error Flag
     Geometry['Corr_error'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Geometry['SSB'] = np.zeros((n_records),dtype=np.int32)
     Geometry['Spares3'] = np.zeros((n_records,2),dtype=np.int32)
 
-    #-- CryoSat-2 Internal Corrections Group
+    # CryoSat-2 Internal Corrections Group
     Instrumental = {}
-    #-- Doppler range correction: Radial + slope (mm)
+    # Doppler range correction: Radial + slope (mm)
     Instrumental['Doppler_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Range Correction: t-r antenna (mm)
+    # Instrument Range Correction: t-r antenna (mm)
     Instrumental['TR_inst_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Range Correction: r-only antenna (mm)
+    # Instrument Range Correction: r-only antenna (mm)
     Instrumental['R_inst_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Sigma 0 Correction: t-r antenna (dB/100)
+    # Instrument Sigma 0 Correction: t-r antenna (dB/100)
     Instrumental['TR_inst_gain'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Sigma 0 Correction: r-only (dB/100)
+    # Instrument Sigma 0 Correction: r-only (dB/100)
     Instrumental['R_inst_gain'] = np.zeros((n_records),dtype=np.int32)
-    #-- Internal Phase Correction (milli-radians)
+    # Internal Phase Correction (milli-radians)
     Instrumental['Internal_phase'] = np.zeros((n_records),dtype=np.int32)
-    #-- External Phase Correction (milli-radians)
+    # External Phase Correction (milli-radians)
     Instrumental['External_phase'] = np.zeros((n_records),dtype=np.int32)
-    #-- Noise Power measurement
+    # Noise Power measurement
     Instrumental['Noise_power'] = np.zeros((n_records),dtype=np.int32)
-    #-- Phase slope correction (microradians)
+    # Phase slope correction (microradians)
     Instrumental['Phase_slope'] = np.zeros((n_records),dtype=np.int32)
     Instrumental['Spares4'] = np.zeros((n_records,2),dtype=np.int32)
 
-    #-- for each record in the CryoSat file
+    # for each record in the CryoSat file
     for r in range(n_records):
-        #-- get satellite time and orbit parameters for record r
+        # get satellite time and orbit parameters for record r
         Location['Day'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Location['Sec'][r] = np.fromfile(fid,dtype='>u4',count=1)
         Location['Micsec'][r] = np.fromfile(fid,dtype='>u4',count=1)
@@ -284,7 +284,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Location['Baseline'][r,:] = np.fromfile(fid,dtype='>i4',count=3)
         Location['MCD'][r] = np.fromfile(fid,dtype='>u4',count=1)
 
-        #-- elevation measurements
+        # elevation measurements
         Data['Elev'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data['Sig0'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data['SWH'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -325,7 +325,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Data['Wind_speed'][r] = np.fromfile(fid,dtype='>u2',count=1)
         Data['Spares1'][r,:] = np.fromfile(fid,dtype='>i4',count=3)
 
-        #-- Auxiliary Data
+        # Auxiliary Data
         Auxiliary['Ice_conc'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Snow_depth'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Snow_density'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -353,7 +353,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Auxiliary['DEM_ID'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Spares2'][r,:] = np.fromfile(fid,dtype='>i4',count=4)
 
-        #-- CryoSat-2 External Corrections Group for record r
+        # CryoSat-2 External Corrections Group for record r
         Geometry['dryTrop'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['wetTrop'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['InvBar'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -371,7 +371,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Geometry['SSB'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['Spares3'][r,:] = np.fromfile(fid,dtype='>i4',count=2)
 
-        #-- CryoSat-2 Internal Corrections Group for record r
+        # CryoSat-2 Internal Corrections Group for record r
         Instrumental['Doppler_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['TR_inst_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['R_inst_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -383,102 +383,102 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Instrumental['Phase_slope'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['Spares4'][r,:] = np.fromfile(fid,dtype='>i4',count=2)
 
-    #-- Bind all the bits of the l2i_mds together into a single dictionary
+    # Bind all the bits of the l2i_mds together into a single dictionary
     CS_L2I_mds = {}
     CS_L2I_mds['Location'] = Location
     CS_L2I_mds['Data'] = Data
     CS_L2I_mds['Auxiliary'] = Auxiliary
     CS_L2I_mds['Geometry'] = Geometry
     CS_L2I_mds['Instrumental'] = Instrumental
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_L2I_mds
 
-#-- PURPOSE: Initiate L2I MDS variables for CryoSat Baseline BC
+# PURPOSE: Initiate L2I MDS variables for CryoSat Baseline BC
 def cryosat_baseline_BC(fid,record_size,n_records):
-    #-- CryoSat-2 Location Group
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 Location Group
+    # Time and Orbit Parameters plus Measurement Mode
     Location = {}
-    #-- Time: day part
+    # Time: day part
     Location['Day'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Location['Sec'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Location['Micsec'] = np.zeros((n_records),dtype=np.uint32)
-    #-- USO correction factor
+    # USO correction factor
     Location['USO_Corr'] = np.zeros((n_records),dtype=np.int32)
-    #-- Mode ID
+    # Mode ID
     Location['Mode_ID'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Source sequence counter
+    # Source sequence counter
     Location['SSC'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Instrument configuration
+    # Instrument configuration
     Location['Inst_config'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Record Counter
+    # Record Counter
     Location['Rec_Count'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lon'] = np.zeros((n_records),dtype=np.int32)
-    #-- Alt: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Location['Alt'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
+    # Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
     Location['Alt_rate'] = np.zeros((n_records),dtype=np.int32)
-    #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
+    # Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
     Location['Sat_velocity'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Real_beam'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Baseline'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Star Tracker ID
+    # Star Tracker ID
     Location['ST_ID'] = np.zeros((n_records),dtype=np.int16)
     Location['Spare'] = np.zeros((n_records),dtype=np.int16)
-    #-- Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Roll'] = np.zeros((n_records),dtype=np.int32)
-    #-- Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Pitch'] = np.zeros((n_records),dtype=np.int32)
-    #-- Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Yaw'] = np.zeros((n_records),dtype=np.int32)
-    #-- Measurement Confidence Data
+    # Measurement Confidence Data
     Location['MCD'] = np.zeros((n_records),dtype=np.uint32)
 
-    #-- CryoSat-2 Measurement Group
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 Measurement Group
+    # Derived from instrument measurement parameters
     Data = {}
-    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     Data['Elev_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     Data['Elev_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     Data['Elev_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     Data['Sig0_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     Data['Sig0_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     Data['Sig0_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- SWH packed units (mm, 1e-3)
+    # SWH packed units (mm, 1e-3)
     Data['SWH'] = np.zeros((n_records),dtype=np.int32)
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     Data['Peakiness'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
     Data['Range_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction for retracker 2: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 2: packed units (mm, 1e-3 m)
     Data['Range_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
     Data['Range_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked sigma 0 correction for Retracker 1: packed units (1e-2 dB)
+    # Retracked sigma 0 correction for Retracker 1: packed units (1e-2 dB)
     Data['Retrack_1_sig0'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked sigma 0 correction for Retracker 2: packed units (1e-2 dB)
+    # Retracked sigma 0 correction for Retracker 2: packed units (1e-2 dB)
     Data['Retrack_2_sig0'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked sigma 0 correction for Retracker 3: packed units (1e-2 dB)
+    # Retracked sigma 0 correction for Retracker 3: packed units (1e-2 dB)
     Data['Retrack_3_sig0'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracker 1 quality metric
+    # Retracker 1 quality metric
     Data['Quality_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracker 2 quality metric
+    # Retracker 2 quality metric
     Data['Quality_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracker 3 quality metric
+    # Retracker 3 quality metric
     Data['Quality_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retrackers 3-23 output
+    # Retrackers 3-23 output
     Data['Retrack_3'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_4'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_5'] = np.zeros((n_records),dtype=np.int32)
@@ -500,66 +500,66 @@ def cryosat_baseline_BC(fid,record_size,n_records):
     Data['Retrack_21'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_22'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_23'] = np.zeros((n_records),dtype=np.int32)
-    #-- Power echo shape parameter: packed units (dB/100)
+    # Power echo shape parameter: packed units (dB/100)
     Data['echo_shape'] = np.zeros((n_records),dtype=np.int32)
-    #-- Beam behaviour parameter: unitless code number related to
-    #-- surface characteristics
+    # Beam behaviour parameter: unitless code number related to
+    # surface characteristics
     Data['BB_parameter'] = np.zeros((n_records,50),dtype=np.int16)
-    #-- Cross track angle: packed units (micro radians)
+    # Cross track angle: packed units (micro radians)
     Data['X_Track_Angle'] = np.zeros((n_records),dtype=np.int32)
-    #-- Cross track angle correction: packed units (micro radians)
+    # Cross track angle correction: packed units (micro radians)
     Data['X_Track_Angle_c'] = np.zeros((n_records),dtype=np.int32)
-    #-- Leading edge coherence at retrack point 1/1000
+    # Leading edge coherence at retrack point 1/1000
     Data['Coherence'] = np.zeros((n_records),dtype=np.int32)
-    #-- Interpolated Ocean Height: packed units (mm above ellipsoid)
+    # Interpolated Ocean Height: packed units (mm above ellipsoid)
     Data['Ocean_ht'] = np.zeros((n_records),dtype=np.int32)
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     Data['Freeboard'] = np.zeros((n_records),dtype=np.int32)
-    #-- Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SHA'] = np.zeros((n_records),dtype=np.int32)
-    #-- Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SSHA_interp'] = np.zeros((n_records),dtype=np.int32)
-    #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
+    # Error in ocean height interpolation: packed units (mm, 1e-3 m)
     Data['SSHA_interp_RMS'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Number of forward records interpolated
+    # Number of forward records interpolated
     Data['SSHA_interp_count_fwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Number of backward records interpolated
+    # Number of backward records interpolated
     Data['SSHA_interp_count_bkwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Distance in time of most forward record interpolated (milli-seconds)
+    # Distance in time of most forward record interpolated (milli-seconds)
     Data['SSHA_interp_time_fwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Distance in time of most backward record interpolated (milli-seconds)
+    # Distance in time of most backward record interpolated (milli-seconds)
     Data['SSHA_interp_time_bkwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Interpolation error flag
+    # Interpolation error flag
     Data['SSHA_interp_flag'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Measurement mode
+    # Measurement mode
     Data['Measurement_Mode'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Quality flags
+    # Quality flags
     Data['Quality_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Retracker flags
+    # Retracker flags
     Data['Retracker_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Height calculation details
-    #-- Specifies what was applied during the height calculation
+    # Height calculation details
+    # Specifies what was applied during the height calculation
     Data['Height_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- SAR freeboard status flag
+    # SAR freeboard status flag
     Data['Freeboard_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data['N_avg'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Data['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
     Data['Spares1'] = np.zeros((n_records,3),dtype=np.int32)
 
-    #-- CryoSat-2 Auxiliary Data Group
+    # CryoSat-2 Auxiliary Data Group
     Auxiliary = {}
-    #-- Ice Concentration packed units (%/1000)
+    # Ice Concentration packed units (%/1000)
     Auxiliary['Ice_conc'] = np.zeros((n_records),dtype=np.int32)
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Auxiliary['Snow_depth'] = np.zeros((n_records),dtype=np.int32)
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Auxiliary['Snow_density'] = np.zeros((n_records),dtype=np.int32)
-    #-- Discriminator result
+    # Discriminator result
     Auxiliary['Discriminator'] = np.zeros((n_records),dtype=np.int32)
-    #-- SARin discriminator parameters 1-10
+    # SARin discriminator parameters 1-10
     Auxiliary['SARIN_disc_1'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_2'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_3'] = np.zeros((n_records),dtype=np.int32)
@@ -570,91 +570,91 @@ def cryosat_baseline_BC(fid,record_size,n_records):
     Auxiliary['SARIN_disc_8'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_9'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_10'] = np.zeros((n_records),dtype=np.int32)
-    #-- Discriminator flags
+    # Discriminator flags
     Auxiliary['Discrim_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Slope model correction (Attitude of echo in micro-degrees)
+    # Slope model correction (Attitude of echo in micro-degrees)
     Auxiliary['Attitude'] = np.zeros((n_records),dtype=np.int32)
-    #-- Slope model correction (Azimuth of echo in micro-degrees)
+    # Slope model correction (Azimuth of echo in micro-degrees)
     Auxiliary['Azimuth'] = np.zeros((n_records),dtype=np.int32)
-    #-- Slope doppler correction (mm)
+    # Slope doppler correction (mm)
     Auxiliary['Slope_doppler'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original latitude of the satellite (micro-degrees)
+    # The original latitude of the satellite (micro-degrees)
     Auxiliary['Lat_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original longitude of the satellite (micro-degrees)
+    # The original longitude of the satellite (micro-degrees)
     Auxiliary['Lon_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ambiguity indicator
+    # Ambiguity indicator
     Auxiliary['Ambiguity'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
+    # Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
     Auxiliary['MSS_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- Geoid standard Model: packed units (mm, 1e-3 m)
+    # Geoid standard Model: packed units (mm, 1e-3 m)
     Auxiliary['Geoid_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- ODLE standard Model: packed units (mm, 1e-3 m)
+    # ODLE standard Model: packed units (mm, 1e-3 m)
     Auxiliary['ODLE'] = np.zeros((n_records),dtype=np.int32)
-    #-- The interpolated elevation value obtained from the DEM (mm)
+    # The interpolated elevation value obtained from the DEM (mm)
     Auxiliary['DEM_elev'] = np.zeros((n_records),dtype=np.int32)
-    #-- Identification of DEM used in SARin ambiguity test
+    # Identification of DEM used in SARin ambiguity test
     Auxiliary['DEM_ID'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['Spares2'] = np.zeros((n_records,4),dtype=np.int32)
 
-    #-- CryoSat-2 External Corrections Group
+    # CryoSat-2 External Corrections Group
     Geometry = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['dryTrop'] = np.zeros((n_records),dtype=np.int32)
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['wetTrop'] = np.zeros((n_records),dtype=np.int32)
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['InvBar'] = np.zeros((n_records),dtype=np.int32)
-    #-- Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['DAC'] = np.zeros((n_records),dtype=np.int32)
-    #-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+    # GIM Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_GIM'] = np.zeros((n_records),dtype=np.int32)
-    #-- Model Ionospheric Correction packed units (mm, 1e-3 m)
+    # Model Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['ocTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['lpeTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Geometry['olTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Geometry['seTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Geometry['gpTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     Geometry['Surf_type'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Geometry['Corr_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Correction Error Flag
+    # Correction Error Flag
     Geometry['Corr_error'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Geometry['SSB'] = np.zeros((n_records),dtype=np.int32)
     Geometry['Spares3'] = np.zeros((n_records,2),dtype=np.int32)
 
-    #-- CryoSat-2 Internal Corrections Group
+    # CryoSat-2 Internal Corrections Group
     Instrumental = {}
-    #-- Doppler range correction: Radial + slope (mm)
+    # Doppler range correction: Radial + slope (mm)
     Instrumental['Doppler_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Range Correction: t-r antenna (mm)
+    # Instrument Range Correction: t-r antenna (mm)
     Instrumental['TR_inst_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Range Correction: r-only antenna (mm)
+    # Instrument Range Correction: r-only antenna (mm)
     Instrumental['R_inst_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Sigma 0 Correction: t-r antenna (dB/100)
+    # Instrument Sigma 0 Correction: t-r antenna (dB/100)
     Instrumental['TR_inst_gain'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Sigma 0 Correction: r-only (dB/100)
+    # Instrument Sigma 0 Correction: r-only (dB/100)
     Instrumental['R_inst_gain'] = np.zeros((n_records),dtype=np.int32)
-    #-- Internal Phase Correction (milli-radians)
+    # Internal Phase Correction (milli-radians)
     Instrumental['Internal_phase'] = np.zeros((n_records),dtype=np.int32)
-    #-- External Phase Correction (milli-radians)
+    # External Phase Correction (milli-radians)
     Instrumental['External_phase'] = np.zeros((n_records),dtype=np.int32)
-    #-- Noise Power measurement
+    # Noise Power measurement
     Instrumental['Noise_power'] = np.zeros((n_records),dtype=np.int32)
-    #-- Phase slope correction (microradians)
+    # Phase slope correction (microradians)
     Instrumental['Phase_slope'] = np.zeros((n_records),dtype=np.int32)
     Instrumental['Spares4'] = np.zeros((n_records,2),dtype=np.int32)
 
-    #-- for each record in the CryoSat file
+    # for each record in the CryoSat file
     for r in range(n_records):
-        #-- CryoSat-2 Location Group for record r
+        # CryoSat-2 Location Group for record r
         Location['Day'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Location['Sec'][r] = np.fromfile(fid,dtype='>u4',count=1)
         Location['Micsec'][r] = np.fromfile(fid,dtype='>u4',count=1)
@@ -677,7 +677,7 @@ def cryosat_baseline_BC(fid,record_size,n_records):
         Location['Yaw'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Location['MCD'][r] = np.fromfile(fid,dtype='>u4',count=1)
 
-        #-- CryoSat-2 Measurement Group for record r
+        # CryoSat-2 Measurement Group for record r
         Data['Elev_1'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data['Elev_2'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data['Elev_3'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -740,7 +740,7 @@ def cryosat_baseline_BC(fid,record_size,n_records):
         Data['Wind_speed'][r] = np.fromfile(fid,dtype='>u2',count=1)
         Data['Spares1'][r,:] = np.fromfile(fid,dtype='>i4',count=3)
 
-        #-- CryoSat-2 Auxiliary Data Group for record r
+        # CryoSat-2 Auxiliary Data Group for record r
         Auxiliary['Ice_conc'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Snow_depth'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Snow_density'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -769,7 +769,7 @@ def cryosat_baseline_BC(fid,record_size,n_records):
         Auxiliary['DEM_ID'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Spares2'][r,:] = np.fromfile(fid,dtype='>i4',count=4)
 
-        #-- CryoSat-2 External Corrections Group for record r
+        # CryoSat-2 External Corrections Group for record r
         Geometry['dryTrop'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['wetTrop'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['InvBar'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -787,7 +787,7 @@ def cryosat_baseline_BC(fid,record_size,n_records):
         Geometry['SSB'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['Spares3'][r,:] = np.fromfile(fid,dtype='>i4',count=2)
 
-        #-- CryoSat-2 Internal Corrections Group for record r
+        # CryoSat-2 Internal Corrections Group for record r
         Instrumental['Doppler_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['TR_inst_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['R_inst_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -799,99 +799,99 @@ def cryosat_baseline_BC(fid,record_size,n_records):
         Instrumental['Phase_slope'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['Spares4'][r,:] = np.fromfile(fid,dtype='>i4',count=2)
 
-    #-- Bind all the bits of the l2i_mds together into a single dictionary
+    # Bind all the bits of the l2i_mds together into a single dictionary
     CS_L2I_mds = {}
     CS_L2I_mds['Location'] = Location
     CS_L2I_mds['Data'] = Data
     CS_L2I_mds['Auxiliary'] = Auxiliary
     CS_L2I_mds['Geometry'] = Geometry
     CS_L2I_mds['Instrumental'] = Instrumental
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_L2I_mds
 
-#-- PURPOSE: Initiate L2I MDS variables for CryoSat Baseline C
+# PURPOSE: Initiate L2I MDS variables for CryoSat Baseline C
 def cryosat_baseline_C(fid,record_size,n_records):
-    #-- CryoSat-2 Location Group
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 Location Group
+    # Time and Orbit Parameters plus Measurement Mode
     Location = {}
-    #-- Time: day part
+    # Time: day part
     Location['Day'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Location['Sec'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Location['Micsec'] = np.zeros((n_records),dtype=np.uint32)
-    #-- USO correction factor
+    # USO correction factor
     Location['USO_Corr'] = np.zeros((n_records),dtype=np.int32)
-    #-- Mode ID
+    # Mode ID
     Location['Mode_ID'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Source sequence counter
+    # Source sequence counter
     Location['SSC'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Instrument configuration
+    # Instrument configuration
     Location['Inst_config'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Record Counter
+    # Record Counter
     Location['Rec_Count'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lon'] = np.zeros((n_records),dtype=np.int32)
-    #-- Alt: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Location['Alt'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
+    # Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
     Location['Alt_rate'] = np.zeros((n_records),dtype=np.int32)
-    #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
+    # Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
     Location['Sat_velocity'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Real_beam'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Baseline'] = np.zeros((n_records,3),dtype=np.int32)
-    #-- Star Tracker ID
+    # Star Tracker ID
     Location['ST_ID'] = np.zeros((n_records),dtype=np.int16)
     Location['Spare'] = np.zeros((n_records),dtype=np.int16)
-    #-- Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Roll'] = np.zeros((n_records),dtype=np.int32)
-    #-- Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Pitch'] = np.zeros((n_records),dtype=np.int32)
-    #-- Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Yaw'] = np.zeros((n_records),dtype=np.int32)
-    #-- Measurement Confidence Data
+    # Measurement Confidence Data
     Location['MCD'] = np.zeros((n_records),dtype=np.uint32)
 
-    #-- CryoSat-2 Measurement Group
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 Measurement Group
+    # Derived from instrument measurement parameters
     Data = {}
-    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     Data['Elev_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     Data['Elev_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     Data['Elev_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     Data['Sig0_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     Data['Sig0_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     Data['Sig0_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- SWH packed units (mm, 1e-3)
+    # SWH packed units (mm, 1e-3)
     Data['SWH'] = np.zeros((n_records),dtype=np.int32)
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     Data['Peakiness'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
     Data['Range_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
     Data['Range_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
     Data['Range_3'] = np.zeros((n_records),dtype=np.int32)
     Data['Spare2'] = np.zeros((n_records),dtype=np.int32)
     Data['Spare3'] = np.zeros((n_records),dtype=np.int32)
     Data['Spare4'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracker 1 quality metric
+    # Retracker 1 quality metric
     Data['Quality_1'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracker 2 quality metric
+    # Retracker 2 quality metric
     Data['Quality_2'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retracker 3 quality metric
+    # Retracker 3 quality metric
     Data['Quality_3'] = np.zeros((n_records),dtype=np.int32)
-    #-- Retrackers 3-23 output
+    # Retrackers 3-23 output
     Data['Retrack_3'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_4'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_5'] = np.zeros((n_records),dtype=np.int32)
@@ -913,66 +913,66 @@ def cryosat_baseline_C(fid,record_size,n_records):
     Data['Retrack_21'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_22'] = np.zeros((n_records),dtype=np.int32)
     Data['Retrack_23'] = np.zeros((n_records),dtype=np.int32)
-    #-- Power echo shape parameter: packed units (dB/100)
+    # Power echo shape parameter: packed units (dB/100)
     Data['echo_shape'] = np.zeros((n_records),dtype=np.int32)
-    #-- Beam behaviour parameter: unitless code number related to
-    #-- surface characteristics
+    # Beam behaviour parameter: unitless code number related to
+    # surface characteristics
     Data['BB_parameter'] = np.zeros((n_records,50),dtype=np.int16)
-    #-- Cross track angle: packed units (micro radians)
+    # Cross track angle: packed units (micro radians)
     Data['X_Track_Angle'] = np.zeros((n_records),dtype=np.int32)
-    #-- Cross track angle correction: packed units (micro radians)
+    # Cross track angle correction: packed units (micro radians)
     Data['X_Track_Angle_c'] = np.zeros((n_records),dtype=np.int32)
-    #-- Leading edge coherence at retrack point 1/1000
+    # Leading edge coherence at retrack point 1/1000
     Data['Coherence'] = np.zeros((n_records),dtype=np.int32)
-    #-- Interpolated Ocean Height: packed units (mm above ellipsoid)
+    # Interpolated Ocean Height: packed units (mm above ellipsoid)
     Data['Ocean_ht'] = np.zeros((n_records),dtype=np.int32)
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     Data['Freeboard'] = np.zeros((n_records),dtype=np.int32)
-    #-- Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SHA'] = np.zeros((n_records),dtype=np.int32)
-    #-- Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SSHA_interp'] = np.zeros((n_records),dtype=np.int32)
-    #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
+    # Error in ocean height interpolation: packed units (mm, 1e-3 m)
     Data['SSHA_interp_RMS'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Number of forward records interpolated
+    # Number of forward records interpolated
     Data['SSHA_interp_count_fwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Number of backward records interpolated
+    # Number of backward records interpolated
     Data['SSHA_interp_count_bkwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Distance in time of most forward record interpolated (milli-seconds)
+    # Distance in time of most forward record interpolated (milli-seconds)
     Data['SSHA_interp_time_fwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Distance in time of most backward record interpolated (milli-seconds)
+    # Distance in time of most backward record interpolated (milli-seconds)
     Data['SSHA_interp_time_bkwd'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Interpolation error flag
+    # Interpolation error flag
     Data['SSHA_interp_flag'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Measurement mode
+    # Measurement mode
     Data['Measurement_Mode'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Quality flags
+    # Quality flags
     Data['Quality_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Retracker flags
+    # Retracker flags
     Data['Retracker_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Height calculation details
-    #-- Specifies what was applied during the height calculation
+    # Height calculation details
+    # Specifies what was applied during the height calculation
     Data['Height_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- SAR freeboard status flag
+    # SAR freeboard status flag
     Data['Freeboard_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data['N_avg'] = np.zeros((n_records),dtype=np.uint16)
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Data['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
     Data['Spares1'] = np.zeros((n_records,3),dtype=np.int32)
 
-    #-- CryoSat-2 Auxiliary Data Group
+    # CryoSat-2 Auxiliary Data Group
     Auxiliary = {}
-    #-- Ice Concentration packed units (%/1000)
+    # Ice Concentration packed units (%/1000)
     Auxiliary['Ice_conc'] = np.zeros((n_records),dtype=np.int32)
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Auxiliary['Snow_depth'] = np.zeros((n_records),dtype=np.int32)
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Auxiliary['Snow_density'] = np.zeros((n_records),dtype=np.int32)
-    #-- Discriminator result
+    # Discriminator result
     Auxiliary['Discriminator'] = np.zeros((n_records),dtype=np.int32)
-    #-- SARin discriminator parameters 1-10
+    # SARin discriminator parameters 1-10
     Auxiliary['SARIN_disc_1'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_2'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_3'] = np.zeros((n_records),dtype=np.int32)
@@ -983,89 +983,89 @@ def cryosat_baseline_C(fid,record_size,n_records):
     Auxiliary['SARIN_disc_8'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_9'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['SARIN_disc_10'] = np.zeros((n_records),dtype=np.int32)
-    #-- Discriminator flags
+    # Discriminator flags
     Auxiliary['Discrim_flag'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Slope model correction (Attitude of echo in micro-degrees)
+    # Slope model correction (Attitude of echo in micro-degrees)
     Auxiliary['Attitude'] = np.zeros((n_records),dtype=np.int32)
-    #-- Slope model correction (Azimuth of echo in micro-degrees)
+    # Slope model correction (Azimuth of echo in micro-degrees)
     Auxiliary['Azimuth'] = np.zeros((n_records),dtype=np.int32)
-    #-- Slope doppler correction (mm)
+    # Slope doppler correction (mm)
     Auxiliary['Slope_doppler'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original latitude of the satellite (micro-degrees)
+    # The original latitude of the satellite (micro-degrees)
     Auxiliary['Lat_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original longitude of the satellite (micro-degrees)
+    # The original longitude of the satellite (micro-degrees)
     Auxiliary['Lon_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ambiguity indicator
+    # Ambiguity indicator
     Auxiliary['Ambiguity'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Mean Sea Surface Model packed units (mm, 1e-3 m)
+    # Mean Sea Surface Model packed units (mm, 1e-3 m)
     Auxiliary['MSS_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- Geoid Model packed units (mm, 1e-3 m)
+    # Geoid Model packed units (mm, 1e-3 m)
     Auxiliary['Geoid_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- ODLE Model packed units (mm, 1e-3 m)
+    # ODLE Model packed units (mm, 1e-3 m)
     Auxiliary['ODLE'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['DEM_elev'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['DEM_ID'] = np.zeros((n_records),dtype=np.int32)
     Auxiliary['Spares2'] = np.zeros((n_records,4),dtype=np.int32)
 
-    #-- CryoSat-2 External Corrections Group
+    # CryoSat-2 External Corrections Group
     Geometry = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['dryTrop'] = np.zeros((n_records),dtype=np.int32)
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['wetTrop'] = np.zeros((n_records),dtype=np.int32)
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['InvBar'] = np.zeros((n_records),dtype=np.int32)
-    #-- Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['DAC'] = np.zeros((n_records),dtype=np.int32)
-    #-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+    # GIM Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_GIM'] = np.zeros((n_records),dtype=np.int32)
-    #-- Model Ionospheric Correction packed units (mm, 1e-3 m)
+    # Model Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_model'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['ocTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['lpeTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Geometry['olTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Geometry['seTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Geometry['gpTideElv'] = np.zeros((n_records),dtype=np.int32)
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     Geometry['Surf_type'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Geometry['Corr_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Correction Error Flag
+    # Correction Error Flag
     Geometry['Corr_error'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Geometry['SSB'] = np.zeros((n_records),dtype=np.int32)
     Geometry['Spares3'] = np.zeros((n_records,2),dtype=np.int32)
 
-    #-- CryoSat-2 Internal Corrections Group
+    # CryoSat-2 Internal Corrections Group
     Instrumental = {}
-    #-- Doppler range correction: Radial + slope (mm)
+    # Doppler range correction: Radial + slope (mm)
     Instrumental['Doppler_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Range Correction: t-r antenna (mm)
+    # Instrument Range Correction: t-r antenna (mm)
     Instrumental['TR_inst_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Range Correction: r-only antenna (mm)
+    # Instrument Range Correction: r-only antenna (mm)
     Instrumental['R_inst_range'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Sigma 0 Correction: t-r antenna (dB/100)
+    # Instrument Sigma 0 Correction: t-r antenna (dB/100)
     Instrumental['TR_inst_gain'] = np.zeros((n_records),dtype=np.int32)
-    #-- Instrument Sigma 0 Correction: r-only (dB/100)
+    # Instrument Sigma 0 Correction: r-only (dB/100)
     Instrumental['R_inst_gain'] = np.zeros((n_records),dtype=np.int32)
-    #-- Internal Phase Correction (milli-radians)
+    # Internal Phase Correction (milli-radians)
     Instrumental['Internal_phase'] = np.zeros((n_records),dtype=np.int32)
-    #-- External Phase Correction (milli-radians)
+    # External Phase Correction (milli-radians)
     Instrumental['External_phase'] = np.zeros((n_records),dtype=np.int32)
-    #-- Noise Power measurement
+    # Noise Power measurement
     Instrumental['Noise_power'] = np.zeros((n_records),dtype=np.int32)
-    #-- Phase slope correction (microradians)
+    # Phase slope correction (microradians)
     Instrumental['Phase_slope'] = np.zeros((n_records),dtype=np.int32)
     Instrumental['Spares4'] = np.zeros((n_records,2),dtype=np.int32)
 
-    #-- for each record in the CryoSat file
+    # for each record in the CryoSat file
     for r in range(n_records):
-        #-- CryoSat-2 Location Group for record r
+        # CryoSat-2 Location Group for record r
         Location['Day'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Location['Sec'][r] = np.fromfile(fid,dtype='>u4',count=1)
         Location['Micsec'][r] = np.fromfile(fid,dtype='>u4',count=1)
@@ -1088,7 +1088,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Location['Yaw'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Location['MCD'][r] = np.fromfile(fid,dtype='>u4',count=1)
 
-        #-- CryoSat-2 Measurement Group for record r
+        # CryoSat-2 Measurement Group for record r
         Data['Elev_1'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data['Elev_2'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data['Elev_3'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -1151,7 +1151,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Data['Wind_speed'][r] = np.fromfile(fid,dtype='>u2',count=1)
         Data['Spares1'][r,:] = np.fromfile(fid,dtype='>i4',count=3)
 
-        #-- CryoSat-2 Auxiliary Data Group for record r
+        # CryoSat-2 Auxiliary Data Group for record r
         Auxiliary['Ice_conc'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Snow_depth'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Snow_density'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -1180,7 +1180,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Auxiliary['DEM_ID'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Auxiliary['Spares2'][r,:] = np.fromfile(fid,dtype='>i4',count=4)
 
-        #-- CryoSat-2 External Corrections Group for record r
+        # CryoSat-2 External Corrections Group for record r
         Geometry['dryTrop'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['wetTrop'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['InvBar'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -1198,7 +1198,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Geometry['SSB'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Geometry['Spares3'][r,:] = np.fromfile(fid,dtype='>i4',count=2)
 
-        #-- CryoSat-2 Internal Corrections Group for record r
+        # CryoSat-2 Internal Corrections Group for record r
         Instrumental['Doppler_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['TR_inst_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['R_inst_range'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -1210,127 +1210,127 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Instrumental['Phase_slope'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Instrumental['Spares4'][r,:] = np.fromfile(fid,dtype='>i4',count=2)
 
-    #-- Bind all the bits of the l2i_mds together into a single dictionary
+    # Bind all the bits of the l2i_mds together into a single dictionary
     CS_L2I_mds = {}
     CS_L2I_mds['Location'] = Location
     CS_L2I_mds['Data'] = Data
     CS_L2I_mds['Auxiliary'] = Auxiliary
     CS_L2I_mds['Geometry'] = Geometry
     CS_L2I_mds['Instrumental'] = Instrumental
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_L2I_mds
 
-#-- PURPOSE: Initiate L2I MDS variables for CryoSat Baseline D (netCDF4)
+# PURPOSE: Initiate L2I MDS variables for CryoSat Baseline D (netCDF4)
 def cryosat_baseline_D(full_filename, UNPACK=False):
-    #-- open netCDF4 file for reading
+    # open netCDF4 file for reading
     fid = netCDF4.Dataset(os.path.expanduser(full_filename),'r')
-    #-- use original unscaled units unless UNPACK=True
+    # use original unscaled units unless UNPACK=True
     fid.set_auto_scale(UNPACK)
-    #-- get dimensions
+    # get dimensions
     time_20_ku = fid.variables['time_20_ku'][:].copy()
     time_cor_01 = fid.variables['time_cor_01'][:].copy()
     n_records = len(time_20_ku)
 
-    #-- CryoSat-2 Location Group
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 Location Group
+    # Time and Orbit Parameters plus Measurement Mode
     Location = {}
 
-    #-- Data Record Time (MDSR Time Stamp)
-    #-- Time (seconds since 2000-01-01)
+    # Data Record Time (MDSR Time Stamp)
+    # Time (seconds since 2000-01-01)
     Location['Time'] = time_20_ku.copy()
-    #-- Time: day part
+    # Time: day part
     Location['Day'] = np.array(time_20_ku/86400.0, dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Location['Second'] = np.array(time_20_ku -
         Location['Day'][:]*86400.0, dtype=np.uint32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Location['Micsec'] = np.array((time_20_ku -
         Location['Day'][:]*86400.0 -
         Location['Second'][:])*1e6, dtype=np.uint32)
-    #-- USO correction factor (2-way range)
+    # USO correction factor (2-way range)
     Location['USO_Corr'] = fid.variables['uso_cor_20_ku'][:].copy()
-    #-- USO correction factor (1-way range)
+    # USO correction factor (1-way range)
     Location['USO_Corr_1way'] = fid.variables['uso_cor_applied_20_ku'][:].copy()
-    #-- Mode ID
+    # Mode ID
     Location['Mode_ID'] = fid.variables['flag_instr_mode_op_20_ku'][:].copy()
-    #-- Mode Flags
+    # Mode Flags
     Location['Mode_flags'] = fid.variables['flag_instr_mode_flags_20_ku'][:].copy()
-    #-- Platform attitude control mode
+    # Platform attitude control mode
     Location['Att_control'] = fid.variables['flag_instr_mode_att_ctrl_20_ku'][:].copy()
-    #-- Instrument configuration
+    # Instrument configuration
     Location['Inst_config'] = fid.variables['flag_instr_conf_rx_flags_20_ku'][:].copy()
-    #-- acquisition band
+    # acquisition band
     Location['Inst_band'] = fid.variables['flag_instr_conf_rx_bwdt_20_ku'][:].copy()
-    #-- instrument channel
+    # instrument channel
     Location['Inst_channel'] = fid.variables['flag_instr_conf_rx_in_use_20_ku'][:].copy()
-    #-- tracking mode
+    # tracking mode
     Location['Tracking_mode'] = fid.variables['flag_instr_conf_rx_trk_mode_20_ku'][:].copy()
-    #-- Source sequence counter
+    # Source sequence counter
     Location['SSC'] = fid.variables['seq_count_20_ku'][:].copy()
-    #-- Record Counter
+    # Record Counter
     Location['Rec_Count'] = fid.variables['rec_count_20_ku'][:].copy()
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lat'] = fid.variables['lat_20_ku'][:].copy()
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Lon'] = fid.variables['lon_20_ku'][:].copy()
-    #-- Alt: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Location['Alt'] = fid.variables['alt_20_ku'][:].copy()
-    #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
+    # Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
     Location['Alt_rate'] = fid.variables['orb_alt_rate_20_ku'][:].copy()
-    #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
+    # Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
     Location['Sat_velocity'] = fid.variables['sat_vel_vec_20_ku'][:].copy()
-    #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Real_beam'] = fid.variables['beam_dir_vec_20_ku'][:].copy()
-    #-- Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     Location['Baseline'] = fid.variables['inter_base_vec_20_ku'][:].copy()
-    #-- Star Tracker ID
+    # Star Tracker ID
     Location['ST_ID'] = fid.variables['flag_instr_conf_rx_str_in_use_20_ku'][:].copy()
-    #-- Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Roll'] = fid.variables['off_nadir_roll_angle_str_20_ku'][:].copy()
-    #-- Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Pitch'] = fid.variables['off_nadir_pitch_angle_str_20_ku'][:].copy()
-    #-- Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     Location['Yaw'] = fid.variables['off_nadir_yaw_angle_str_20_ku'][:].copy()
-    #-- Measurement Confidence Data Flags
-    #-- Generally the MCD flags indicate problems when set
-    #-- If MCD is 0 then no problems or non-nominal conditions were detected
-    #-- Serious errors are indicated by setting bit 31
+    # Measurement Confidence Data Flags
+    # Generally the MCD flags indicate problems when set
+    # If MCD is 0 then no problems or non-nominal conditions were detected
+    # Serious errors are indicated by setting bit 31
     Location['MCD'] = fid.variables['flag_mcd_20_ku'][:].copy()
 
 
-    #-- CryoSat-2 Measurement Group
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 Measurement Group
+    # Derived from instrument measurement parameters
     Data = {}
-    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     Data['Elev_1'] = fid.variables['height_1_20_ku'][:].copy()
-    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     Data['Elev_2'] = fid.variables['height_2_20_ku'][:].copy()
-    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     Data['Elev_3'] = fid.variables['height_3_20_ku'][:].copy()
-    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     Data['Sig0_1'] = fid.variables['sig0_1_20_ku'][:].copy()
-    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     Data['Sig0_2'] = fid.variables['sig0_2_20_ku'][:].copy()
-    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     Data['Sig0_3'] = fid.variables['sig0_3_20_ku'][:].copy()
-    #-- SWH packed units (mm, 1e-3)
+    # SWH packed units (mm, 1e-3)
     Data['SWH'] = fid.variables['swh_ocean_20_ku'][:].copy()
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     Data['Peakiness'] = fid.variables['peakiness_20_ku'][:].copy()
-    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
     Data['Range_1'] = fid.variables['range_1_20_ku'][:].copy()
-    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
     Data['Range_2'] = fid.variables['range_2_20_ku'][:].copy()
-    #-- Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
     Data['Range_3'] = fid.variables['range_3_20_ku'][:].copy()
-    #-- Retracker 1 quality metric
+    # Retracker 1 quality metric
     Data['Quality_1'] = fid.variables['retracker_1_quality_20_ku'][:].copy()
-    #-- Retracker 2 quality metric
+    # Retracker 2 quality metric
     Data['Quality_2'] = fid.variables['retracker_2_quality_20_ku'][:].copy()
-    #-- Retracker 3 quality metric
+    # Retracker 3 quality metric
     Data['Quality_3'] = fid.variables['retracker_3_quality_20_ku'][:].copy()
-    #-- Retrackers 3-23 output
+    # Retrackers 3-23 output
     Data['Retrack_3'] = fid.variables['retracker_output_3_20_ku'][:].copy()
     Data['Retrack_4'] = fid.variables['retracker_output_4_20_ku'][:].copy()
     Data['Retrack_5'] = fid.variables['retracker_output_5_20_ku'][:].copy()
@@ -1352,94 +1352,94 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     Data['Retrack_21'] = fid.variables['retracker_output_21_20_ku'][:].copy()
     Data['Retrack_22'] = fid.variables['retracker_output_22_20_ku'][:].copy()
     Data['Retrack_23'] = fid.variables['retracker_output_23_20_ku'][:].copy()
-    #-- Power echo shape parameter: packed units (dB/100)
+    # Power echo shape parameter: packed units (dB/100)
     Data['echo_shape'] = np.zeros((n_records),dtype=np.int32)
-    #-- Beam behaviour parameter: unitless code number related to
-    #-- surface characteristics
+    # Beam behaviour parameter: unitless code number related to
+    # surface characteristics
     Data['Beam'] = {}
-    #-- Standard Deviation of Gaussian fit to range integrated stack power.
+    # Standard Deviation of Gaussian fit to range integrated stack power.
     Data['Beam']['SD'] =  fid.variables['stack_std_20_ku'][:].copy()
-    #-- Stack Center: Mean of Gaussian fit to range integrated stack power.
+    # Stack Center: Mean of Gaussian fit to range integrated stack power.
     Data['Beam']['Center'] = fid.variables['stack_centre_20_ku'][:].copy()
-    #-- Stack amplitude parameter scaled in dB/100.
+    # Stack amplitude parameter scaled in dB/100.
     Data['Beam']['Amplitude'] = fid.variables['stack_scaled_amplitude_20_ku'][:].copy()
-    #-- 3rd moment: providing the degree of asymmetry of the range integrated
-    #-- stack power distribution.
+    # 3rd moment: providing the degree of asymmetry of the range integrated
+    # stack power distribution.
     Data['Beam']['Skewness'] = fid.variables['stack_skewness_20_ku'][:].copy()
-    #-- 4th moment: Measure of peakiness of range integrated stack power distribution.
+    # 4th moment: Measure of peakiness of range integrated stack power distribution.
     Data['Beam']['Kurtosis'] = fid.variables['stack_kurtosis_20_ku'][:].copy()
-    #-- Stack peakiness computed from the range integrated power of the single look echoes
+    # Stack peakiness computed from the range integrated power of the single look echoes
     Data['Beam']['Peakiness'] = fid.variables['stack_peakiness_20_ku'][:].copy()
-    #-- Stack residuals of Gaussian that fits the range integrated power of the single look echoes
+    # Stack residuals of Gaussian that fits the range integrated power of the single look echoes
     Data['Beam']['RMS'] = fid.variables['stack_gaussian_fitting_residuals_20_ku'][:].copy()
-    #-- Standard deviation as a function of boresight angle (microradians)
+    # Standard deviation as a function of boresight angle (microradians)
     Data['Beam']['SD_boresight_angle'] = fid.variables['stack_std_angle_20_ku'][:].copy()
-    #-- Stack Center angle as a function of boresight angle (microradians)
+    # Stack Center angle as a function of boresight angle (microradians)
     Data['Beam']['Center_boresight_angle'] = fid.variables['stack_centre_angle_20_ku'][:].copy()
-    #-- Stack Center angle as a function of look angle (microradians)
+    # Stack Center angle as a function of look angle (microradians)
     Data['Beam']['Center_look_angle'] = fid.variables['stack_centre_look_angle_20_ku'][:].copy()
-    #-- Number of contributing beams in the stack before weighting
+    # Number of contributing beams in the stack before weighting
     Data['Beam']['Number'] = fid.variables['stack_number_before_weighting_20_ku'][:].copy()
-    #-- Number of contributing beams in the stack after weighting
+    # Number of contributing beams in the stack after weighting
     Data['Beam']['Weighted_Number'] = fid.variables['stack_number_after_weighting_20_ku'][:].copy()
-    #-- Cross track angle: packed units (micro radians)
+    # Cross track angle: packed units (micro radians)
     Data['X_Track_Angle'] = fid.variables['across_track_angle_20_ku'][:].copy()
-    #-- Cross track angle correction: packed units (micro radians)
+    # Cross track angle correction: packed units (micro radians)
     Data['X_Track_Angle_c'] = fid.variables['across_track_angle_cor_20_ku'][:].copy()
-    #-- Leading edge coherence at retrack point 1/1000
+    # Leading edge coherence at retrack point 1/1000
     Data['Coherence'] = fid.variables['coherence_20_ku'][:].copy()
-    #-- Interpolated Ocean Height: packed units (mm above ellipsoid)
+    # Interpolated Ocean Height: packed units (mm above ellipsoid)
     Data['Ocean_ht'] = np.zeros((n_records),dtype=np.int32)
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     Data['Freeboard'] = fid.variables['freeboard_20_ku'][:].copy()
-    #-- Sea ice Floe height
+    # Sea ice Floe height
     Data['Sea_Ice_Lead'] = fid.variables['height_sea_ice_floe_20_ku'][:].copy()
-    #-- Sea ice lead height
+    # Sea ice lead height
     Data['Sea_Ice_Floe'] = fid.variables['height_sea_ice_lead_20_ku'][:].copy()
-    #-- Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SHA'] = fid.variables['ssha_20_ku'][:].copy()
-    #-- Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data['SSHA_interp'] = fid.variables['ssha_interp_20_ku'][:].copy()
-    #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
+    # Error in ocean height interpolation: packed units (mm, 1e-3 m)
     Data['SSHA_interp_RMS'] = fid.variables['ssha_interp_rms_20_ku'][:].copy()
-    #-- Number of forward records interpolated
+    # Number of forward records interpolated
     Data['SSHA_interp_count_fwd'] = fid.variables['ssha_interp_numval_fwd_20_ku'][:].copy()
-    #-- Number of backward records interpolated
+    # Number of backward records interpolated
     Data['SSHA_interp_count_bkwd'] = fid.variables['ssha_interp_numval_back_20_ku'][:].copy()
-    #-- Distance in time of most forward record interpolated (milli-seconds)
+    # Distance in time of most forward record interpolated (milli-seconds)
     Data['SSHA_interp_time_fwd'] = fid.variables['ssha_interp_time_fwd_20_ku'][:].copy()
-    #-- Distance in time of most backward record interpolated (milli-seconds)
+    # Distance in time of most backward record interpolated (milli-seconds)
     Data['SSHA_interp_time_bkwd'] = fid.variables['ssha_interp_time_back_20_ku'][:].copy()
-    #-- Interpolation error flag
+    # Interpolation error flag
     Data['SSHA_interp_flag'] = fid.variables['flag_ssha_interp_20_ku'][:].copy()
-    #-- Measurement mode
+    # Measurement mode
     Data['Measurement_Mode'] = fid.variables['flag_instr_mode_op_20_ku'][:].copy()
-    #-- Quality flags
+    # Quality flags
     Data['Quality_flag'] = fid.variables['flag_quality_20_ku'][:].copy()
-    #-- Retracker flags
+    # Retracker flags
     Data['Retracker_flag'] = fid.variables['flag_retracker_20_ku'][:].copy()
-    #-- Height calculation details
-    #-- Specifies what was applied during the height calculation
+    # Height calculation details
+    # Specifies what was applied during the height calculation
     Data['Height_status'] = fid.variables['flag_height_20_ku'][:].copy()
-    #-- SAR freeboard status flag
+    # SAR freeboard status flag
     Data['Freeboard_status'] = fid.variables['flag_freeboard_20_ku'][:].copy()
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data['N_avg'] = fid.variables['echo_numval_20_ku'][:].copy()
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Data['Wind_speed'] = fid.variables['wind_speed_alt_20_ku'][:].copy()
 
-    #-- CryoSat-2 Auxiliary Data Group
+    # CryoSat-2 Auxiliary Data Group
     Auxiliary = {}
-    #-- Ice Concentration packed units (%/1000)
+    # Ice Concentration packed units (%/1000)
     Auxiliary['Ice_conc'] = fid.variables['sea_ice_concentration_20_ku'][:].copy()
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Auxiliary['Snow_depth'] = fid.variables['snow_depth_20_ku'][:].copy()
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Auxiliary['Snow_density'] = fid.variables['snow_density_20_ku'][:].copy()
-    #-- Discriminator result
+    # Discriminator result
     Auxiliary['Discriminator'] = fid.variables['flag_surf_type_class_20_ku'][:].copy()
-    #-- SARin discriminator parameters 1-10
+    # SARin discriminator parameters 1-10
     Auxiliary['SARIN_disc_1'] = fid.variables['sarin_output_1_20_ku'][:].copy()
     Auxiliary['SARIN_disc_2'] = fid.variables['sarin_output_2_20_ku'][:].copy()
     Auxiliary['SARIN_disc_3'] = fid.variables['sarin_output_3_20_ku'][:].copy()
@@ -1450,128 +1450,128 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     Auxiliary['SARIN_disc_8'] = fid.variables['sarin_output_8_20_ku'][:].copy()
     Auxiliary['SARIN_disc_9'] = fid.variables['sarin_output_9_20_ku'][:].copy()
     Auxiliary['SARIN_disc_10'] = fid.variables['sarin_output_10_20_ku'][:].copy()
-    #-- Discriminator flags
+    # Discriminator flags
     Auxiliary['Discrim_flag'] = fid.variables['flag_disc_stat_20_ku'][:].copy()
-    #-- Slope model correction (Attitude of echo in micro-degrees)
+    # Slope model correction (Attitude of echo in micro-degrees)
     Auxiliary['Attitude'] = fid.variables['offset_attitude_20_ku'][:].copy()
-    #-- Slope model correction (Azimuth of echo in micro-degrees)
+    # Slope model correction (Azimuth of echo in micro-degrees)
     Auxiliary['Azimuth'] = fid.variables['offset_azimuth_20_ku'][:].copy()
-    #-- Slope doppler correction (mm)
+    # Slope doppler correction (mm)
     Auxiliary['Slope_doppler'] = fid.variables['slope_dop_cor_20_ku'][:].copy()
-    #-- The original latitude of the satellite (micro-degrees)
+    # The original latitude of the satellite (micro-degrees)
     Auxiliary['Lat_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- The original longitude of the satellite (micro-degrees)
+    # The original longitude of the satellite (micro-degrees)
     Auxiliary['Lon_sat'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ambiguity indicator
+    # Ambiguity indicator
     Auxiliary['Ambiguity'] = fid.variables['flag_sarin_ambiguity_warning_20_ku'][:].copy()
-    #-- Mean Sea Surface Model packed units (mm, 1e-3 m)
+    # Mean Sea Surface Model packed units (mm, 1e-3 m)
     Auxiliary['MSS_model'] = fid.variables['mean_sea_surf_sea_ice_20_ku'][:].copy()
-    #-- Geoid Model packed units (mm, 1e-3 m)
+    # Geoid Model packed units (mm, 1e-3 m)
     Auxiliary['Geoid_model'] = fid.variables['geoid_20_ku'][:].copy()
-    #-- ODLE Model packed units (mm, 1e-3 m)
+    # ODLE Model packed units (mm, 1e-3 m)
     Auxiliary['ODLE'] = fid.variables['odle_20_ku'][:].copy()
     Auxiliary['DEM_elev'] = fid.variables['dem_height_20_ku'][:].copy()
     Auxiliary['DEM_ID'] = fid.variables['dem_identifier_20_ku'][:].copy()
 
-    #-- CryoSat-2 External Corrections Group (interpolate 1Hz to 20Hz)
+    # CryoSat-2 External Corrections Group (interpolate 1Hz to 20Hz)
     Geometry = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['dryTrop'] = np.zeros((n_records))
     mod_dry_tropo_cor_01 = fid.variables['mod_dry_tropo_cor_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,mod_dry_tropo_cor_01,k=3,s=0)
     Geometry['dryTrop'][:] = fint(time_20_ku)
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Geometry['wetTrop'] = np.zeros((n_records))
     mod_wet_tropo_cor_01 = fid.variables['mod_wet_tropo_cor_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,mod_wet_tropo_cor_01,k=3,s=0)
     Geometry['wetTrop'][:] = fint(time_20_ku)
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['InvBar'] = np.zeros((n_records))
     inv_bar_cor_01 = fid.variables['inv_bar_cor_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,inv_bar_cor_01,k=3,s=0)
     Geometry['InvBar'][:] = fint(time_20_ku)
-    #-- Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
     Geometry['DAC'] = np.zeros((n_records))
     hf_fluct_total_cor_01 = fid.variables['hf_fluct_total_cor_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,hf_fluct_total_cor_01,k=3,s=0)
     Geometry['DAC'][:] = fint(time_20_ku)
-    #-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+    # GIM Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_GIM'] = np.zeros((n_records))
     iono_cor_gim_01 = fid.variables['iono_cor_gim_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,iono_cor_gim_01,k=3,s=0)
     Geometry['Iono_GIM'][:] = fint(time_20_ku)
-    #-- Model Ionospheric Correction packed units (mm, 1e-3 m)
+    # Model Ionospheric Correction packed units (mm, 1e-3 m)
     Geometry['Iono_model'] = np.zeros((n_records))
     iono_cor_01 = fid.variables['iono_cor_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,iono_cor_01,k=3,s=0)
     Geometry['Iono_model'][:] = fint(time_20_ku)
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['ocTideElv'] = np.zeros((n_records))
     ocean_tide_01 = fid.variables['ocean_tide_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,ocean_tide_01,k=3,s=0)
     Geometry['ocTideElv'][:] = fint(time_20_ku)
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Geometry['lpeTideElv'] = np.zeros((n_records))
     ocean_tide_eq_01 = fid.variables['ocean_tide_eq_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,ocean_tide_eq_01,k=3,s=0)
     Geometry['lpeTideElv'][:] = fint(time_20_ku)
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Geometry['olTideElv'] = np.zeros((n_records))
     load_tide_01 = fid.variables['load_tide_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,load_tide_01,k=3,s=0)
     Geometry['olTideElv'][:] = fint(time_20_ku)
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Geometry['seTideElv'] = np.zeros((n_records))
     solid_earth_tide_01 = fid.variables['solid_earth_tide_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,solid_earth_tide_01,k=3,s=0)
     Geometry['seTideElv'][:] = fint(time_20_ku)
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Geometry['gpTideElv'] = np.zeros((n_records))
     pole_tide_01 = fid.variables['pole_tide_01'][:].copy()
     fint=scipy.interpolate.UnivariateSpline(time_cor_01,pole_tide_01,k=3,s=0)
     Geometry['gpTideElv'][:] = fint(time_20_ku)
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     Geometry['Surf_type'] = fid.variables['surf_type_20_ku'][:].copy()
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Geometry['Corr_status'] = fid.variables['flag_cor_status_20_ku'][:].copy()
-    #-- Correction Error Flag
+    # Correction Error Flag
     Geometry['Corr_error'] = fid.variables['flag_cor_err_20_ku'][:].copy()
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Geometry['SSB'] = fid.variables['sea_state_bias_20_ku'][:].copy()
 
-    #-- CryoSat-2 Internal Corrections Group
+    # CryoSat-2 Internal Corrections Group
     Instrumental = {}
-    #-- Doppler range correction: Radial + slope (mm)
-    #-- computed for the component of satellite velocity in the nadir direction
+    # Doppler range correction: Radial + slope (mm)
+    # computed for the component of satellite velocity in the nadir direction
     Instrumental['Doppler_range'] = fid.variables['dop_cor_20_ku'][:].copy()
-    #-- Value of Doppler Angle for the first single look echo (1e-7 radians)
+    # Value of Doppler Angle for the first single look echo (1e-7 radians)
     Instrumental['Doppler_angle_start'] = fid.variables['dop_angle_start_20_ku'][:].copy()
-    #-- Value of Doppler Angle for the last single look echo (1e-7 radians)
+    # Value of Doppler Angle for the last single look echo (1e-7 radians)
     Instrumental['Doppler_angle_stop'] = fid.variables['dop_angle_stop_20_ku'][:].copy()
-    #-- Instrument Range Correction: transmit-receive antenna (mm)
-    #-- Calibration correction to range on channel 1 computed from CAL1.
+    # Instrument Range Correction: transmit-receive antenna (mm)
+    # Calibration correction to range on channel 1 computed from CAL1.
     Instrumental['TR_inst_range'] = fid.variables['instr_cor_range_tx_rx_20_ku'][:].copy()
-    #-- Instrument Range Correction: receive-only antenna (mm)
-    #-- Calibration correction to range on channel 2 computed from CAL1.
+    # Instrument Range Correction: receive-only antenna (mm)
+    # Calibration correction to range on channel 2 computed from CAL1.
     Instrumental['R_inst_range'] = fid.variables['instr_cor_range_rx_20_ku'][:].copy()
-    #-- Instrument Gain Correction: transmit-receive antenna (dB/100)
-    #-- Calibration correction to gain on channel 1 computed from CAL1
+    # Instrument Gain Correction: transmit-receive antenna (dB/100)
+    # Calibration correction to gain on channel 1 computed from CAL1
     Instrumental['TR_inst_gain'] = fid.variables['instr_cor_gain_tx_rx_20_ku'][:].copy()
-    #-- Instrument Gain Correction: receive-only (dB/100)
-    #-- Calibration correction to gain on channel 2 computed from CAL1
+    # Instrument Gain Correction: receive-only (dB/100)
+    # Calibration correction to gain on channel 2 computed from CAL1
     Instrumental['R_inst_gain'] = fid.variables['instr_cor_gain_rx_20_ku'][:].copy()
-    #-- Internal Phase Correction (microradians)
+    # Internal Phase Correction (microradians)
     Instrumental['Internal_phase'] = fid.variables['instr_int_ph_cor_20_ku'][:].copy()
-    #-- External Phase Correction (microradians)
+    # External Phase Correction (microradians)
     Instrumental['External_phase'] = fid.variables['instr_ext_ph_cor_20_ku'][:].copy()
-    #-- Noise Power measurement (dB/100)
+    # Noise Power measurement (dB/100)
     Instrumental['Noise_power'] = fid.variables['noise_power_20_ku'][:].copy()
-    #-- Phase slope correction (microradians)
-    #-- Computed from the CAL-4 packets during the azimuth impulse response
-    #-- amplitude (SARIN only). Set from the latest available CAL-4 packet.
+    # Phase slope correction (microradians)
+    # Computed from the CAL-4 packets during the azimuth impulse response
+    # amplitude (SARIN only). Set from the latest available CAL-4 packet.
     Instrumental['Phase_slope'] = fid.variables['ph_slope_cor_20_ku'][:].copy()
 
-    #-- Bind all the bits of the l2i_mds together into a single dictionary
+    # Bind all the bits of the l2i_mds together into a single dictionary
     CS_L2I_mds = {}
     CS_L2I_mds['Location'] = Location
     CS_L2I_mds['Data'] = Data
@@ -1579,9 +1579,9 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     CS_L2I_mds['Geometry'] = Geometry
     CS_L2I_mds['Instrumental'] = Instrumental
 
-    #-- extract global attributes and assign as MPH and SPH metadata
+    # extract global attributes and assign as MPH and SPH metadata
     CS_L2I_mds['METADATA'] = dict(MPH={},SPH={},DSD={})
-    #-- MPH attributes
+    # MPH attributes
     CS_L2I_mds['METADATA']['MPH']['PRODUCT'] = fid.product_name
     CS_L2I_mds['METADATA']['MPH']['DOI'] = fid.doi
     CS_L2I_mds['METADATA']['MPH']['PROC_STAGE'] =  fid.processing_stage
@@ -1609,7 +1609,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     CS_L2I_mds['METADATA']['MPH']['LEAP_SIGN'] = fid.leap_sign
     CS_L2I_mds['METADATA']['MPH']['LEAP_ERR'] = fid.leap_err
     CS_L2I_mds['METADATA']['MPH']['PRODUCT_ERR'] = fid.product_err
-    #-- SPH attributes
+    # SPH attributes
     CS_L2I_mds['METADATA']['SPH']['START_RECORD_TAI_TIME'] = fid.first_record_time
     CS_L2I_mds['METADATA']['SPH']['STOP_RECORD_TAI_TIME'] = fid.last_record_time
     CS_L2I_mds['METADATA']['SPH']['ABS_ORBIT_START'] = fid.abs_orbit_start
@@ -1679,7 +1679,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     CS_L2I_mds['METADATA']['SPH']['MEAN_SEA_SURFACE_FILE'] = fid.xref_mss
     CS_L2I_mds['METADATA']['SPH']['GEOID_FILE'] = fid.xref_geoid
     CS_L2I_mds['METADATA']['SPH']['ODLE_FILE'] = fid.xref_odle
-    #-- mode dependent attributes
+    # mode dependent attributes
     if ('xref_dem' in fid.ncattrs()):
         CS_L2I_mds['METADATA']['SPH']['DEM_MODEL_FILE'] = fid.xref_dem
     if ('xref_sea_ice' in fid.ncattrs()):
@@ -1687,98 +1687,98 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     if ('xref_snow_depth' in fid.ncattrs()):
         CS_L2I_mds['METADATA']['SPH']['SNOW_DEPTH_FILE'] = fid.xref_snow_depth
 
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_L2I_mds
 
-#-- PURPOSE: Get scaling factors for converting unpacked units in binary files
+# PURPOSE: Get scaling factors for converting unpacked units in binary files
 def cryosat_scaling_factors():
-    #-- dictionary of scale factors for CryoSat-2 variables
+    # dictionary of scale factors for CryoSat-2 variables
     CS_l2i_scale = {}
 
-    #-- CryoSat-2 Location Group
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 Location Group
+    # Time and Orbit Parameters plus Measurement Mode
     CS_l2i_scale['Location'] = {}
-    #-- Time: day part
+    # Time: day part
     CS_l2i_scale['Location']['Day'] = 1.0
-    #-- Time: second part
+    # Time: second part
     CS_l2i_scale['Location']['Sec'] = 1.0
-    #-- Time: microsecond part
+    # Time: microsecond part
     CS_l2i_scale['Location']['Micsec'] = 1.0
-    #-- USO correction factor
+    # USO correction factor
     CS_l2i_scale['Location']['USO_Corr'] = 1.0
-    #-- Mode ID
+    # Mode ID
     CS_l2i_scale['Location']['Mode_ID'] = 1
-    #-- Source sequence counter
+    # Source sequence counter
     CS_l2i_scale['Location']['SSC'] = 1
-    #-- Instrument configuration
+    # Instrument configuration
     CS_l2i_scale['Location']['Inst_config'] = 1
-    #-- Record Counter
+    # Record Counter
     CS_l2i_scale['Location']['Rec_Count'] = 1
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2i_scale['Location']['Lat'] = 1e-7
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2i_scale['Location']['Lon'] = 1e-7
-    #-- Alt: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     CS_l2i_scale['Location']['Alt'] = 1e-3
-    #-- Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
+    # Instantaneous altitude rate derived from orbit: packed units (mm/s, 1e-3 m/s)
     CS_l2i_scale['Location']['Alt_rate'] = 1e-3
-    #-- Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
+    # Satellite velocity vector. In ITRF: packed units (mm/s, 1e-3 m/s)
     CS_l2i_scale['Location']['Sat_velocity'] = 1e-3
-    #-- Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Real beam direction vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     CS_l2i_scale['Location']['Real_beam'] = 1e-6
-    #-- Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
+    # Interferometer baseline vector. In CRF: packed units (micro-m/s, 1e-6 m/s)
     CS_l2i_scale['Location']['Baseline'] = 1e-6
-    #-- Star Tracker ID
+    # Star Tracker ID
     CS_l2i_scale['Location']['ST_ID'] = 1
     CS_l2i_scale['Location']['Spare'] = 1
-    #-- Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2i_scale['Location']['Roll'] = 1e-7
-    #-- Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2i_scale['Location']['Pitch'] = 1e-7
-    #-- Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw (Derived from star trackers): packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2i_scale['Location']['Yaw'] = 1e-7
-    #-- Measurement Confidence Data
+    # Measurement Confidence Data
     CS_l2i_scale['Location']['MCD'] = 1
 
-    #-- CryoSat-2 Measurement Group
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 Measurement Group
+    # Derived from instrument measurement parameters
     CS_l2i_scale['Data'] = {}
-    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['Elev_1'] = 1e-3
-    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['Elev_2'] = 1e-3
-    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['Elev_3'] = 1e-3
-    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     CS_l2i_scale['Data']['Sig0_1'] = 1e-2
-    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     CS_l2i_scale['Data']['Sig0_2'] = 1e-2
-    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     CS_l2i_scale['Data']['Sig0_3'] = 1e-2
-    #-- SWH packed units (mm, 1e-3)
+    # SWH packed units (mm, 1e-3)
     CS_l2i_scale['Data']['SWH'] = 1e-3
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     CS_l2i_scale['Data']['Peakiness'] = 1e-2
-    #-- Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 1: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['Range_1'] = 1e-3
-    #-- Retracked range correction for retracker 2: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 2: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['Range_2'] = 1e-3
-    #-- Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
+    # Retracked range correction for retracker 3: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['Range_3'] = 1e-3
-    #-- Retracked sigma 0 correction for Retracker 1: packed units (1e-2 dB)
+    # Retracked sigma 0 correction for Retracker 1: packed units (1e-2 dB)
     CS_l2i_scale['Data']['Retrack_1_sig0'] = 1e-2
-    #-- Retracked sigma 0 correction for Retracker 2: packed units (1e-2 dB)
+    # Retracked sigma 0 correction for Retracker 2: packed units (1e-2 dB)
     CS_l2i_scale['Data']['Retrack_2_sig0'] = 1e-2
-    #-- Retracked sigma 0 correction for Retracker 3: packed units (1e-2 dB)
+    # Retracked sigma 0 correction for Retracker 3: packed units (1e-2 dB)
     CS_l2i_scale['Data']['Retrack_3_sig0'] = 1e-2
-    #-- Retracker 1 quality metric
+    # Retracker 1 quality metric
     CS_l2i_scale['Data']['Quality_1'] = 1
-    #-- Retracker 2 quality metric
+    # Retracker 2 quality metric
     CS_l2i_scale['Data']['Quality_2'] = 1
-    #-- Retracker 3 quality metric
+    # Retracker 3 quality metric
     CS_l2i_scale['Data']['Quality_3'] = 1
-    #-- Retrackers 3-23 output
+    # Retrackers 3-23 output
     CS_l2i_scale['Data']['Retrack_3'] = 1
     CS_l2i_scale['Data']['Retrack_4'] = 1
     CS_l2i_scale['Data']['Retrack_5'] = 1
@@ -1800,66 +1800,66 @@ def cryosat_scaling_factors():
     CS_l2i_scale['Data']['Retrack_21'] = 1
     CS_l2i_scale['Data']['Retrack_22'] = 1
     CS_l2i_scale['Data']['Retrack_23'] = 1
-    #-- Power echo shape parameter: packed units (dB/100)
+    # Power echo shape parameter: packed units (dB/100)
     CS_l2i_scale['Data']['echo_shape'] = 1e-2
-    #-- Beam behaviour parameter: unitless code number related to
-    #-- surface characteristics
+    # Beam behaviour parameter: unitless code number related to
+    # surface characteristics
     CS_l2i_scale['Data']['BB_parameter'] = 1
-    #-- Cross track angle: packed units (micro radians)
+    # Cross track angle: packed units (micro radians)
     CS_l2i_scale['Data']['X_Track_Angle'] = 1e-6
-    #-- Cross track angle correction: packed units (micro radians)
+    # Cross track angle correction: packed units (micro radians)
     CS_l2i_scale['Data']['X_Track_Angle_c'] = 1e-6
-    #-- Leading edge coherence at retrack point 1/1000
+    # Leading edge coherence at retrack point 1/1000
     CS_l2i_scale['Data']['Coherence'] = 1e-3
-    #-- Interpolated Ocean Height: packed units (mm above ellipsoid)
+    # Interpolated Ocean Height: packed units (mm above ellipsoid)
     CS_l2i_scale['Data']['Ocean_ht'] = 1e-3
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     CS_l2i_scale['Data']['Freeboard'] = 1e-3
-    #-- Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Surface Height Anomaly: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['SHA'] = 1e-3
-    #-- Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Surface Height Anomaly: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['SSHA_interp'] = 1e-3
-    #-- Error in ocean height interpolation: packed units (mm, 1e-3 m)
+    # Error in ocean height interpolation: packed units (mm, 1e-3 m)
     CS_l2i_scale['Data']['SSHA_interp_RMS'] = 1e-3
-    #-- Number of forward records interpolated
+    # Number of forward records interpolated
     CS_l2i_scale['Data']['SSHA_interp_count_fwd'] = 1
-    #-- Number of backward records interpolated
+    # Number of backward records interpolated
     CS_l2i_scale['Data']['SSHA_interp_count_bkwd'] = 1
-    #-- Distance in time of most forward record interpolated (milli-seconds)
+    # Distance in time of most forward record interpolated (milli-seconds)
     CS_l2i_scale['Data']['SSHA_interp_time_fwd'] = 1e-3
-    #-- Distance in time of most backward record interpolated (milli-seconds)
+    # Distance in time of most backward record interpolated (milli-seconds)
     CS_l2i_scale['Data']['SSHA_interp_time_bkwd'] = 1e-3
-    #-- Interpolation error flag
+    # Interpolation error flag
     CS_l2i_scale['Data']['SSHA_interp_flag'] = 1
-    #-- Measurement mode
+    # Measurement mode
     CS_l2i_scale['Data']['Measurement_Mode'] = 1
-    #-- Quality flags
+    # Quality flags
     CS_l2i_scale['Data']['Quality_flag'] = 1
-    #-- Retracker flags
+    # Retracker flags
     CS_l2i_scale['Data']['Retracker_flag'] = 1
-    #-- Height calculation details
-    #-- Specifies what was applied during the height calculation
+    # Height calculation details
+    # Specifies what was applied during the height calculation
     CS_l2i_scale['Data']['Height_status'] = 1
-    #-- SAR freeboard status flag
+    # SAR freeboard status flag
     CS_l2i_scale['Data']['Freeboard_status'] = 1
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     CS_l2i_scale['Data']['N_avg'] = 1
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     CS_l2i_scale['Data']['Wind_speed'] = 1e-3
     CS_l2i_scale['Data']['Spares1'] = 1
 
-    #-- CryoSat-2 Auxiliary Data Group
+    # CryoSat-2 Auxiliary Data Group
     CS_l2i_scale['Auxiliary'] = {}
-    #-- Ice Concentration packed units (%/1000)
+    # Ice Concentration packed units (%/1000)
     CS_l2i_scale['Auxiliary']['Ice_conc'] = 1e-3
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     CS_l2i_scale['Auxiliary']['Snow_depth'] = 1e-3
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     CS_l2i_scale['Auxiliary']['Snow_density'] = 1.0
-    #-- Discriminator result
+    # Discriminator result
     CS_l2i_scale['Auxiliary']['Discriminator'] = 1
-    #-- SARin discriminator parameters 1-10
+    # SARin discriminator parameters 1-10
     CS_l2i_scale['Auxiliary']['SARIN_disc_1'] = 1
     CS_l2i_scale['Auxiliary']['SARIN_disc_2'] = 1
     CS_l2i_scale['Auxiliary']['SARIN_disc_3'] = 1
@@ -1870,186 +1870,186 @@ def cryosat_scaling_factors():
     CS_l2i_scale['Auxiliary']['SARIN_disc_8'] = 1
     CS_l2i_scale['Auxiliary']['SARIN_disc_9'] = 1
     CS_l2i_scale['Auxiliary']['SARIN_disc_10'] = 1
-    #-- Discriminator flags
+    # Discriminator flags
     CS_l2i_scale['Auxiliary']['Discrim_flag'] = 1
-    #-- Slope model correction (Attitude of echo in micro-degrees)
+    # Slope model correction (Attitude of echo in micro-degrees)
     CS_l2i_scale['Auxiliary']['Attitude'] = 1e-6
-    #-- Slope model correction (Azimuth of echo in micro-degrees)
+    # Slope model correction (Azimuth of echo in micro-degrees)
     CS_l2i_scale['Auxiliary']['Azimuth'] = 1e-6
-    #-- Slope doppler correction (mm)
+    # Slope doppler correction (mm)
     CS_l2i_scale['Auxiliary']['Slope_doppler'] = 1e-3
-    #-- The original latitude of the satellite (micro-degrees)
+    # The original latitude of the satellite (micro-degrees)
     CS_l2i_scale['Auxiliary']['Lat_sat'] = 1e-6
-    #-- The original longitude of the satellite (micro-degrees)
+    # The original longitude of the satellite (micro-degrees)
     CS_l2i_scale['Auxiliary']['Lon_sat'] = 1e-6
-    #-- Ambiguity indicator
+    # Ambiguity indicator
     CS_l2i_scale['Auxiliary']['Ambiguity'] = 1
-    #-- Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
+    # Mean Sea Surface standard Model: packed units (mm, 1e-3 m)
     CS_l2i_scale['Auxiliary']['MSS_model'] = 1e-3
-    #-- Geoid standard Model: packed units (mm, 1e-3 m)
+    # Geoid standard Model: packed units (mm, 1e-3 m)
     CS_l2i_scale['Auxiliary']['Geoid_model'] = 1e-3
-    #-- ODLE standard Model: packed units (mm, 1e-3 m)
+    # ODLE standard Model: packed units (mm, 1e-3 m)
     CS_l2i_scale['Auxiliary']['ODLE'] = 1e-3
-    #-- The interpolated elevation value obtained from the DEM (mm)
+    # The interpolated elevation value obtained from the DEM (mm)
     CS_l2i_scale['Auxiliary']['DEM_elev'] = 1e-3
-    #-- Identification of DEM used in SARin ambiguity test
+    # Identification of DEM used in SARin ambiguity test
     CS_l2i_scale['Auxiliary']['DEM_ID'] = 1
     CS_l2i_scale['Auxiliary']['Spares2'] = 1
 
-    #-- CryoSat-2 External Corrections Group
+    # CryoSat-2 External Corrections Group
     CS_l2i_scale['Geometry'] = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['dryTrop'] = 1e-3
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['wetTrop'] = 1e-3
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['InvBar'] = 1e-3
-    #-- Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Delta Inverse Barometric Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['DAC'] = 1e-3
-    #-- GIM Ionospheric Correction packed units (mm, 1e-3 m)
+    # GIM Ionospheric Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['Iono_GIM'] = 1e-3
-    #-- Model Ionospheric Correction packed units (mm, 1e-3 m)
+    # Model Ionospheric Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['Iono_model'] = 1e-3
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['ocTideElv'] = 1e-3
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['lpeTideElv'] = 1e-3
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['olTideElv'] = 1e-3
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['seTideElv'] = 1e-3
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['gpTideElv'] = 1e-3
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     CS_l2i_scale['Geometry']['Surf_type'] = 1
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     CS_l2i_scale['Geometry']['Corr_status'] = 1
-    #-- Correction Error Flag
+    # Correction Error Flag
     CS_l2i_scale['Geometry']['Corr_error'] = 1
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     CS_l2i_scale['Geometry']['SSB'] = 1e-3
     CS_l2i_scale['Geometry']['Spares3'] = 1
 
-    #-- CryoSat-2 Internal Corrections Group
+    # CryoSat-2 Internal Corrections Group
     CS_l2i_scale['Instrumental'] = {}
-    #-- Doppler range correction: Radial + slope (mm)
+    # Doppler range correction: Radial + slope (mm)
     CS_l2i_scale['Instrumental']['Doppler_range'] = 1e-3
-    #-- Instrument Range Correction: t-r antenna (mm)
+    # Instrument Range Correction: t-r antenna (mm)
     CS_l2i_scale['Instrumental']['TR_inst_range'] = 1e-3
-    #-- Instrument Range Correction: r-only antenna (mm)
+    # Instrument Range Correction: r-only antenna (mm)
     CS_l2i_scale['Instrumental']['R_inst_range'] = 1e-3
-    #-- Instrument Sigma 0 Correction: t-r antenna (dB/100)
+    # Instrument Sigma 0 Correction: t-r antenna (dB/100)
     CS_l2i_scale['Instrumental']['TR_inst_gain'] = 1e-2
-    #-- Instrument Sigma 0 Correction: r-only (dB/100)
+    # Instrument Sigma 0 Correction: r-only (dB/100)
     CS_l2i_scale['Instrumental']['R_inst_gain'] = 1e-2
-    #-- Internal Phase Correction (milli-radians)
+    # Internal Phase Correction (milli-radians)
     CS_l2i_scale['Instrumental']['Internal_phase'] = 1e-3
-    #-- External Phase Correction (milli-radians)
+    # External Phase Correction (milli-radians)
     CS_l2i_scale['Instrumental']['External_phase'] = 1e-3
-    #-- Noise Power measurement
+    # Noise Power measurement
     CS_l2i_scale['Instrumental']['Noise_power'] = 1
-    #-- Phase slope correction (microradians)
+    # Phase slope correction (microradians)
     CS_l2i_scale['Instrumental']['Phase_slope'] = 1e-6
     CS_l2i_scale['Instrumental']['Spares4'] = 1
 
-    #-- return the scaling factors
+    # return the scaling factors
     return CS_l2i_scale
 
-#-- PURPOSE: Read ASCII Main Product Header (MPH) block from an ESA PDS file
+# PURPOSE: Read ASCII Main Product Header (MPH) block from an ESA PDS file
 def read_MPH(full_filename):
-    #-- read input data file
+    # read input data file
     with open(os.path.expanduser(full_filename), 'rb') as fid:
         file_contents = fid.read().splitlines()
 
-    #-- Define constant values associated with PDS file formats
-    #-- number of text lines in standard MPH
+    # Define constant values associated with PDS file formats
+    # number of text lines in standard MPH
     n_MPH_lines = 41
-    #-- check that first line of header matches PRODUCT
+    # check that first line of header matches PRODUCT
     if not bool(re.match(br'PRODUCT\=\"(.*)(?=\")',file_contents[0])):
         raise IOError('File does not start with a valid PDS MPH')
-    #-- read MPH header text
+    # read MPH header text
     s_MPH_fields = {}
     for i in range(n_MPH_lines):
-        #-- use regular expression operators to read headers
+        # use regular expression operators to read headers
         if bool(re.match(br'(.*?)\=\"(.*)(?=\")',file_contents[i])):
-            #-- data fields within quotes
+            # data fields within quotes
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
             s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         elif bool(re.match(br'(.*?)\=(.*)',file_contents[i])):
-            #-- data fields without quotes
+            # data fields without quotes
             field,value=re.findall(br'(.*?)\=(.*)',file_contents[i]).pop()
             s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
-    #-- Return block name array to calling function
+    # Return block name array to calling function
     return s_MPH_fields
 
-#-- PURPOSE: Read ASCII Specific Product Header (SPH) block from a PDS file
+# PURPOSE: Read ASCII Specific Product Header (SPH) block from a PDS file
 def read_SPH(full_filename,j_sph_size):
-    #-- read input data file
+    # read input data file
     with open(os.path.expanduser(full_filename), 'rb') as fid:
         file_contents = fid.read().splitlines()
 
-    #-- Define constant values associated with PDS file formats
-    #-- number of text lines in standard MPH
+    # Define constant values associated with PDS file formats
+    # number of text lines in standard MPH
     n_MPH_lines = 41
-    #-- compile regular expression operator for reading headers
+    # compile regular expression operator for reading headers
     rx = re.compile(br'(.*?)\=\"?(.*)',re.VERBOSE)
-    #-- check first line of header matches SPH_DESCRIPTOR
+    # check first line of header matches SPH_DESCRIPTOR
     if not bool(re.match(br'SPH\_DESCRIPTOR\=',file_contents[n_MPH_lines+1])):
         raise IOError('File does not have a valid PDS DSD')
-    #-- read SPH header text (no binary control characters)
+    # read SPH header text (no binary control characters)
     s_SPH_lines = [li for li in file_contents[n_MPH_lines+1:] if rx.match(li)
         and not re.search(br'[^\x20-\x7e]+',li)]
 
-    #-- extract SPH header text
+    # extract SPH header text
     s_SPH_fields = {}
     c = 0
     while (c < len(s_SPH_lines)):
-        #-- check if line is within DS_NAME portion of SPH header
+        # check if line is within DS_NAME portion of SPH header
         if bool(re.match(br'DS_NAME',s_SPH_lines[c])):
-            #-- add dictionary for DS_NAME
+            # add dictionary for DS_NAME
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
             key = value.decode('utf-8').rstrip()
             s_SPH_fields[key] = {}
             for line in s_SPH_lines[c+1:c+7]:
                 if bool(re.match(br'(.*?)\=\"(.*)(?=\")',line)):
-                    #-- data fields within quotes
+                    # data fields within quotes
                     dsfield,dsvalue=re.findall(br'(.*?)\=\"(.*)(?=\")',line).pop()
                     s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
                 elif bool(re.match(br'(.*?)\=(.*)',line)):
-                    #-- data fields without quotes
+                    # data fields without quotes
                     dsfield,dsvalue=re.findall(br'(.*?)\=(.*)',line).pop()
                     s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
-            #-- add 6 to counter to go to next entry
+            # add 6 to counter to go to next entry
             c += 6
-        #-- use regular expression operators to read headers
+        # use regular expression operators to read headers
         elif bool(re.match(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c])):
-            #-- data fields within quotes
+            # data fields within quotes
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
             s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         elif bool(re.match(br'(.*?)\=(.*)',s_SPH_lines[c])):
-            #-- data fields without quotes
+            # data fields without quotes
             field,value=re.findall(br'(.*?)\=(.*)',s_SPH_lines[c]).pop()
             s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
-        #-- add 1 to counter to go to next line
+        # add 1 to counter to go to next line
         c += 1
 
-    #-- Return block name array to calling function
+    # Return block name array to calling function
     return s_SPH_fields
 
-#-- PURPOSE: Read ASCII Data Set Descriptors (DSD) block from a PDS file
+# PURPOSE: Read ASCII Data Set Descriptors (DSD) block from a PDS file
 def read_DSD(full_filename):
-    #-- read input data file
+    # read input data file
     with open(os.path.expanduser(full_filename), 'rb') as fid:
         file_contents = fid.read().splitlines()
 
-    #-- Define constant values associated with PDS file formats
-    #-- number of text lines in standard MPH
+    # Define constant values associated with PDS file formats
+    # number of text lines in standard MPH
     n_MPH_lines = 41
-    #-- number of text lines in a DSD header
+    # number of text lines in a DSD header
     n_DSD_lines = 8
 
-    #-- Level-2 CryoSat DS_NAMES within files
+    # Level-2 CryoSat DS_NAMES within files
     regex_patterns = []
     regex_patterns.append(br'DS_NAME\="SIR_LRM_L2(_I)?[\s+]*"')
     regex_patterns.append(br'DS_NAME\="SIR_LRMIL2[\s+]*"')
@@ -2061,86 +2061,86 @@ def read_DSD(full_filename):
     regex_patterns.append(br'DS_NAME\="SIR_SID_L2(_I)?[\s+]*"')
     regex_patterns.append(br'DS_NAME\="SIR_SIDIL2[\s+]*"')
     regex_patterns.append(br'DS_NAME\="SIR_GDR_2(A|B|_)?[\s+]*"')
-    #-- find the DSD starting line within the SPH header
+    # find the DSD starting line within the SPH header
     c = 0
     Flag = False
     while ((Flag is False) and (c < len(regex_patterns))):
-        #-- find indice within
+        # find indice within
         indice = [i for i,line in enumerate(file_contents[n_MPH_lines+1:]) if
             re.search(regex_patterns[c],line)]
         if indice:
             Flag = True
         else:
             c+=1
-    #-- check that valid indice was found within header
+    # check that valid indice was found within header
     if not indice:
         raise IOError('Can not find correct DSD field')
 
-    #-- extract s_DSD_fields info
+    # extract s_DSD_fields info
     DSD_START = n_MPH_lines + indice[0] + 1
     s_DSD_fields = {}
     for i in range(DSD_START,DSD_START+n_DSD_lines):
-        #-- use regular expression operators to read headers
+        # use regular expression operators to read headers
         if bool(re.match(br'(.*?)\=\"(.*)(?=\")',file_contents[i])):
-            #-- data fields within quotes
+            # data fields within quotes
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
             s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         elif bool(re.match(br'(.*?)\=(.*)',file_contents[i])):
-            #-- data fields without quotes
+            # data fields without quotes
             field,value=re.findall(br'(.*?)\=(.*)',file_contents[i]).pop()
             s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
-    #-- Return block name array to calling function
+    # Return block name array to calling function
     return s_DSD_fields
 
-#-- PURPOSE: read CryoSat Level-2 Intermediate data
+# PURPOSE: read CryoSat Level-2 Intermediate data
 def read_cryosat_L2I(full_filename, VERBOSE=False):
-    #-- file basename and file extension of input file
+    # file basename and file extension of input file
     fileBasename,fileExtension=os.path.splitext(os.path.basename(full_filename))
 
-    #-- CryoSat file class
-    #-- OFFL (Off Line Processing/Systematic)
-    #-- NRT_ (Near Real Time)
-    #-- RPRO (ReProcessing)
-    #-- TEST (Testing)
-    #-- LTA_ (Long Term Archive)
+    # CryoSat file class
+    # OFFL (Off Line Processing/Systematic)
+    # NRT_ (Near Real Time)
+    # RPRO (ReProcessing)
+    # TEST (Testing)
+    # LTA_ (Long Term Archive)
     regex_class = r'OFFL|NRT_|RPRO|TEST|LTA_'
-    #-- CryoSat mission products
-    #-- SIR_LRM_2 L2 Product from Low Resolution Mode Processing
-    #-- SIR_FDM_2 L2 Product from Fast Delivery Marine Mode Processing
-    #-- SIR_SIN_2 L2 Product from SAR Interferometric Processing
-    #-- SIR_SID_2 L2 Product from SIN Degraded Processing
-    #-- SIR_SAR_2 L2 Product from SAR Processing
-    #-- SIR_GDR_2 L2 Consolidated Product
-    #-- SIR_LRMI2 In-depth L2 Product from LRM Processing
-    #-- SIR_SINI2 In-depth L2 Product from SIN Processing
-    #-- SIR_SIDI2 In-depth L2 Product from SIN Degraded Process.
-    #-- SIR_SARI2 In-depth L2 Product from SAR Processing
+    # CryoSat mission products
+    # SIR_LRM_2 L2 Product from Low Resolution Mode Processing
+    # SIR_FDM_2 L2 Product from Fast Delivery Marine Mode Processing
+    # SIR_SIN_2 L2 Product from SAR Interferometric Processing
+    # SIR_SID_2 L2 Product from SIN Degraded Processing
+    # SIR_SAR_2 L2 Product from SAR Processing
+    # SIR_GDR_2 L2 Consolidated Product
+    # SIR_LRMI2 In-depth L2 Product from LRM Processing
+    # SIR_SINI2 In-depth L2 Product from SIN Processing
+    # SIR_SIDI2 In-depth L2 Product from SIN Degraded Process.
+    # SIR_SARI2 In-depth L2 Product from SAR Processing
     regex_products = (r'SIR_LRM_2|SIR_FDM_2|SIR_SIN_2|SIR_SID_2|'
         r'SIR_SAR_2|SIR_GDR_2|SIR_LRMI2|SIR_SINI2|SIR_SIDI2|SIR_SARI2')
-    #-- CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
-    #-- Mission Identifier
-    #-- File Class
-    #-- File Product
-    #-- Validity Start Date and Time
-    #-- Validity Stop Date and Time
-    #-- Baseline Identifier
-    #-- Version Number
+    # CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
+    # Mission Identifier
+    # File Class
+    # File Product
+    # Validity Start Date and Time
+    # Validity Stop Date and Time
+    # Baseline Identifier
+    # Version Number
     regex_pattern = r'(.*?)_({0})_({1})__(\d+T?\d+)_(\d+T?\d+)_(.*?)(\d+)'
     rx = re.compile(regex_pattern.format(regex_class,regex_products),re.VERBOSE)
-    #-- extract file information from filename
+    # extract file information from filename
     MI,CLASS,PRODUCT,START,STOP,BASELINE,VERSION=rx.findall(fileBasename).pop()
 
-    #-- check if input file is original binary *.DBL or new netCDF4 *.nc format
+    # check if input file is original binary *.DBL or new netCDF4 *.nc format
     if (fileExtension == '.nc'):
         print(fileBasename) if VERBOSE else None
         CS_L2I_mds = cryosat_baseline_D(full_filename, UNPACK=False)
     elif (fileExtension == '.DBL'):
-        #-- Record sizes
+        # Record sizes
         CS_L2I_MDS_REC_SIZE = 556
         CS_L2I_BC_MDS_REC_SIZE = 664
         CS_L2I_C_MDS_REC_SIZE = 664
-        #-- check baseline from file to set i_record_size and allocation function
+        # check baseline from file to set i_record_size and allocation function
         if (BASELINE == 'C'):
             i_record_size = CS_L2I_C_MDS_REC_SIZE
             read_cryosat_variables = cryosat_baseline_C
@@ -2151,67 +2151,67 @@ def read_cryosat_L2I(full_filename, VERBOSE=False):
             i_record_size = CS_L2I_MDS_REC_SIZE
             read_cryosat_variables = cryosat_baseline_AB
 
-        #-- read the input file to get file information
+        # read the input file to get file information
         fid = os.open(os.path.expanduser(full_filename),os.O_RDONLY)
         file_info = os.fstat(fid)
         os.close(fid)
 
-        #-- num DSRs from SPH
+        # num DSRs from SPH
         j_num_DSR = np.int32(file_info.st_size//i_record_size)
-        #-- print file information
+        # print file information
         if VERBOSE:
             print(fileBasename)
             print('{0:d} {1:d} {2:d}'.format(j_num_DSR,file_info.st_size,i_record_size))
-            #-- Check if MPH/SPH/DSD headers
+            # Check if MPH/SPH/DSD headers
             if (j_num_DSR*i_record_size == file_info.st_size):
                 print('No Header on file')
                 print('The number of DSRs is: {0:d}'.format(j_num_DSR))
             else:
                 print('Header on file')
 
-        #-- Check if MPH/SPH/DSD headers
+        # Check if MPH/SPH/DSD headers
         if (j_num_DSR*i_record_size != file_info.st_size):
-            #-- If there are MPH/SPH/DSD headers
+            # If there are MPH/SPH/DSD headers
             s_MPH_fields = read_MPH(full_filename)
             j_sph_size = np.int32(re.findall('[-+]?\d+',s_MPH_fields['SPH_SIZE']).pop())
             s_SPH_fields = read_SPH(full_filename,j_sph_size)
-            #-- extract information from DSD fields
+            # extract information from DSD fields
             s_DSD_fields = read_DSD(full_filename)
-            #-- extract DS_OFFSET
+            # extract DS_OFFSET
             j_DS_start = np.int32(re.findall('[-+]?\d+',s_DSD_fields['DS_OFFSET']).pop())
-            #-- extract number of DSR in the file
+            # extract number of DSR in the file
             j_num_DSR = np.int32(re.findall('[-+]?\d+',s_DSD_fields['NUM_DSR']).pop())
-            #-- check the record size
+            # check the record size
             j_DSR_size = np.int32(re.findall('[-+]?\d+',s_DSD_fields['DSR_SIZE']).pop())
-            #--  minimum size is start of the read plus number of records to read
+            #  minimum size is start of the read plus number of records to read
             j_check_size = j_DS_start +(j_DSR_size*j_num_DSR)
             if VERBOSE:
                 print('The offset of the DSD is: {0:d} bytes'.format(j_DS_start))
                 print('The number of DSRs is {0:d}'.format(j_num_DSR))
                 print('The size of the DSR is {0:d}'.format(j_DSR_size))
-            #-- check if invalid file size
+            # check if invalid file size
             if (j_check_size > file_info.st_size):
                 raise IOError('File size error')
-            #-- extract binary data from input CryoSat data file (skip headers)
+            # extract binary data from input CryoSat data file (skip headers)
             fid = open(os.path.expanduser(full_filename), 'rb')
             cryosat_header = fid.read(j_DS_start)
-            #-- iterate through CryoSat file and fill output variables
+            # iterate through CryoSat file and fill output variables
             CS_L2I_mds = read_cryosat_variables(fid,i_record_size,j_num_DSR)
-            #-- add headers to output dictionary as METADATA
+            # add headers to output dictionary as METADATA
             CS_L2I_mds['METADATA'] = {}
             CS_L2I_mds['METADATA']['MPH'] = s_MPH_fields
             CS_L2I_mds['METADATA']['SPH'] = s_SPH_fields
             CS_L2I_mds['METADATA']['DSD'] = s_DSD_fields
-            #-- close the input CryoSat binary file
+            # close the input CryoSat binary file
             fid.close()
         else:
-            #-- If there are not MPH/SPH/DSD headers
-            #-- extract binary data from input CryoSat data file
+            # If there are not MPH/SPH/DSD headers
+            # extract binary data from input CryoSat data file
             fid = open(os.path.expanduser(full_filename), 'rb')
-            #-- iterate through CryoSat file and fill output variables
+            # iterate through CryoSat file and fill output variables
             CS_L2I_mds = read_cryosat_variables(fid,i_record_size,j_num_DSR)
-            #-- close the input CryoSat binary file
+            # close the input CryoSat binary file
             fid.close()
 
-    #-- return the data and headers
+    # return the data and headers
     return CS_L2I_mds

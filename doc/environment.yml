@@ -2,7 +2,7 @@ name: cryosat-docs
 channels:
   - conda-forge
 dependencies:
-  - docutils<0.18
+  - docutils
   - fiona
   - fontconfig
   - freetype
@@ -25,8 +25,7 @@ dependencies:
   - scipy
   - shapely
   - sphinx
-  - sphinx-argparse
   - sphinx_rtd_theme
-  - texlive-core
   - pip:
+    - sphinx-argparse>=0.4
     - ..

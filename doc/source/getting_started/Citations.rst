@@ -12,7 +12,7 @@ contributed most recently to the following work:
     E. Cirac\ |igrave|\ , I. Velicogna and T. C. Sutterley. "Mass Balance of Novaya Zemlya
     Archipelago, Russian High Arctic, Using Time-Variable Gravity from GRACE and
     Altimetry Data from ICESat and CryoSat-2". *Remote Sensing*, 10(11): 1817, 2018.
-    `doi:10.3390/rs10111817 <https://doi.org/10.3390/rs10111817>`_
+    `doi: 10.3390/rs10111817 <https://doi.org/10.3390/rs10111817>`_
 
 Contributors
 ############

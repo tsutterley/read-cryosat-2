@@ -5,8 +5,6 @@ read-cryosat-2
 |Language|
 |License|
 |Documentation Status|
-|Binder|
-|Pangeo|
 
 .. |Language| image:: https://img.shields.io/badge/python-v3.8-green.svg
    :target: https://www.python.org/
@@ -16,12 +14,6 @@ read-cryosat-2
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/read-cryosat-2/badge/?version=latest
    :target: https://read-cryosat-2.readthedocs.io/en/latest/?badge=latest
-
-.. |Binder| image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/tsutterley/read-cryosat-2/main
-
-.. |Pangeo| image:: https://binder.pangeo.io/badge.svg
-   :target: https://binder.pangeo.io/v2/gh/tsutterley/read-cryosat-2/main
 
 Python tools for reading waveform and geolocated elevation data from the ESA CryoSat-2 mission and writing to HDF5
 

@@ -10,12 +10,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
       run: |
         pytest --verbose --capture=no test/test_leap_seconds.py
     - name: Archive updated files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: leap-seconds
         path: |
@@ -42,15 +42,15 @@ jobs:
       id: changes
       run: |
         if [ -n "$(git status --porcelain)" ] ; then
-            echo "::set-output name=detected::true";
+            echo "DETECTED=true" >> $GITHUB_OUTPUT;
             echo "::debug::Changes detected";
         else
-            echo "::set-output name=detected::false";
+            echo "DETECTED=false" >> $GITHUB_OUTPUT;
             echo "::debug::No changes detected";
         fi
     - name: Create pull request
-      if: steps.changes.outputs.detected == 'true'
-      uses: peter-evans/create-pull-request@v3
+      if: steps.changes.outputs.DETECTED == 'true'
+      uses: peter-evans/create-pull-request@v5
       with:
         assignees: ${{ github.actor }}
         title: "Automatic time updates"

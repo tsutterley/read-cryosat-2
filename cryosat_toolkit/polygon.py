@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 u"""
 polygon.py
-Written by Tyler Sutterley (10/2020)
+Written by Tyler Sutterley (05/2022)
 Reads polygons from GeoJSON, kml/kmz or ESRI shapefile files
 
 INPUTS:
@@ -28,6 +28,7 @@ PYTHON DEPENDENCIES:
         https://pypi.org/project/pyproj/
 
 UPDATE HISTORY:
+    Updated 05/2022: updated docstrings to numpy documentation format
     Written 10/2020
 """
 from __future__ import print_function
@@ -37,6 +38,7 @@ import io
 import re
 import fiona
 import pyproj
+import logging
 import zipfile
 import osgeo.gdal
 import geopandas
@@ -57,29 +59,48 @@ class polygon(object):
     def case_insensitive_filename(self,filename):
         """
         Searches a directory for a filename without case dependence
+
+        Parameters
+        ----------
+        filename: str
+            input filename
         """
         self.filename = os.path.expanduser(filename)
-        #-- check if file presently exists with input case
+        # check if file presently exists with input case
         if not os.access(self.filename,os.F_OK):
-            #-- search for filename without case dependence
+            # search for filename without case dependence
             basename = os.path.basename(filename)
             directory = os.path.dirname(os.path.expanduser(filename))
             f = [f for f in os.listdir(directory) if re.match(basename,f,re.I)]
             if not f:
                 raise IOError('{0} not found in file system'.format(filename))
             self.filename = os.path.join(directory,f.pop())
+        # print the input filename
+        logging.debug(self.filename)
         return self
 
     def from_geojson(self, filename, variables=None):
         """
         read GeoJSON (.json, .geojson) files
+
+        Parameters
+        ----------
+        filename: str
+            path to input GeoJSON file
+        variables: list or Nonetype, default None
+            reduce to a specific set of identifiers
+
+        Returns
+        -------
+        mpoly_obj: obj
+            shapely multipolygon object
         """
         # set filename
         self.case_insensitive_filename(filename)
         # read the GeoJSON file
         gj = geopandas.read_file(self.filename)
 
-        #-- converting x,y from polygon projection to output EPSG
+        # converting x,y from polygon projection to output EPSG
         crs1 = pyproj.CRS.from_string(gj.crs['init'])
         crs2 = pyproj.CRS.from_string("epsg:{0:d}".format(self.epsg))
         transformer = pyproj.Transformer.from_crs(crs1, crs2, always_xy=True)
@@ -111,6 +132,20 @@ class polygon(object):
     def from_kml(self, filename, kmz=False, variables=None):
         """
         read keyhole markup language (.kml) files
+
+        Parameters
+        ----------
+        filename: str
+            path to input markup file
+        kmz: bool, default False
+            input file is compressed
+        variables: list or Nonetype, default None
+            reduce to a specific set of identifiers
+
+        Returns
+        -------
+        mpoly_obj: obj
+            shapely multipolygon object
         """
         # set filename
         self.case_insensitive_filename(filename)
@@ -127,7 +162,7 @@ class polygon(object):
         else:
             kml = geopandas.read_file(self.filename)
 
-        #-- converting x,y from polygon projection to output EPSG
+        # converting x,y from polygon projection to output EPSG
         crs1 = pyproj.CRS.from_string(kml.crs['init'])
         crs2 = pyproj.CRS.from_string("epsg:{0:d}".format(self.epsg))
         transformer = pyproj.Transformer.from_crs(crs1, crs2, always_xy=True)
@@ -160,6 +195,20 @@ class polygon(object):
     def from_shapefile(self, filename, zip=False, variables=None):
         """
         read ESRI shapefiles
+
+        Parameters
+        ----------
+        filename: str
+            path to input shapefile
+        zip: bool, default False
+            input file is compressed
+        variables: list or Nonetype, default None
+            reduce to a specific set of identifiers
+
+        Returns
+        -------
+        mpoly_obj: obj
+            shapely multipolygon object
         """
         # set filename
         self.case_insensitive_filename(filename)
@@ -171,7 +220,7 @@ class polygon(object):
             # read the shapefile and extract entities
             shape = fiona.open(self.filename,'r')
 
-        #-- converting x,y from polygon projection to output EPSG
+        # converting x,y from polygon projection to output EPSG
         crs1 = pyproj.CRS.from_string(shape.crs['init'])
         crs2 = pyproj.CRS.from_string("epsg:{0:d}".format(self.epsg))
         transformer = pyproj.Transformer.from_crs(crs1, crs2, always_xy=True)

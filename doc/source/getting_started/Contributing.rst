@@ -20,7 +20,7 @@ Requesting a Feature
 Check the `project issues tab <https://github.com/tsutterley/read-cryosat-2/issues>`_ to see if the feature has already been suggested.
 If not, please submit a new issue describing your requested feature or enhancement .
 Please give your feature request both a clear title and description.
-let us know if this is something you would like to contribute to ``read-cryosat-2`` in your description as well.
+Let us know if this is something you would like to contribute to ``read-cryosat-2`` in your description as well.
 
 Reporting a Bug
 ---------------
@@ -51,7 +51,7 @@ Steps to Contribute
 2) Either by cloning to your local system or working in `GitHub Codespaces <https://github.com/features/codespaces>`_, create a work environment to make your changes.
 3) Add your fork as the ``origin`` remote and the original project repository as the ``upstream`` remote.  While this step isn't a necessary, it allows you to keep your fork up to date in the future.
 4) Create a new branch to do your work.
-5) Make your changes on the new branch and add yourself to the list of `project contributors <./Citations.html#contributors>`_.
+5) Make your changes on the new branch and add yourself to the list of project `contributors <https://github.com/tsutterley/read-cryosat-2/blob/main/CONTRIBUTORS.rst>`_.
 6) Push your work to GitHub under your fork of the project.
 7) Submit a `Pull Request <https://github.com/tsutterley/read-cryosat-2/pulls>`_ from your forked branch to the project repository.
 

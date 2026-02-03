@@ -13,6 +13,7 @@ CryoSat-2 mission and to support its science applications
 Documentation is available at https://read-cryosat-2.readthedocs.io
 """
 import cryosat_toolkit.utilities
+import cryosat_toolkit.version
 from cryosat_toolkit.polygon import polygon
 from cryosat_toolkit.calc_GPS_time import calc_GPS_time
 from cryosat_toolkit.read_cryosat_L1b import read_cryosat_L1b
@@ -21,3 +22,5 @@ from cryosat_toolkit.read_cryosat_L2I import read_cryosat_L2I
 from cryosat_toolkit.HDF5_cryosat_L1b import HDF5_cryosat_L1b
 from cryosat_toolkit.HDF5_cryosat_L2 import HDF5_cryosat_L2
 from cryosat_toolkit.HDF5_cryosat_L2I import HDF5_cryosat_L2I
+# get version number
+__version__ = cryosat_toolkit.version.version

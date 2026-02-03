@@ -43,69 +43,26 @@ Convert a calendar date into Modified Julian Days
 General Methods
 ===============
 
+.. autofunction:: cryosat_toolkit.time.parse_date_string
 
-.. method:: cryosat_toolkit.time.convert_delta_time(delta_time, epoch1=None, epoch2=None, scale=1.0)
+.. autofunction:: cryosat_toolkit.time.split_date_string
 
-    Convert delta time from seconds since epoch1 to time since epoch2
+.. autofunction:: cryosat_toolkit.time.datetime_to_list
 
-    Arguments:
+.. autofunction:: cryosat_toolkit.time.calendar_days
 
-        ``delta_time``: seconds since epoch1
+.. autofunction:: cryosat_toolkit.time.convert_datetime
 
-    Keyword arguments:
+.. autofunction:: cryosat_toolkit.time.convert_delta_time
 
-        ``epoch1``: epoch for input delta_time
+.. autofunction:: cryosat_toolkit.time.convert_calendar_dates
 
-        ``epoch2``: epoch for output delta_time
+.. autofunction:: cryosat_toolkit.time.convert_calendar_decimal
 
-        ``scale``: scaling factor for converting time to output units
+.. autofunction:: cryosat_toolkit.time.convert_julian
 
+.. autofunction:: cryosat_toolkit.time.count_leap_seconds
 
-.. method:: cryosat_toolkit.time.convert_calendar_dates(year, month, day, hour=0.0, minute=0.0, second=0.0, epoch=None)
+.. autofunction:: cryosat_toolkit.time.get_leap_seconds
 
-    Calculate the time in days since epoch from calendar dates
-
-    Arguments:
-
-        ``year``: calendar month
-
-        ``month``: month of the year
-
-        ``day``: day of the month
-
-    Keyword arguments:
-
-        ``hour``: hour of the day
-
-        ``minute``: minute of the hour
-
-        ``second``: second of the minute
-
-        ``epoch``: epoch for output delta_time
-
-
-.. method:: cryosat_toolkit.time.count_leap_seconds(GPS_Time)
-
-    Counts the number of leap seconds between a given GPS time and UTC
-
-    Arguments:
-
-        ``GPS_Time``: seconds since January 6, 1980 at 00:00:00
-
-
-.. method:: cryosat_toolkit.time.get_leap_seconds()
-
-    Gets a list of GPS times for when leap seconds occurred
-
-
-.. method:: cryosat_toolkit.time.update_leap_seconds(verbose=False, mode=0o775)
-
-    Connects to servers to download leap-seconds.list files from `NIST servers`__
-
-.. __: ftp://ftp.nist.gov/pub/time/leap-seconds.list
-
-    Keyword arguments:
-
-        ``verbose``: print file information about output file
-
-        ``mode``: permissions mode of output file
+.. autofunction:: cryosat_toolkit.time.update_leap_seconds

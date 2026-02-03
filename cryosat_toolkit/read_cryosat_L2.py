@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 u"""
 read_cryosat_L2.py
-Written by Tyler Sutterley (05/2021)
+Written by Tyler Sutterley (05/2022)
 
 Reads CryoSat Level-2 data products from baselines A, B and C
-Reads CryoSat Level-2 netCDF4 data products from baseline D
+Reads CryoSat Level-2 netCDF4 data products from baseline D and E
 Supported CryoSat Modes: LRM, SAR, SARin, FDM, SID, GDR
 
 INPUTS:
@@ -24,6 +24,7 @@ PYTHON DEPENDENCIES:
         https://unidata.github.io/netcdf4-python/netCDF4/index.html
 
 UPDATE HISTORY:
+    Updated 05/2022: added docstrings in numpy documentation format
     Updated 05/2021: use raw binary string prefixes (rb) for regular expressions
     Updated 02/2021: replaced numpy bool to prevent deprecation warning
     Updated 06/2020: patch error in CryoSat-2 GDR pointer variables
@@ -51,124 +52,124 @@ import re
 import netCDF4
 import numpy as np
 
-#-- PURPOSE: Initiate L2 MDS variables for CryoSat Baselines A and B
+# PURPOSE: Initiate L2 MDS variables for CryoSat Baselines A and B
 def cryosat_baseline_AB(fid,record_size,n_records):
-    #-- CryoSat-2 1 Hz data fields (Location Group)
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 1 Hz data fields (Location Group)
+    # Time and Orbit Parameters plus Measurement Mode
     Data_1Hz = {}
-    #-- Time: day part
+    # Time: day part
     Data_1Hz['Day'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Data_1Hz['Second'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Data_1Hz['Micsec'] = np.zeros((n_records),dtype=np.int32)
-    #-- SIRAL mode
+    # SIRAL mode
     Data_1Hz['Siral_mode'] = np.zeros((n_records),dtype=np.uint64)
-    #-- Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Lat_1Hz'] = np.zeros((n_records),dtype=np.int32)
-    #-- Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Lon_1Hz'] = np.zeros((n_records),dtype=np.int32)
-    #-- Alt_1Hz: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt_1Hz: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Data_1Hz['Alt_1Hz'] = np.zeros((n_records),dtype=np.int32)
-    #-- Mispointing: packed units (millidegrees, 1e-3 degrees)
+    # Mispointing: packed units (millidegrees, 1e-3 degrees)
     Data_1Hz['Mispointing'] = np.zeros((n_records),dtype=np.int16)
-    #-- Number of valid records in the block of twenty that contain data
-    #-- Last few records of the last block of a dataset may be blank blocks
-    #-- inserted to bring the file up to a multiple of twenty.
+    # Number of valid records in the block of twenty that contain data
+    # Last few records of the last block of a dataset may be blank blocks
+    # inserted to bring the file up to a multiple of twenty.
     Data_1Hz['N_valid'] = np.zeros((n_records),dtype=np.int16)
 
-    #-- CryoSat-2 geophysical corrections (External Corrections Group)
+    # CryoSat-2 geophysical corrections (External Corrections Group)
     Corrections = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Corrections['dryTrop'] = np.zeros((n_records),dtype=np.int16)
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Corrections['wetTrop'] = np.zeros((n_records),dtype=np.int16)
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Corrections['InvBar'] = np.zeros((n_records),dtype=np.int16)
-    #-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
+    # Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
     Corrections['DAC'] = np.zeros((n_records),dtype=np.int16)
-    #-- Ionospheric Correction packed units (mm, 1e-3 m)
+    # Ionospheric Correction packed units (mm, 1e-3 m)
     Corrections['Iono'] = np.zeros((n_records),dtype=np.int16)
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Corrections['SSB'] = np.zeros((n_records),dtype=np.int16)
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Corrections['ocTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Corrections['lpeTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Corrections['olTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Corrections['seTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Corrections['gpTideElv'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare1'] = np.zeros((n_records),dtype=np.int16)
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     Corrections['Surf_type'] = np.zeros((n_records),dtype=np.uint64)
-    #-- Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
+    # Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
     Corrections['MSS_Geoid'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
+    # Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
     Corrections['ODLE'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ice Concentration packed units (%/100)
+    # Ice Concentration packed units (%/100)
     Corrections['Ice_conc'] = np.zeros((n_records),dtype=np.int16)
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Corrections['Snow_depth'] = np.zeros((n_records),dtype=np.int16)
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Corrections['Snow_density'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare2'] = np.zeros((n_records),dtype=np.int16)
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Corrections['C_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Significant Wave Height (SWH) packed units (mm, 1e-3)
+    # Significant Wave Height (SWH) packed units (mm, 1e-3)
     Corrections['SWH'] = np.zeros((n_records),dtype=np.int16)
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Corrections['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
     Corrections['Spare3'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare4'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare5'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare6'] = np.zeros((n_records),dtype=np.int16)
 
-    #-- CryoSat-2 20 Hz data fields (Measurement Group)
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 20 Hz data fields (Measurement Group)
+    # Derived from instrument measurement parameters
     n_blocks = 20
     Data_20Hz = {}
-    #-- Delta between the timestamps for 20Hz record and the 1Hz record
-    #-- D_time_mics packed units (microseconds)
+    # Delta between the timestamps for 20Hz record and the 1Hz record
+    # D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['D_time_mics'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lat'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Lat'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lon'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Lon'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Measured elevation above ellipsoid from retracker: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker: packed units (mm, 1e-3 m)
     Data_20Hz['Elev'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Elev'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['SSHA_interp'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Interpolated Sea Surface Height measurement count
+    # Interpolated Sea Surface Height measurement count
     Data_20Hz['SSHA_interp_count'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['SSHA_interp_count'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
+    # Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp_RMS'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['SSHA_interp_RMS'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Sigma Zero Backscatter for retracker: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker: packed units (1e-2 dB)
     Data_20Hz['Sig0'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Sig0'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     Data_20Hz['Peakiness'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint16)
     Data_20Hz['Peakiness'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     Data_20Hz['Freeboard'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Freeboard'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data_20Hz['N_avg'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['N_avg'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Spare1'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Quality flags
+    # Quality flags
     Data_20Hz['Quality_flag'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint32)
     Data_20Hz['Quality_flag'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
@@ -179,9 +180,9 @@ def cryosat_baseline_AB(fid,record_size,n_records):
     Data_20Hz['Spare4'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare5'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Spare5'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- for each record in the CryoSat file
+    # for each record in the CryoSat file
     for r in range(n_records):
-        #-- CryoSat-2 Location Group for record r
+        # CryoSat-2 Location Group for record r
         Data_1Hz['Day'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data_1Hz['Second'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data_1Hz['Micsec'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -191,7 +192,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Data_1Hz['Alt_1Hz'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data_1Hz['Mispointing'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Data_1Hz['N_valid'][r] = np.fromfile(fid,dtype='>i2',count=1)
-        #-- CryoSat-2 External Corrections Group for record r
+        # CryoSat-2 External Corrections Group for record r
         Corrections['dryTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['wetTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['InvBar'][r] = np.fromfile(fid,dtype='>i2',count=1)
@@ -218,7 +219,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Corrections['Spare4'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['Spare5'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['Spare6'][r] = np.fromfile(fid,dtype='>i2',count=1)
-        #-- CryoSat-2 Measurements Group for record r and block b
+        # CryoSat-2 Measurements Group for record r and block b
         for b in range(n_blocks):
             Data_20Hz['D_time_mics'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
             Data_20Hz['Lat'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
@@ -237,7 +238,7 @@ def cryosat_baseline_AB(fid,record_size,n_records):
             Data_20Hz['Spare3'].data[r,b] = np.fromfile(fid,dtype='>i2',count=1)
             Data_20Hz['Spare4'].data[r,b] = np.fromfile(fid,dtype='>i2',count=1)
             Data_20Hz['Spare5'].data[r,b] = np.fromfile(fid,dtype='>i2',count=1)
-        #-- Set CryoSat-2 Measurements Group Masks for record r
+        # Set CryoSat-2 Measurements Group Masks for record r
         Data_20Hz['D_time_mics'].mask[r,:Data_1Hz['N_valid'][r]] = False
         Data_20Hz['Lat'].mask[r,:Data_1Hz['N_valid'][r]] = False
         Data_20Hz['Lon'].mask[r,:Data_1Hz['N_valid'][r]] = False
@@ -256,166 +257,166 @@ def cryosat_baseline_AB(fid,record_size,n_records):
         Data_20Hz['Spare4'].mask[r,:Data_1Hz['N_valid'][r]] = False
         Data_20Hz['Spare5'].mask[r,:Data_1Hz['N_valid'][r]] = False
 
-    #-- Bind all the bits of the l2_mds together into a single dictionary
+    # Bind all the bits of the l2_mds together into a single dictionary
     CS_l2_mds = {}
     CS_l2_mds['Data_1Hz'] = Data_1Hz
     CS_l2_mds['Corrections'] = Corrections
     CS_l2_mds['Data_20Hz'] = Data_20Hz
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_l2_mds
 
-#-- PURPOSE: Initiate L2 MDS variables for CryoSat Baseline C
+# PURPOSE: Initiate L2 MDS variables for CryoSat Baseline C
 def cryosat_baseline_C(fid,record_size,n_records):
-    #-- CryoSat-2 1 Hz data fields (Location Group)
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 1 Hz data fields (Location Group)
+    # Time and Orbit Parameters plus Measurement Mode
     Data_1Hz = {}
-    #-- Time: day part
+    # Time: day part
     Data_1Hz['Day'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Data_1Hz['Second'] = np.zeros((n_records),dtype=np.int32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Data_1Hz['Micsec'] = np.zeros((n_records),dtype=np.int32)
-    #-- SIRAL mode
+    # SIRAL mode
     Data_1Hz['Siral_mode'] = np.zeros((n_records),dtype=np.uint64)
-    #-- Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Lat_1Hz'] = np.zeros((n_records),dtype=np.int32)
-    #-- Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Lon_1Hz'] = np.zeros((n_records),dtype=np.int32)
-    #-- Alt_1Hz: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt_1Hz: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Data_1Hz['Alt_1Hz'] = np.zeros((n_records),dtype=np.int32)
-    #-- Roll: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Roll'] = np.zeros((n_records),dtype=np.int32)
-    #-- Pitch: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Pitch'] = np.zeros((n_records),dtype=np.int32)
-    #-- Yaw: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Yaw'] = np.zeros((n_records),dtype=np.int32)
     Data_1Hz['Spare'] = np.zeros((n_records),dtype=np.int16)
-    #-- Number of valid records in the block of twenty that contain data
-    #-- Last few records of the last block of a dataset may be blank blocks
-    #-- inserted to bring the file up to a multiple of twenty.
+    # Number of valid records in the block of twenty that contain data
+    # Last few records of the last block of a dataset may be blank blocks
+    # inserted to bring the file up to a multiple of twenty.
     Data_1Hz['N_valid'] = np.zeros((n_records),dtype=np.int16)
 
-    #-- CryoSat-2 geophysical corrections (External Corrections Group)
+    # CryoSat-2 geophysical corrections (External Corrections Group)
     Corrections = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Corrections['dryTrop'] = np.zeros((n_records),dtype=np.int16)
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Corrections['wetTrop'] = np.zeros((n_records),dtype=np.int16)
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Corrections['InvBar'] = np.zeros((n_records),dtype=np.int16)
-    #-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
+    # Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
     Corrections['DAC'] = np.zeros((n_records),dtype=np.int16)
-    #-- Ionospheric Correction packed units (mm, 1e-3 m)
+    # Ionospheric Correction packed units (mm, 1e-3 m)
     Corrections['Iono'] = np.zeros((n_records),dtype=np.int16)
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Corrections['SSB'] = np.zeros((n_records),dtype=np.int16)
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Corrections['ocTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Corrections['lpeTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Corrections['olTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Corrections['seTideElv'] = np.zeros((n_records),dtype=np.int16)
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Corrections['gpTideElv'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare1'] = np.zeros((n_records),dtype=np.int16)
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     Corrections['Surf_type'] = np.zeros((n_records),dtype=np.uint64)
-    #-- Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
+    # Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
     Corrections['MSS_Geoid'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
+    # Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
     Corrections['ODLE'] = np.zeros((n_records),dtype=np.int32)
-    #-- Ice Concentration packed units (%/100)
+    # Ice Concentration packed units (%/100)
     Corrections['Ice_conc'] = np.zeros((n_records),dtype=np.int16)
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Corrections['Snow_depth'] = np.zeros((n_records),dtype=np.int16)
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Corrections['Snow_density'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare2'] = np.zeros((n_records),dtype=np.int16)
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Corrections['C_status'] = np.zeros((n_records),dtype=np.uint32)
-    #-- Significant Wave Height (SWH) packed units (mm, 1e-3)
+    # Significant Wave Height (SWH) packed units (mm, 1e-3)
     Corrections['SWH'] = np.zeros((n_records),dtype=np.int16)
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Corrections['Wind_speed'] = np.zeros((n_records),dtype=np.uint16)
     Corrections['Spare3'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare4'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare5'] = np.zeros((n_records),dtype=np.int16)
     Corrections['Spare6'] = np.zeros((n_records),dtype=np.int16)
 
-    #-- CryoSat-2 20 Hz data fields (Measurement Group)
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 20 Hz data fields (Measurement Group)
+    # Derived from instrument measurement parameters
     n_blocks = 20
     Data_20Hz = {}
-    #-- Delta between the timestamps for 20Hz record and the 1Hz record
-    #-- D_time_mics packed units (microseconds)
+    # Delta between the timestamps for 20Hz record and the 1Hz record
+    # D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['D_time_mics'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lat'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Lat'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_20Hz['Lon'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Lon'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     Data_20Hz['Elev_1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Elev_1'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     Data_20Hz['Elev_2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Elev_2'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     Data_20Hz['Elev_3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Elev_3'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     Data_20Hz['Sig0_1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Sig0_1'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     Data_20Hz['Sig0_2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Sig0_2'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     Data_20Hz['Sig0_3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Sig0_3'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     Data_20Hz['Freeboard'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Freeboard'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['SSHA_interp'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Interpolated Sea Surface Height measurement count
+    # Interpolated Sea Surface Height measurement count
     Data_20Hz['SSHA_interp_count'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['SSHA_interp_count'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
+    # Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
     Data_20Hz['SSHA_interp_RMS'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['SSHA_interp_RMS'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     Data_20Hz['Peakiness'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint16)
     Data_20Hz['Peakiness'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data_20Hz['N_avg'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['N_avg'].mask = np.ones((n_records,n_blocks),dtype=bool)
     Data_20Hz['Spare1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int16)
     Data_20Hz['Spare1'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Quality flags
+    # Quality flags
     Data_20Hz['Quality_flag'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint32)
     Data_20Hz['Quality_flag'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Corrections Application Flag
+    # Corrections Application Flag
     Data_20Hz['Corrections_flag'] = np.ma.zeros((n_records,n_blocks),dtype=np.uint32)
     Data_20Hz['Corrections_flag'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Quality metric for retracker 1
+    # Quality metric for retracker 1
     Data_20Hz['Quality_1'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Quality_1'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Quality metric for retracker 2
+    # Quality metric for retracker 2
     Data_20Hz['Quality_2'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Quality_2'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- Quality metric for retracker 3
+    # Quality metric for retracker 3
     Data_20Hz['Quality_3'] = np.ma.zeros((n_records,n_blocks),dtype=np.int32)
     Data_20Hz['Quality_3'].mask = np.ones((n_records,n_blocks),dtype=bool)
-    #-- for each record in the CryoSat file
+    # for each record in the CryoSat file
     for r in range(n_records):
-        #-- CryoSat-2 Location Group for record r
+        # CryoSat-2 Location Group for record r
         Data_1Hz['Day'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data_1Hz['Second'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data_1Hz['Micsec'][r] = np.fromfile(fid,dtype='>i4',count=1)
@@ -428,7 +429,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Data_1Hz['Yaw'][r] = np.fromfile(fid,dtype='>i4',count=1)
         Data_1Hz['Spare'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Data_1Hz['N_valid'][r] = np.fromfile(fid,dtype='>i2',count=1)
-        #-- CryoSat-2 External Corrections Group for record r
+        # CryoSat-2 External Corrections Group for record r
         Corrections['dryTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['wetTrop'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['InvBar'][r] = np.fromfile(fid,dtype='>i2',count=1)
@@ -455,7 +456,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Corrections['Spare4'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['Spare5'][r] = np.fromfile(fid,dtype='>i2',count=1)
         Corrections['Spare6'][r] = np.fromfile(fid,dtype='>i2',count=1)
-        #-- CryoSat-2 Measurements Group for record r and block b
+        # CryoSat-2 Measurements Group for record r and block b
         for b in range(n_blocks):
             Data_20Hz['D_time_mics'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
             Data_20Hz['Lat'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
@@ -478,7 +479,7 @@ def cryosat_baseline_C(fid,record_size,n_records):
             Data_20Hz['Quality_1'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
             Data_20Hz['Quality_2'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
             Data_20Hz['Quality_3'].data[r,b] = np.fromfile(fid,dtype='>i4',count=1)
-        #-- Set CryoSat-2 Measurements Group Masks for record r
+        # Set CryoSat-2 Measurements Group Masks for record r
         Data_20Hz['D_time_mics'].mask[r,:Data_1Hz['N_valid'][r]] = False
         Data_20Hz['Lat'].mask[r,:Data_1Hz['N_valid'][r]] = False
         Data_20Hz['Lon'].mask[r,:Data_1Hz['N_valid'][r]] = False
@@ -501,234 +502,234 @@ def cryosat_baseline_C(fid,record_size,n_records):
         Data_20Hz['Quality_2'].mask[r,:Data_1Hz['N_valid'][r]] = False
         Data_20Hz['Quality_3'].mask[r,:Data_1Hz['N_valid'][r]] = False
 
-    #-- Bind all the bits of the l2_mds together into a single dictionary
+    # Bind all the bits of the l2_mds together into a single dictionary
     CS_l2_mds = {}
     CS_l2_mds['Data_1Hz'] = Data_1Hz
     CS_l2_mds['Corrections'] = Corrections
     CS_l2_mds['Data_20Hz'] = Data_20Hz
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_l2_mds
 
-#-- PURPOSE: Initiate L2 MDS variables for CryoSat Baseline D (netCDF4)
+# PURPOSE: Initiate L2 MDS variables for CryoSat Baseline D (netCDF4)
 def cryosat_baseline_D(full_filename, UNPACK=False):
-    #-- open netCDF4 file for reading
+    # open netCDF4 file for reading
     fid = netCDF4.Dataset(os.path.expanduser(full_filename),'r')
-    #-- use original unscaled units unless UNPACK=True
+    # use original unscaled units unless UNPACK=True
     fid.set_auto_scale(UNPACK)
-    #-- get dimensions
+    # get dimensions
     time_cor_01 = fid.variables['time_cor_01'][:].copy()
     time_20_ku = fid.variables['time_20_ku'][:].copy()
     n_records, = time_cor_01.shape
     n_blocks = 20
-    #-- CryoSat-2 1 Hz data fields (Location Group)
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 1 Hz data fields (Location Group)
+    # Time and Orbit Parameters plus Measurement Mode
     Data_1Hz = {}
-    #-- Time (seconds since 2000-01-01)
+    # Time (seconds since 2000-01-01)
     Data_1Hz['Time'] = time_cor_01.copy()
-    #-- Time: day part
+    # Time: day part
     Data_1Hz['Day'] = np.array(time_cor_01/86400.0,dtype=np.int32)
-    #-- Time: second part
+    # Time: second part
     Data_1Hz['Second'] = np.array(time_cor_01-Data_1Hz['Day'][:]*86400.0,dtype=np.int32)
-    #-- Time: microsecond part
+    # Time: microsecond part
     Data_1Hz['Micsec'] = np.array((time_cor_01-Data_1Hz['Day'][:]*86400.0-
         Data_1Hz['Second'][:])*1e6,dtype=np.int32)
-    #-- Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Lat_1Hz'] = fid.variables['lat_01'][:].copy()
-    #-- Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Lon_1Hz'] = fid.variables['lon_01'][:].copy()
-    #-- Alt_1Hz: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt_1Hz: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     Data_1Hz['Alt_1Hz'] = fid.variables['alt_01'][:].copy()
-    #-- Roll: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Roll'] = fid.variables['off_nadir_roll_angle_str_01'][:].copy()
-    #-- Pitch: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Pitch'] = fid.variables['off_nadir_pitch_angle_str_01'][:].copy()
-    #-- Yaw: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw: packed units (0.1 micro-degree, 1e-7 degrees)
     Data_1Hz['Yaw'] = fid.variables['off_nadir_yaw_angle_str_01'][:].copy()
-    #-- Number of valid records in the block of twenty that contain data
-    #-- Last few records of the last block of a dataset may be blank blocks
-    #-- inserted to bring the file up to a multiple of twenty.
+    # Number of valid records in the block of twenty that contain data
+    # Last few records of the last block of a dataset may be blank blocks
+    # inserted to bring the file up to a multiple of twenty.
     Data_1Hz['N_valid'] = fid.variables['num_valid_01'][:].copy()
-    #-- add absolute orbit number to 1Hz data
+    # add absolute orbit number to 1Hz data
     Data_1Hz['Abs_Orbit'] = np.zeros((n_records),dtype=np.uint32)
     Data_1Hz['Abs_Orbit'][:] = np.uint32(fid.abs_orbit_number)
-    #-- add ascending/descending flag to 1Hz data (A=ascending,D=descending)
+    # add ascending/descending flag to 1Hz data (A=ascending,D=descending)
     Data_1Hz['Ascending_flag'] = np.zeros((n_records),dtype=bool)
     Data_1Hz['Ascending_flag'][:] = (fid.ascending_flag == 'A')
 
-    #-- CryoSat-2 geophysical corrections (External Corrections Group)
+    # CryoSat-2 geophysical corrections (External Corrections Group)
     Corrections = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     Corrections['dryTrop'] = fid.variables['mod_dry_tropo_cor_01'][:].copy()
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     Corrections['wetTrop'] = fid.variables['mod_wet_tropo_cor_01'][:].copy()
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     Corrections['InvBar'] = fid.variables['inv_bar_cor_01'][:].copy()
-    #-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
+    # Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
     Corrections['DAC'] = fid.variables['hf_fluct_total_cor_01'][:].copy()
-    #-- Ionospheric Correction packed units (mm, 1e-3 m)
+    # Ionospheric Correction packed units (mm, 1e-3 m)
     Corrections['Iono'] = fid.variables['iono_cor_01'][:].copy()
     Corrections['Iono_GIM'] = fid.variables['iono_cor_gim_01'][:].copy()
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     Corrections['SSB'] = fid.variables['sea_state_bias_01_ku'][:].copy()
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     Corrections['ocTideElv'] = fid.variables['ocean_tide_01'][:].copy()
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     Corrections['lpeTideElv'] = fid.variables['ocean_tide_eq_01'][:].copy()
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     Corrections['olTideElv'] = fid.variables['load_tide_01'][:].copy()
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     Corrections['seTideElv'] = fid.variables['solid_earth_tide_01'][:].copy()
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     Corrections['gpTideElv'] = fid.variables['pole_tide_01'][:].copy()
-    #-- Mean Sea Surface and Geoid packed units (mm, 1e-3 m)
+    # Mean Sea Surface and Geoid packed units (mm, 1e-3 m)
     Corrections['Geoid'] = fid.variables['geoid_01'][:].copy()
     Corrections['MSS'] = fid.variables['mean_sea_surf_sea_ice_01'][:].copy()
-    #-- Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
+    # Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
     Corrections['ODLE'] = fid.variables['odle_01'][:].copy()
-    #-- Ice Concentration packed units (%/100)
+    # Ice Concentration packed units (%/100)
     Corrections['Ice_conc'] = fid.variables['sea_ice_concentration_01'][:].copy()
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     Corrections['Snow_depth'] = fid.variables['snow_depth_01'][:].copy()
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     Corrections['Snow_density'] = fid.variables['snow_density_01'][:].copy()
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     Corrections['C_status'] = fid.variables['flag_cor_err_01'][:].copy()
-    #-- Significant Wave Height (SWH) packed units (mm, 1e-3)
+    # Significant Wave Height (SWH) packed units (mm, 1e-3)
     Corrections['SWH'] = fid.variables['swh_ocean_01_ku'][:].copy()
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     Corrections['Wind_speed'] = fid.variables['wind_speed_alt_01_ku'][:].copy()
 
-    #-- CryoSat-2 20 Hz data fields (Measurement Group)
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 20 Hz data fields (Measurement Group)
+    # Derived from instrument measurement parameters
     Data_20Hz = {}
-    #-- Time (seconds since 2000-01-01)
+    # Time (seconds since 2000-01-01)
     Data_20Hz['Time'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Time'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
-    #-- Delta between the timestamps for 20Hz record and the 1Hz record
-    #-- D_time_mics packed units (microseconds)
+    # Delta between the timestamps for 20Hz record and the 1Hz record
+    # D_time_mics packed units (microseconds)
     Data_20Hz['D_time_mics'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['D_time_mics'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
-    #-- Lat: packed units
+    # Lat: packed units
     Data_20Hz['Lat'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Lat'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     lat_poca_20_ku = fid.variables['lat_poca_20_ku'][:].copy()
-    #-- Lon: packed units
+    # Lon: packed units
     Data_20Hz['Lon'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Lon'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     lon_poca_20_ku = fid.variables['lon_poca_20_ku'][:].copy()
-    #-- Measured elevation above ellipsoid from retracker 1
+    # Measured elevation above ellipsoid from retracker 1
     Data_20Hz['Elev_1'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Elev_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_1_20_ku = fid.variables['height_1_20_ku'][:].copy()
-    #-- Measured elevation above ellipsoid from retracker 2
+    # Measured elevation above ellipsoid from retracker 2
     Data_20Hz['Elev_2'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Elev_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_2_20_ku = fid.variables['height_2_20_ku'][:].copy()
-    #-- Measured elevation above ellipsoid from retracker 3
+    # Measured elevation above ellipsoid from retracker 3
     Data_20Hz['Elev_3'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Elev_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_3_20_ku = fid.variables['height_3_20_ku'][:].copy()
-    #-- Sigma Zero Backscatter for retracker 1
+    # Sigma Zero Backscatter for retracker 1
     Data_20Hz['Sig0_1'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Sig0_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     sig0_1_20_ku = fid.variables['sig0_1_20_ku'][:].copy()
-    #-- Sigma Zero Backscatter for retracker 2
+    # Sigma Zero Backscatter for retracker 2
     Data_20Hz['Sig0_2'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Sig0_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     sig0_2_20_ku = fid.variables['sig0_2_20_ku'][:].copy()
-    #-- Sigma Zero Backscatter for retracker 3
+    # Sigma Zero Backscatter for retracker 3
     Data_20Hz['Sig0_3'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Sig0_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     sig0_3_20_ku = fid.variables['sig0_3_20_ku'][:].copy()
-    #-- Measured range from the satellite CoM to the surface from retracker 1
+    # Measured range from the satellite CoM to the surface from retracker 1
     Data_20Hz['Range_1'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Range_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     range_1_20_ku = fid.variables['range_1_20_ku'][:].copy()
-    #-- Measured range from the satellite CoM to the surface from retracker 2
+    # Measured range from the satellite CoM to the surface from retracker 2
     Data_20Hz['Range_2'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Range_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     range_2_20_ku = fid.variables['range_2_20_ku'][:].copy()
-    #-- Measured range from the satellite CoM to the surface from retracker 3
+    # Measured range from the satellite CoM to the surface from retracker 3
     Data_20Hz['Range_3'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Range_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     range_3_20_ku = fid.variables['range_3_20_ku'][:].copy()
-    #-- Freeboard
+    # Freeboard
     Data_20Hz['Freeboard'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Freeboard'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     freeboard_20_ku = fid.variables['freeboard_20_ku'][:].copy()
-    #-- Sea ice Floe height
+    # Sea ice Floe height
     Data_20Hz['Sea_Ice_Lead'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Sea_Ice_Lead'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_sea_ice_floe_20_ku = fid.variables['height_sea_ice_floe_20_ku'][:].copy()
-    #-- Sea ice lead height
+    # Sea ice lead height
     Data_20Hz['Sea_Ice_Floe'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Sea_Ice_Floe'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     height_sea_ice_lead_20_ku = fid.variables['height_sea_ice_lead_20_ku'][:].copy()
-    #-- Interpolated Sea Surface Height Anomaly
+    # Interpolated Sea Surface Height Anomaly
     Data_20Hz['SSHA_interp'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['SSHA_interp'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     ssha_interp_20_ku = fid.variables['ssha_interp_20_ku'][:].copy()
-    #-- Interpolated Sea Surface Height measurement count
+    # Interpolated Sea Surface Height measurement count
     Data_20Hz['SSHA_interp_count'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['SSHA_interp_count'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     ssha_interp_numval_20_ku = fid.variables['ssha_interp_numval_20_ku'][:].copy()
-    #-- Interpolation quality estimate RSS
+    # Interpolation quality estimate RSS
     Data_20Hz['SSHA_interp_RMS'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['SSHA_interp_RMS'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     ssha_interp_rms_20_ku = fid.variables['ssha_interp_rms_20_ku'][:].copy()
-    #-- Peakiness
+    # Peakiness
     Data_20Hz['Peakiness'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Peakiness'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     peakiness_20_ku = fid.variables['peakiness_20_ku'][:].copy()
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     Data_20Hz['N_avg'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['N_avg'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     echo_avg_numval_20_ku = fid.variables['echo_avg_numval_20_ku'][:].copy()
-    #-- Quality flags
+    # Quality flags
     Data_20Hz['Quality_flag'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Quality_flag'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     flag_prod_status_20_ku = fid.variables['flag_prod_status_20_ku'][:].copy()
-    #-- Corrections Application Flag
+    # Corrections Application Flag
     Data_20Hz['Corrections_flag'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Corrections_flag'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     flag_cor_applied_20_ku = fid.variables['flag_cor_applied_20_ku'][:].copy()
-    #-- Measurement mode
+    # Measurement mode
     Data_20Hz['Measurement_Mode'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Measurement_Mode'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     flag_instr_mode_op_20_ku = fid.variables['flag_instr_mode_op_20_ku'][:].copy()
-    #-- Surface Type
+    # Surface Type
     Data_20Hz['Surf_type'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Surf_type'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     surf_type_20_ku = fid.variables['surf_type_20_ku'][:].copy()
-    #-- Quality metric for retracker 1
+    # Quality metric for retracker 1
     Data_20Hz['Quality_1'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Quality_1'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     retracker_1_quality_20_ku = fid.variables['retracker_1_quality_20_ku'][:].copy()
-    #-- Quality metric for retracker 2
+    # Quality metric for retracker 2
     Data_20Hz['Quality_2'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Quality_2'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     retracker_2_quality_20_ku = fid.variables['retracker_2_quality_20_ku'][:].copy()
-    #-- Quality metric for retracker 3
+    # Quality metric for retracker 3
     Data_20Hz['Quality_3'] = np.ma.zeros((n_records,n_blocks))
     Data_20Hz['Quality_3'].mask = np.ma.ones((n_records,n_blocks),dtype=bool)
     retracker_3_quality_20_ku = fid.variables['retracker_3_quality_20_ku'][:].copy()
 
-    #-- remap ind_first_meas_20hz_01 for the CryoSat file
-    #-- GDR data can have indices pointing outside the file
-    #-- use the 1Hz mapping variable ind_meas_1hz_20_ku to recalculate the index
+    # remap ind_first_meas_20hz_01 for the CryoSat file
+    # GDR data can have indices pointing outside the file
+    # use the 1Hz mapping variable ind_meas_1hz_20_ku to recalculate the index
     ind_meas_1hz_20_ku = fid.variables['ind_meas_1hz_20_ku'][:].copy()
     ind_first_meas_20hz_01 = np.zeros((n_records),dtype=np.int64)
-    #-- for each record in the CryoSat file
+    # for each record in the CryoSat file
     for r in range(n_records):
-        #-- GDR data are incorrectly mapped between the 20Hz and 1Hz variables
+        # GDR data are incorrectly mapped between the 20Hz and 1Hz variables
         ind_first_meas_20hz_01[r] = (ind_meas_1hz_20_ku == r).argmax()
-        #-- index for record r
+        # index for record r
         # idx = fid.variables['ind_first_meas_20hz_01'][r].copy()
         idx = ind_first_meas_20hz_01[r].copy()
-        #-- number of valid blocks in record r
+        # number of valid blocks in record r
         cnt = np.copy(fid.variables['num_valid_01'][r])
-        #-- CryoSat-2 Measurements Group for record r
+        # CryoSat-2 Measurements Group for record r
         Data_20Hz['Time'].data[r,:cnt] = time_20_ku[idx:idx+cnt].copy()
         Data_20Hz['Time'].mask[r,:cnt] = False
         Data_20Hz['D_time_mics'].data[r,:cnt] = 1e6*(time_20_ku[idx:idx+cnt] - time_cor_01[r])
@@ -786,15 +787,15 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
         Data_20Hz['Quality_3'].data[r,:cnt] = retracker_3_quality_20_ku[idx:idx+cnt].copy()
         Data_20Hz['Quality_3'].mask[r,:cnt] = False
 
-    #-- Bind all the variables of the l2_mds together into a single dictionary
+    # Bind all the variables of the l2_mds together into a single dictionary
     CS_l2_mds = {}
     CS_l2_mds['Data_1Hz'] = Data_1Hz
     CS_l2_mds['Corrections'] = Corrections
     CS_l2_mds['Data_20Hz'] = Data_20Hz
 
-    #-- extract global attributes and assign as MPH and SPH metadata
+    # extract global attributes and assign as MPH and SPH metadata
     CS_l2_mds['METADATA'] = dict(MPH={},SPH={},DSD={})
-    #-- MPH attributes
+    # MPH attributes
     CS_l2_mds['METADATA']['MPH']['PRODUCT'] = fid.product_name
     CS_l2_mds['METADATA']['MPH']['DOI'] = fid.doi
     CS_l2_mds['METADATA']['MPH']['PROC_STAGE'] =  fid.processing_stage
@@ -822,7 +823,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     CS_l2_mds['METADATA']['MPH']['LEAP_SIGN'] = fid.leap_sign
     CS_l2_mds['METADATA']['MPH']['LEAP_ERR'] = fid.leap_err
     CS_l2_mds['METADATA']['MPH']['PRODUCT_ERR'] = fid.product_err
-    #-- SPH attributes
+    # SPH attributes
     CS_l2_mds['METADATA']['SPH']['START_RECORD_TAI_TIME'] = fid.first_record_time
     CS_l2_mds['METADATA']['SPH']['STOP_RECORD_TAI_TIME'] = fid.last_record_time
     CS_l2_mds['METADATA']['SPH']['ABS_ORBIT_START'] = fid.abs_orbit_start
@@ -892,7 +893,7 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     CS_l2_mds['METADATA']['SPH']['MEAN_SEA_SURFACE_FILE'] = fid.xref_mss
     CS_l2_mds['METADATA']['SPH']['GEOID_FILE'] = fid.xref_geoid
     CS_l2_mds['METADATA']['SPH']['ODLE_FILE'] = fid.xref_odle
-    #-- mode dependent attributes
+    # mode dependent attributes
     if ('xref_dem' in fid.ncattrs()):
         CS_l2_mds['METADATA']['SPH']['DEM_MODEL_FILE'] = fid.xref_dem
     if ('xref_sea_ice' in fid.ncattrs()):
@@ -900,243 +901,243 @@ def cryosat_baseline_D(full_filename, UNPACK=False):
     if ('xref_snow_depth' in fid.ncattrs()):
         CS_l2_mds['METADATA']['SPH']['SNOW_DEPTH_FILE'] = fid.xref_snow_depth
 
-    #-- close the netCDF4 file
+    # close the netCDF4 file
     fid.close()
-    #-- return the output dictionary
+    # return the output dictionary
     return CS_l2_mds
 
-#-- PURPOSE: Get scaling factors for converting unpacked units in binary files
+# PURPOSE: Get scaling factors for converting unpacked units in binary files
 def cryosat_scaling_factors():
-    #-- dictionary of scale factors for CryoSat-2 variables
+    # dictionary of scale factors for CryoSat-2 variables
     CS_l2_scale = {}
 
-    #-- CryoSat-2 1 Hz data fields (Location Group)
-    #-- Time and Orbit Parameters plus Measurement Mode
+    # CryoSat-2 1 Hz data fields (Location Group)
+    # Time and Orbit Parameters plus Measurement Mode
     CS_l2_scale['Data_1Hz'] = {}
-    #-- Time: day part
+    # Time: day part
     CS_l2_scale['Data_1Hz']['Day'] = 1.0
-    #-- Time: second part
+    # Time: second part
     CS_l2_scale['Data_1Hz']['Second'] = 1.0
-    #-- Time: microsecond part
+    # Time: microsecond part
     CS_l2_scale['Data_1Hz']['Micsec'] = 1.0
-    #-- SIRAL mode
+    # SIRAL mode
     CS_l2_scale['Data_1Hz']['Siral_mode'] = 1
-    #-- Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_1Hz']['Lat_1Hz'] = 1e-7
-    #-- Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon_1Hz: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_1Hz']['Lon_1Hz'] = 1e-7
-    #-- Alt_1Hz: packed units (mm, 1e-3 m)
-    #-- Altitude of COG above reference ellipsoid (interpolated value)
+    # Alt_1Hz: packed units (mm, 1e-3 m)
+    # Altitude of COG above reference ellipsoid (interpolated value)
     CS_l2_scale['Data_1Hz']['Alt_1Hz'] = 1e-3
-    #-- Roll: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Roll: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_1Hz']['Roll'] = 1e-7
-    #-- Pitch: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Pitch: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_1Hz']['Pitch'] = 1e-7
-    #-- Yaw: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Yaw: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_1Hz']['Yaw'] = 1e-7
     CS_l2_scale['Data_1Hz']['Spare'] = 1
-    #-- Number of valid records in the block of twenty that contain data
-    #-- Last few records of the last block of a dataset may be blank blocks
-    #-- inserted to bring the file up to a multiple of twenty.
+    # Number of valid records in the block of twenty that contain data
+    # Last few records of the last block of a dataset may be blank blocks
+    # inserted to bring the file up to a multiple of twenty.
     CS_l2_scale['Data_1Hz']['N_valid'] = 1
-    #-- add absolute orbit number to 1Hz data
+    # add absolute orbit number to 1Hz data
     CS_l2_scale['Data_1Hz']['Abs_Orbit'] = 1
 
-    #-- CryoSat-2 geophysical corrections (External corrections Group)
+    # CryoSat-2 geophysical corrections (External corrections Group)
     CS_l2_scale['Corrections'] = {}
-    #-- Dry Tropospheric Correction packed units (mm, 1e-3 m)
+    # Dry Tropospheric Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['dryTrop'] = 1e-3
-    #-- Wet Tropospheric Correction packed units (mm, 1e-3 m)
+    # Wet Tropospheric Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['wetTrop'] = 1e-3
-    #-- Inverse Barometric Correction packed units (mm, 1e-3 m)
+    # Inverse Barometric Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['InvBar'] = 1e-3
-    #-- Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
+    # Dynamic Atmosphere Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['DAC'] = 1e-3
-    #-- Ionospheric Correction packed units (mm, 1e-3 m)
+    # Ionospheric Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['Iono'] = 1e-3
-    #-- Sea State Bias Correction packed units (mm, 1e-3 m)
+    # Sea State Bias Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['SSB'] = 1e-3
-    #-- Ocean tide Correction packed units (mm, 1e-3 m)
+    # Ocean tide Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['ocTideElv'] = 1e-3
-    #-- Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
+    # Long period equilibrium ocean tide Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['lpeTideElv'] = 1e-3
-    #-- Ocean loading tide Correction packed units (mm, 1e-3 m)
+    # Ocean loading tide Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['olTideElv'] = 1e-3
-    #-- Solid Earth tide Correction packed units (mm, 1e-3 m)
+    # Solid Earth tide Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['seTideElv'] = 1e-3
-    #-- Geocentric Polar tide Correction packed units (mm, 1e-3 m)
+    # Geocentric Polar tide Correction packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['gpTideElv'] = 1e-3
     CS_l2_scale['Corrections']['Spare1'] = 1
-    #-- Surface Type: Packed in groups of three bits for each of the 20 records
+    # Surface Type: Packed in groups of three bits for each of the 20 records
     CS_l2_scale['Corrections']['Surf_type'] = 1
-    #-- Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
+    # Mean Sea Surface or Geoid packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['MSS_Geoid'] = 1e-3
-    #-- Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
+    # Ocean Depth/Land Elevation Model (ODLE) packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['ODLE'] = 1e-3
-    #-- Ice Concentration packed units (%/100)
+    # Ice Concentration packed units (%/100)
     CS_l2_scale['Corrections']['Ice_conc'] = 1e-2
-    #-- Snow Depth packed units (mm, 1e-3 m)
+    # Snow Depth packed units (mm, 1e-3 m)
     CS_l2_scale['Corrections']['Snow_depth'] = 1e-3
-    #-- Snow Density packed units (kg/m^3)
+    # Snow Density packed units (kg/m^3)
     CS_l2_scale['Corrections']['Snow_density'] = 1
     CS_l2_scale['Corrections']['Spare2'] = 1
-    #-- Corrections Status Flag
+    # Corrections Status Flag
     CS_l2_scale['Corrections']['C_status'] = 1
-    #-- Significant Wave Height (SWH) packed units (mm, 1e-3)
+    # Significant Wave Height (SWH) packed units (mm, 1e-3)
     CS_l2_scale['Corrections']['SWH'] = 1e-3
-    #-- Wind Speed packed units (mm/s, 1e-3 m/s)
+    # Wind Speed packed units (mm/s, 1e-3 m/s)
     CS_l2_scale['Corrections']['Wind_speed'] = 1e-3
     CS_l2_scale['Corrections']['Spare3'] = 1
     CS_l2_scale['Corrections']['Spare4'] = 1
     CS_l2_scale['Corrections']['Spare5'] = 1
     CS_l2_scale['Corrections']['Spare6'] = 1
 
-    #-- CryoSat-2 20 Hz data fields (Measurement Group)
-    #-- Derived from instrument measurement parameters
+    # CryoSat-2 20 Hz data fields (Measurement Group)
+    # Derived from instrument measurement parameters
     n_blocks = 20
     CS_l2_scale['Data_20Hz'] = {}
-    #-- Delta between the timestamps for 20Hz record and the 1Hz record
-    #-- D_time_mics packed units (microseconds)
+    # Delta between the timestamps for 20Hz record and the 1Hz record
+    # D_time_mics packed units (microseconds)
     CS_l2_scale['Data_20Hz']['D_time_mics'] = 1.0
-    #-- Lat: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lat: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_20Hz']['Lat'] = 1e-7
-    #-- Lon: packed units (0.1 micro-degree, 1e-7 degrees)
+    # Lon: packed units (0.1 micro-degree, 1e-7 degrees)
     CS_l2_scale['Data_20Hz']['Lon'] = 1e-7
-    #-- Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 1: packed units (mm, 1e-3 m)
     CS_l2_scale['Data_20Hz']['Elev_1'] = 1e-3
-    #-- Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 2: packed units (mm, 1e-3 m)
     CS_l2_scale['Data_20Hz']['Elev_2'] = 1e-3
-    #-- Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
+    # Measured elevation above ellipsoid from retracker 3: packed units (mm, 1e-3 m)
     CS_l2_scale['Data_20Hz']['Elev_3'] = 1e-3
-    #-- Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 1: packed units (1e-2 dB)
     CS_l2_scale['Data_20Hz']['Sig0_1'] = 1e-2
-    #-- Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 2: packed units (1e-2 dB)
     CS_l2_scale['Data_20Hz']['Sig0_2'] = 1e-2
-    #-- Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
+    # Sigma Zero Backscatter for retracker 3: packed units (1e-2 dB)
     CS_l2_scale['Data_20Hz']['Sig0_3'] = 1e-2
-    #-- Freeboard: packed units (mm, 1e-3 m)
-    #-- -9999 default value indicates computation has not been performed
+    # Freeboard: packed units (mm, 1e-3 m)
+    # -9999 default value indicates computation has not been performed
     CS_l2_scale['Data_20Hz']['Freeboard'] = 1e-3
-    #-- Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
+    # Interpolated Sea Surface Height Anomaly: packed units (mm, 1e-3 m)
     CS_l2_scale['Data_20Hz']['SSHA_interp'] = 1e-3
-    #-- Interpolated Sea Surface Height measurement count
+    # Interpolated Sea Surface Height measurement count
     CS_l2_scale['Data_20Hz']['SSHA_interp_count'] = 1
-    #-- Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
+    # Interpolation quality estimate RSS: packed units (mm, 1e-3 m)
     CS_l2_scale['Data_20Hz']['SSHA_interp_RMS'] = 1e-3
-    #-- Peakiness: packed units (1e-2)
+    # Peakiness: packed units (1e-2)
     CS_l2_scale['Data_20Hz']['Peakiness'] = 1e-2
-    #-- Number of averaged echoes or beams
+    # Number of averaged echoes or beams
     CS_l2_scale['Data_20Hz']['N_avg'] = 1
     CS_l2_scale['Data_20Hz']['Spare1'] = 1
-    #-- Quality flags
+    # Quality flags
     CS_l2_scale['Data_20Hz']['Quality_flag'] = 1
-    #-- Corrections Application Flag
+    # Corrections Application Flag
     CS_l2_scale['Data_20Hz']['Corrections_flag'] = 1
-    #-- Quality metric for retracker 1
+    # Quality metric for retracker 1
     CS_l2_scale['Data_20Hz']['Quality_1'] = 1
-    #-- Quality metric for retracker 2
+    # Quality metric for retracker 2
     CS_l2_scale['Data_20Hz']['Quality_2'] = 1
-    #-- Quality metric for retracker 3
+    # Quality metric for retracker 3
     CS_l2_scale['Data_20Hz']['Quality_3'] = 1
 
-    #-- return the scaling factors
+    # return the scaling factors
     return CS_l2_scale
 
-#-- PURPOSE: Read ASCII Main Product Header (MPH) block from an ESA PDS file
+# PURPOSE: Read ASCII Main Product Header (MPH) block from an ESA PDS file
 def read_MPH(full_filename):
-    #-- read input data file
+    # read input data file
     with open(os.path.expanduser(full_filename), 'rb') as fid:
         file_contents = fid.read().splitlines()
 
-    #-- Define constant values associated with PDS file formats
-    #-- number of text lines in standard MPH
+    # Define constant values associated with PDS file formats
+    # number of text lines in standard MPH
     n_MPH_lines = 41
-    #-- check that first line of header matches PRODUCT
+    # check that first line of header matches PRODUCT
     if not bool(re.match(br'PRODUCT\=\"(.*)(?=\")',file_contents[0])):
         raise IOError('File does not start with a valid PDS MPH')
-    #-- read MPH header text
+    # read MPH header text
     s_MPH_fields = {}
     for i in range(n_MPH_lines):
-        #-- use regular expression operators to read headers
+        # use regular expression operators to read headers
         if bool(re.match(br'(.*?)\=\"(.*)(?=\")',file_contents[i])):
-            #-- data fields within quotes
+            # data fields within quotes
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
             s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         elif bool(re.match(br'(.*?)\=(.*)',file_contents[i])):
-            #-- data fields without quotes
+            # data fields without quotes
             field,value=re.findall(br'(.*?)\=(.*)',file_contents[i]).pop()
             s_MPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
-    #-- Return block name array to calling function
+    # Return block name array to calling function
     return s_MPH_fields
 
-#-- PURPOSE: Read ASCII Specific Product Header (SPH) block from a PDS file
+# PURPOSE: Read ASCII Specific Product Header (SPH) block from a PDS file
 def read_SPH(full_filename,j_sph_size):
-    #-- read input data file
+    # read input data file
     with open(os.path.expanduser(full_filename), 'rb') as fid:
         file_contents = fid.read().splitlines()
 
-    #-- Define constant values associated with PDS file formats
-    #-- number of text lines in standard MPH
+    # Define constant values associated with PDS file formats
+    # number of text lines in standard MPH
     n_MPH_lines = 41
-    #-- compile regular expression operator for reading headers
+    # compile regular expression operator for reading headers
     rx = re.compile(br'(.*?)\=\"?(.*)',re.VERBOSE)
-    #-- check first line of header matches SPH_DESCRIPTOR
+    # check first line of header matches SPH_DESCRIPTOR
     if not bool(re.match(br'SPH\_DESCRIPTOR\=',file_contents[n_MPH_lines+1])):
         raise IOError('File does not have a valid PDS DSD')
-    #-- read SPH header text (no binary control characters)
+    # read SPH header text (no binary control characters)
     s_SPH_lines = [li for li in file_contents[n_MPH_lines+1:] if rx.match(li)
         and not re.search(br'[^\x20-\x7e]+',li)]
 
-    #-- extract SPH header text
+    # extract SPH header text
     s_SPH_fields = {}
     c = 0
     while (c < len(s_SPH_lines)):
-        #-- check if line is within DS_NAME portion of SPH header
+        # check if line is within DS_NAME portion of SPH header
         if bool(re.match(br'DS_NAME',s_SPH_lines[c])):
-            #-- add dictionary for DS_NAME
+            # add dictionary for DS_NAME
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
             key = value.decode('utf-8').rstrip()
             s_SPH_fields[key] = {}
             for line in s_SPH_lines[c+1:c+7]:
                 if bool(re.match(br'(.*?)\=\"(.*)(?=\")',line)):
-                    #-- data fields within quotes
+                    # data fields within quotes
                     dsfield,dsvalue=re.findall(br'(.*?)\=\"(.*)(?=\")',line).pop()
                     s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
                 elif bool(re.match(br'(.*?)\=(.*)',line)):
-                    #-- data fields without quotes
+                    # data fields without quotes
                     dsfield,dsvalue=re.findall(br'(.*?)\=(.*)',line).pop()
                     s_SPH_fields[key][dsfield.decode('utf-8')] = dsvalue.decode('utf-8').rstrip()
-            #-- add 6 to counter to go to next entry
+            # add 6 to counter to go to next entry
             c += 6
-        #-- use regular expression operators to read headers
+        # use regular expression operators to read headers
         elif bool(re.match(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c])):
-            #-- data fields within quotes
+            # data fields within quotes
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',s_SPH_lines[c]).pop()
             s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         elif bool(re.match(br'(.*?)\=(.*)',s_SPH_lines[c])):
-            #-- data fields without quotes
+            # data fields without quotes
             field,value=re.findall(br'(.*?)\=(.*)',s_SPH_lines[c]).pop()
             s_SPH_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
-        #-- add 1 to counter to go to next line
+        # add 1 to counter to go to next line
         c += 1
 
-    #-- Return block name array to calling function
+    # Return block name array to calling function
     return s_SPH_fields
 
-#-- PURPOSE: Read ASCII Data Set Descriptors (DSD) block from a PDS file
+# PURPOSE: Read ASCII Data Set Descriptors (DSD) block from a PDS file
 def read_DSD(full_filename):
-    #-- read input data file
+    # read input data file
     with open(os.path.expanduser(full_filename), 'rb') as fid:
         file_contents = fid.read().splitlines()
 
-    #-- Define constant values associated with PDS file formats
-    #-- number of text lines in standard MPH
+    # Define constant values associated with PDS file formats
+    # number of text lines in standard MPH
     n_MPH_lines = 41
-    #-- number of text lines in a DSD header
+    # number of text lines in a DSD header
     n_DSD_lines = 8
 
-    #-- Level-2 CryoSat DS_NAMES within files
+    # Level-2 CryoSat DS_NAMES within files
     regex_patterns = []
     regex_patterns.append(br'DS_NAME\="SIR_LRM_L2(_I)?[\s+]*"')
     regex_patterns.append(br'DS_NAME\="SIR_LRMIL2[\s+]*"')
@@ -1148,85 +1149,85 @@ def read_DSD(full_filename):
     regex_patterns.append(br'DS_NAME\="SIR_SID_L2(_I)?[\s+]*"')
     regex_patterns.append(br'DS_NAME\="SIR_SIDIL2[\s+]*"')
     regex_patterns.append(br'DS_NAME\="SIR_GDR_2(A|B|_)?[\s+]*"')
-    #-- find the DSD starting line within the SPH header
+    # find the DSD starting line within the SPH header
     c = 0
     Flag = False
     while ((Flag is False) and (c < len(regex_patterns))):
-        #-- find indice within
+        # find indice within
         indice = [i for i,line in enumerate(file_contents[n_MPH_lines+1:]) if
             re.search(regex_patterns[c],line)]
         if indice:
             Flag = True
         else:
             c+=1
-    #-- check that valid indice was found within header
+    # check that valid indice was found within header
     if not indice:
         raise IOError('Can not find correct DSD field')
 
-    #-- extract s_DSD_fields info
+    # extract s_DSD_fields info
     DSD_START = n_MPH_lines + indice[0] + 1
     s_DSD_fields = {}
     for i in range(DSD_START,DSD_START+n_DSD_lines):
-        #-- use regular expression operators to read headers
+        # use regular expression operators to read headers
         if bool(re.match(br'(.*?)\=\"(.*)(?=\")',file_contents[i])):
-            #-- data fields within quotes
+            # data fields within quotes
             field,value=re.findall(br'(.*?)\=\"(.*)(?=\")',file_contents[i]).pop()
             s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
         elif bool(re.match(br'(.*?)\=(.*)',file_contents[i])):
-            #-- data fields without quotes
+            # data fields without quotes
             field,value=re.findall(br'(.*?)\=(.*)',file_contents[i]).pop()
             s_DSD_fields[field.decode('utf-8')] = value.decode('utf-8').rstrip()
 
-    #-- Return block name array to calling function
+    # Return block name array to calling function
     return s_DSD_fields
 
-#-- PURPOSE: read CryoSat Level-2 data
+# PURPOSE: read CryoSat Level-2 data
 def read_cryosat_L2(full_filename, VERBOSE=False):
-    #-- file basename and file extension of input file
+    # file basename and file extension of input file
     fileBasename,fileExtension=os.path.splitext(os.path.basename(full_filename))
 
-    #-- CryoSat file class
-    #-- OFFL (Off Line Processing/Systematic)
-    #-- NRT_ (Near Real Time)
-    #-- RPRO (ReProcessing)
-    #-- TEST (Testing)
-    #-- LTA_ (Long Term Archive)
+    # CryoSat file class
+    # OFFL (Off Line Processing/Systematic)
+    # NRT_ (Near Real Time)
+    # RPRO (ReProcessing)
+    # TEST (Testing)
+    # LTA_ (Long Term Archive)
     regex_class = r'OFFL|NRT_|RPRO|TEST|LTA_'
-    #-- CryoSat mission products
-    #-- SIR_LRM_2 L2 Product from Low Resolution Mode Processing
-    #-- SIR_FDM_2 L2 Product from Fast Delivery Marine Mode Processing
-    #-- SIR_SIN_2 L2 Product from SAR Interferometric Processing
-    #-- SIR_SID_2 L2 Product from SIN Degraded Processing
-    #-- SIR_SAR_2 L2 Product from SAR Processing
-    #-- SIR_GDR_2 L2 Consolidated Product
-    #-- SIR_LRMI2 In-depth L2 Product from LRM Processing
-    #-- SIR_SINI2 In-depth L2 Product from SIN Processing
-    #-- SIR_SIDI2 In-depth L2 Product from SIN Degraded Process.
-    #-- SIR_SARI2 In-depth L2 Product from SAR Processing
+    # CryoSat mission products
+    # SIR_LRM_2 L2 Product from Low Resolution Mode Processing
+    # SIR_FDM_2 L2 Product from Fast Delivery Marine Mode Processing
+    # SIR_SIN_2 L2 Product from SAR Interferometric Processing
+    # SIR_SID_2 L2 Product from SIN Degraded Processing
+    # SIR_SAR_2 L2 Product from SAR Processing
+    # SIR_GDR_2 L2 Consolidated Product
+    # SIR_LRMI2 In-depth L2 Product from LRM Processing
+    # SIR_SINI2 In-depth L2 Product from SIN Processing
+    # SIR_SIDI2 In-depth L2 Product from SIN Degraded Process.
+    # SIR_SARI2 In-depth L2 Product from SAR Processing
     regex_products = (r'SIR_LRM_2|SIR_FDM_2|SIR_SIN_2|SIR_SID_2|'
         r'SIR_SAR_2|SIR_GDR_2|SIR_LRMI2|SIR_SINI2|SIR_SIDI2|SIR_SARI2')
-    #-- CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
-    #-- Mission Identifier
-    #-- File Class
-    #-- File Product
-    #-- Validity Start Date and Time
-    #-- Validity Stop Date and Time
-    #-- Baseline Identifier
-    #-- Version Number
+    # CRYOSAT LEVEL-2 PRODUCTS NAMING RULES
+    # Mission Identifier
+    # File Class
+    # File Product
+    # Validity Start Date and Time
+    # Validity Stop Date and Time
+    # Baseline Identifier
+    # Version Number
     regex_pattern = r'(.*?)_({0})_({1})__(\d+T?\d+)_(\d+T?\d+)_(.*?)(\d+)'
     rx = re.compile(regex_pattern.format(regex_class,regex_products),re.VERBOSE)
-    #-- extract file information from filename
+    # extract file information from filename
     MI,CLASS,PRODUCT,START,STOP,BASELINE,VERSION=rx.findall(fileBasename).pop()
 
-    #-- check if input file is original binary *.DBL or new netCDF4 *.nc format
+    # check if input file is original binary *.DBL or new netCDF4 *.nc format
     if (fileExtension == '.nc'):
         print(fileBasename) if VERBOSE else None
         CS_L2_mds = cryosat_baseline_D(full_filename, UNPACK=False)
     elif (fileExtension == '.DBL'):
-        #-- Record sizes
+        # Record sizes
         CS_L2_MDS_REC_SIZE = 980
         CS_L2_C_MDS_REC_SIZE = 1392
-        #-- check baseline from file to set i_record_size and allocation function
+        # check baseline from file to set i_record_size and allocation function
         if (BASELINE == 'C'):
             i_record_size = CS_L2_C_MDS_REC_SIZE
             read_cryosat_variables = cryosat_baseline_C
@@ -1234,74 +1235,74 @@ def read_cryosat_L2(full_filename, VERBOSE=False):
             i_record_size = CS_L2_MDS_REC_SIZE
             read_cryosat_variables = cryosat_baseline_AB
 
-        #-- read the input file to get file information
+        # read the input file to get file information
         fid = os.open(os.path.expanduser(full_filename),os.O_RDONLY)
         file_info = os.fstat(fid)
         os.close(fid)
 
-        #-- num DSRs from SPH
+        # num DSRs from SPH
         j_num_DSR = np.int32(file_info.st_size//i_record_size)
-        #-- print file information
+        # print file information
         if VERBOSE:
             print(fileBasename)
             print('{0:d} {1:d} {2:d}'.format(j_num_DSR,file_info.st_size,i_record_size))
-            #-- Check if MPH/SPH/DSD headers
+            # Check if MPH/SPH/DSD headers
             if (j_num_DSR*i_record_size == file_info.st_size):
                 print('No Header on file')
                 print('The number of DSRs is: {0:d}'.format(j_num_DSR))
             else:
                 print('Header on file')
 
-        #-- Check if MPH/SPH/DSD headers
+        # Check if MPH/SPH/DSD headers
         if (j_num_DSR*i_record_size != file_info.st_size):
-            #-- If there are MPH/SPH/DSD headers
+            # If there are MPH/SPH/DSD headers
             s_MPH_fields = read_MPH(full_filename)
             j_sph_size = np.int32(re.findall('[-+]?\d+',s_MPH_fields['SPH_SIZE']).pop())
             s_SPH_fields = read_SPH(full_filename,j_sph_size)
-            #-- extract information from DSD fields
+            # extract information from DSD fields
             s_DSD_fields = read_DSD(full_filename)
-            #-- extract DS_OFFSET
+            # extract DS_OFFSET
             j_DS_start = np.int32(re.findall('[-+]?\d+',s_DSD_fields['DS_OFFSET']).pop())
-            #-- extract number of DSR in the file
+            # extract number of DSR in the file
             j_num_DSR = np.int32(re.findall('[-+]?\d+',s_DSD_fields['NUM_DSR']).pop())
-            #-- check the record size
+            # check the record size
             j_DSR_size = np.int32(re.findall('[-+]?\d+',s_DSD_fields['DSR_SIZE']).pop())
-            #--  minimum size is start of the read plus number of records to read
+            #  minimum size is start of the read plus number of records to read
             j_check_size = j_DS_start +(j_DSR_size*j_num_DSR)
             if VERBOSE:
                 print('The offset of the DSD is: {0:d} bytes'.format(j_DS_start))
                 print('The number of DSRs is {0:d}'.format(j_num_DSR))
                 print('The size of the DSR is {0:d}'.format(j_DSR_size))
-            #-- check if invalid file size
+            # check if invalid file size
             if (j_check_size > file_info.st_size):
                 raise IOError('File size error')
-            #-- extract binary data from input CryoSat data file (skip headers)
+            # extract binary data from input CryoSat data file (skip headers)
             fid = open(os.path.expanduser(full_filename), 'rb')
             cryosat_header = fid.read(j_DS_start)
-            #-- iterate through CryoSat file and fill output variables
+            # iterate through CryoSat file and fill output variables
             CS_L2_mds = read_cryosat_variables(fid,i_record_size,j_num_DSR)
-            #-- add headers to output dictionary as METADATA
+            # add headers to output dictionary as METADATA
             CS_L2_mds['METADATA'] = {}
             CS_L2_mds['METADATA']['MPH'] = s_MPH_fields
             CS_L2_mds['METADATA']['SPH'] = s_SPH_fields
             CS_L2_mds['METADATA']['DSD'] = s_DSD_fields
-            #-- add absolute orbit number to 1Hz data
+            # add absolute orbit number to 1Hz data
             CS_L2_mds['Data_1Hz']['Abs_Orbit']=np.zeros((j_num_DSR),dtype=np.uint32)
             CS_L2_mds['Data_1Hz']['Abs_Orbit'][:]=np.uint32(s_MPH_fields['ABS_ORBIT'])
-            #-- add ascending/descending flag to 1Hz data (A=ascending,D=descending)
+            # add ascending/descending flag to 1Hz data (A=ascending,D=descending)
             CS_L2_mds['Data_1Hz']['Ascending_flag']=np.zeros((j_num_DSR),dtype=bool)
             if (s_SPH_fields['ASCENDING_FLAG'] == 'A'):
                 CS_L2_mds['Data_1Hz']['Ascending_flag'][:] = True
-            #-- close the input CryoSat binary file
+            # close the input CryoSat binary file
             fid.close()
         else:
-            #-- If there are not MPH/SPH/DSD headers
-            #-- extract binary data from input CryoSat data file
+            # If there are not MPH/SPH/DSD headers
+            # extract binary data from input CryoSat data file
             fid = open(os.path.expanduser(full_filename), 'rb')
-            #-- iterate through CryoSat file and fill output variables
+            # iterate through CryoSat file and fill output variables
             CS_L2_mds = read_cryosat_variables(fid,i_record_size,j_num_DSR)
-            #-- close the input CryoSat binary file
+            # close the input CryoSat binary file
             fid.close()
 
-    #-- return the data and headers
+    # return the data and headers
     return CS_L2_mds
